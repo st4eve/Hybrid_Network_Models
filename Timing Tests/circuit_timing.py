@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import os
 from math import comb
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 #%% Non-CV Timing Function for depth and qubits
 def timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, min_blocks = 1, samples=1):
@@ -22,6 +23,7 @@ def timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, min_
 
     for n_qubits in qubit_range:
         for n_blocks in block_range:
+            print(n_qubits, " ", n_blocks)
             test_circuit = circuit_name(n_qubits, n_blocks)
             input = tf.random.uniform([n_qubits])
             start = time.time()
@@ -31,7 +33,7 @@ def timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, min_
             dt = (end - start)/samples
             n_weights = count_params(test_circuit.trainable_weights)
 
-            if(file_name == "real_amplitudes"):
+            if(circuit_name == real_amplitudes_circuit):
                 save_gates.append(3*n_qubits+n_blocks*(n_qubits+comb(n_qubits,2)))
 
             save_qubits.append(n_qubits)
@@ -48,7 +50,7 @@ def timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, min_
 def cv_timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, min_blocks = 1, min_cutoff=2, max_cutoff=15, samples=1):
     qubit_range = range(min_qubits, max_qubits+1)
     block_range = range(min_blocks, max_blocks+1)
-    cutoff_range = range(min_cutoff, max_cutoff+1)
+    cutoff_range = range(min_cutoff, max_cutoff+1, 2)
 
     save_qubits = []
     save_blocks = []
@@ -60,6 +62,7 @@ def cv_timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, m
     for n_qubits in qubit_range:
         for n_blocks in block_range:
             for cutoff_dim in cutoff_range:
+                print(n_qubits, " ", n_blocks, " ", cutoff_dim)
                 test_circuit = circuit_name(n_qubits, n_blocks, cutoff_dim)
                 input = tf.random.uniform([n_qubits])
                 start = time.time()
@@ -69,7 +72,7 @@ def cv_timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, m
                 dt = (end - start)/samples
                 n_weights = count_params(test_circuit.trainable_weights)
 
-                if(file_name == "cv_neural_net"):
+                if(circuit_name == cv_neural_net):
                     save_gates.append(2*n_qubits+n_blocks*(7*n_qubits+4*int(n_qubits*(n_qubits-1)/2)))
 
                 save_qubits.append(n_qubits)
@@ -103,11 +106,12 @@ def nn_timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2, m
     x_train, x_test = x_train / 255.0, x_test / 255.0
     x_train = tf.convert_to_tensor(x_train, dtype='float32')
     x_test = tf.convert_to_tensor(x_test, dtype='float32')
-    x_train = x_train[:200]
-    y_train = y_train[:200]
+    x_train = x_train[:batch_size]
+    y_train = y_train[:batch_size]
 
     for n_qubits in qubit_range:
         for n_blocks in block_range:
+            print(n_qubits, " ", n_blocks)
             class Net(tf.keras.Model):
                 def __init__(self):
                     super(Net, self).__init__()
@@ -219,14 +223,18 @@ def nn_cv_timing(circuit_name, file_name, max_qubits, max_blocks, min_qubits = 2
     dataframe.to_pickle(file_name)
 
 #%% Non-CV Timing Experiments
-timing(real_amplitudes_circuit, "real_amplitudes", 10, 10, 2, 1, 10)
+timing(real_amplitudes_circuit, "real_amplitudes2", 15, 15, 2, 1, 2)
 #%%
 nn_timing(real_amplitudes_circuit, "real_amplitudes-batch-5", 10, 10, 2, 1, 5)
+#%%
 nn_timing(real_amplitudes_circuit, "real_amplitudes-batch-10", 10, 10, 2, 1, 10)
+#%%
 nn_timing(real_amplitudes_circuit, "real_amplitudes-batch-25", 10, 10, 2, 1, 25)
 
 #%% CV Timing Experiments
-cv_timing(cv_neural_net, "cv_neural_net", 3, 4, 2, 1, 2, 20, 10)
+cv_timing(cv_neural_net, "cv_neural_net", 5, 10, 2, 1, 4, 4, 2)
+
+#%%
 nn_cv_timing(cv_neural_net, "cv_neural_net-batch-5", 3, 4, 2, 1, 2, 20, 5)
 nn_cv_timing(cv_neural_net, "cv_neural_net-batch-10", 3, 4, 2, 1, 2, 20, 10)
 nn_cv_timing(cv_neural_net, "cv_neural_net-batch-25", 3, 4, 2, 1, 2, 20, 25)

@@ -23,7 +23,7 @@ class Net(tf.keras.Model):
             tf.keras.layers.Dense(128, activation='relu'),
             tf.keras.layers.Dense(64, activation='relu'),
             tf.keras.layers.Dense(10, activation='relu'),
-            #QuantumLayer(10, "real_amplitudes", n_qubits=2, n_blocks=1),
+            #QuantumLayer(10, "cv_neural_net", n_qubits=2, n_blocks=1),
             tf.keras.layers.Dense(10, activation='softmax')
         ])
 
