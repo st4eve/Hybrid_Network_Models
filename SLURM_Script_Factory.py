@@ -34,7 +34,6 @@ TEMPLATE = '''
 #SBATCH --time={time_d}-{time_h}:{time_m}:{time_s}
 #SBATCH --nodes={num_nodes}
 #SBATCH --cpus-per-task={num_cpus}
-#SBATCH --reservation={reserve}
 
 {param_arr_init}
 trial=${{SLURM_ARRAY_TASK_ID}}
