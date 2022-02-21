@@ -133,7 +133,7 @@ def _get_params_bash(params, values):
     return init_lines, assign_lines
 
 def _get_python_call(python_script_name, params):
-    str = python_script_name + " with "
+    str = "python " + python_script_name + " with "
     for param in params:
         str = str + param + "=${" + param + "}" + " "
     return str
