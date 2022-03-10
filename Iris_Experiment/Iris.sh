@@ -6,6 +6,8 @@
 #SBATCH --time=0-3:0:0
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=11
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=18arth@queensu.ca
 
 initial_weight_amplitudes_values=( 0.1 0.25 0.5 0.75 1.0 1.25 1.5 2.0 )
 initial_input_amplitude_values=( 0.1 0.25 0.5 0.75 1.0 1.25 1.5 2.0 )
