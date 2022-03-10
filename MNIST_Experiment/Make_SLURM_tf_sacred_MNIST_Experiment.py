@@ -13,4 +13,4 @@ parameters = {'num_epochs': [5],
               'activation_type':["softmax"],
 }
 
-save_script('test2.sh', 'tf_sacred_MNIST_Experiment.py', fields, parameters)
+save_script('../test2.sh', 'tf_sacred_MNIST_Experiment.py', fields, parameters)

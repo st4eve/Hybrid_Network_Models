@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 import pennylane as qml
 from itertools import combinations
-
+import numpy as np
 
 #%% Real Amplitudes Circuit
 """Returns a real amplitudes circuit with some number of qubits and some number of blocks (i.e. depth)"""
@@ -30,28 +30,45 @@ def real_amplitudes_circuit(n_qubits, n_blocks):
     circuit = qml.qnn.KerasLayer(real_amplitudes, weight_shapes, output_dim=n_qubits)
     return circuit
 
-def cv_neural_net(n_qubits, n_blocks, cutoff_dim):
+#%% CV Neural Net
+def CustomDisplacementEmbedding(features, wires):
+    for idx, f in enumerate(features):
+        if(idx%2==0):
+            qml.Displacement(f, features[idx+1], wires=wires[int(idx/2)])
+            #print("amp: ", f, "phase: ", features[idx+1], "idx: ", int(idx/2))
+
+def cv_neural_net(n_qubits, n_blocks, output_size, cutoff_dim):
     dev = qml.device("strawberryfields.tf", wires=n_qubits, cutoff_dim=cutoff_dim)
 
     @qml.qnode(dev, interface="tf")
-    def cv_nn(inputs, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10):
-        qml.templates.DisplacementEmbedding(inputs, wires=range(n_qubits))
-        qml.templates.CVNeuralNetLayers(w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, wires=range(n_qubits))
-        return [qml.expval(qml.X(wires=i)) for i in range(n_qubits)]
+    def cv_nn(inputs, theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k):
+        CustomDisplacementEmbedding(inputs, wires=range(n_qubits))
+        qml.templates.CVNeuralNetLayers(theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k, wires=range(n_qubits))
+
+        return [qml.expval(qml.X(wires=i)) for i in range(output_size)]
 
     L = n_blocks
     M = n_qubits
     K = int(M*(M-1)/2)
-    weight_shapes = {"w0":(L,K), "w1":(L,K), "w2":(L,M), "w3":(L,M), "w4":(L,M), "w5":(L,K), "w6":(L,K), "w7":(L,M), "w8":(L,M), "w9":(L,M), "w10":(L,M)}
-    circuit = qml.qnn.KerasLayer(cv_nn, weight_shapes, output_dim=2)
+    weight_shapes = {"theta_1":(L,K), "phi_1":(L,K), "varphi_1":(L,M), "r":(L,M), "phi_r":(L,M), "theta_2":(L,K), "phi_2":(L,K), "varphi_2":(L,M), "a":(L,M), "phi_a":(L,M), "k":(L,M)}
+    circuit = qml.qnn.KerasLayer(cv_nn, weight_shapes, output_dim=2, weight_specs={
+        "a": {"initializer": tf.random_uniform_initializer(minval=-0.05, maxval=0.05)},
+        "r": {"initializer": tf.random_uniform_initializer(minval=-0.05, maxval=0.05)}
+    })
+
     return circuit
 
-def basic_entangling_layers(n_qubits, n_blocks):
-    dev = qml.device("default.qubit.tf", wires=n_qubits)
+def normalization_check(cutoff_dim, inputs, weights):
+    @qml.qnode(qml.device("strawberryfields.tf", wires=2, cutoff_dim=cutoff_dim), interface="tf")
+    def cv_nn_normalization_test(inputs, theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k):
+        CustomDisplacementEmbedding(inputs, wires=range(2))
+        qml.templates.CVNeuralNetLayers(theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k, wires=range(2))
+        return [qml.probs(wires=i) for i in range(2)]
+    return cv_nn_normalization_test(inputs, *weights)
 
-
+#%% Main Quantum Layer
 class QuantumLayer(keras.Model):
-    def __init__(self, input_size, circuit_layer, **kwargs):
+    def __init__(self, input_size, output_size, circuit_layer, **kwargs):
         super().__init__()
 
         # Get circuit params
@@ -80,7 +97,7 @@ class QuantumLayer(keras.Model):
                 raise ValueError("Please ensure the input size is a multiple of the number of wires")
             self.num_circuits = int(input_size / self.num_wires)
 
-            self.circuit_layer = [cv_neural_net(n_qubits, n_blocks, kwargs['cutoff_dim']) for i in range(self.num_circuits)]
+            self.circuit_layer = [cv_neural_net(n_qubits, n_blocks, output_size, kwargs['cutoff_dim']) for i in range(self.num_circuits)]
 
     def call(self, x):
         x_split = list(tf.split(x, self.num_circuits, axis=1))

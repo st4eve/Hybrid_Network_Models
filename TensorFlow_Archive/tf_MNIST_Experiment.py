@@ -1,8 +1,4 @@
 #%% Imports
-import tensorflow as tf
-from tensorflow import keras
-import numpy as np
-from tf_quantum_layers import *
 from tf_train import *
 
 #%% Load Data
