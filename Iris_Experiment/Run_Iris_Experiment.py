@@ -17,7 +17,7 @@ if __name__ == "__main__":
     fields = {
         'memory': 16,
         'job_name': 'test_sweep',
-        'time_h': 3,
+        'time_h': 8,
         'num_cpus': 11
     }
 

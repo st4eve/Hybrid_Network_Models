@@ -3,7 +3,7 @@
 #SBATCH --job-name=test_sweep
 #SBATCH --output=output.txt
 #SBATCH --mem=16GB
-#SBATCH --time=0-3:0:0
+#SBATCH --time=0-5:0:0
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=11
 #SBATCH --mail-type=ALL
