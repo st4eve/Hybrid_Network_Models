@@ -1,0 +1,8 @@
+{
+  "cutoff_dimension": 10,
+  "cutoff_management": "L1",
+  "initial_input_amplitude": 1.25,
+  "initial_weight_amplitudes": 0.25,
+  "loss_coefficient": 0.01,
+  "seed": 877062278
+}
