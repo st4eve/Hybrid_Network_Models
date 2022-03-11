@@ -28,7 +28,7 @@ import time
 
 #%% Setup Experiment
 ex = Experiment('Iris_test')
-ex.observers.append(FileStorageObserver('Experiment_Data'))
+ex.observers.append(FileStorageObserver('Experiment_Data1'))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 #%% Experiment Parameters

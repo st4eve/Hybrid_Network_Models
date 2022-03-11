@@ -123,7 +123,7 @@ def plot_final_accuracy_loss(filepath, num_files, initial_weight_amplitudes, ini
     fig.tight_layout(pad=0.3)
     plt.show()
 
-def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_amplitude, loss_coefficient, strategy, save_plot=False):
+def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_amplitude, loss_coefficient, cutoff_dimension, strategy, save_plot=False):
 
     # Loop through files until desired configuration found
     for file_num in range(1,num_files+1):
@@ -133,7 +133,8 @@ def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_am
         if(config["initial_weight_amplitudes"]==initial_weight_amplitude
             and config["initial_input_amplitude"] == initial_input_amplitude
             and config["loss_coefficient"]==loss_coefficient
-            and config["cutoff_management"]==strategy):
+            and config["cutoff_management"]==strategy
+            and config["cutoff_dimension"] == cutoff_dimension):
             metrics = get_metrics(filepath+'/'+str(file_num)+'/metrics.json')
 
             n_epochs = len(metrics['Training Accuracy'])
@@ -151,7 +152,7 @@ def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_am
             axes.grid(True, linestyle=':')
             axes.set_xlabel("Epoch")
             axes.set_ylabel("Accuracy & Normalization")
-            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 1), borderaxespad=0.)
+            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 0.5), borderaxespad=0.)
             fig.tight_layout(pad=0.3)
 
             if save_plot:
@@ -173,7 +174,7 @@ def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_am
             axes.grid(True, linestyle=':')
             axes.set_xlabel("Epoch")
             axes.set_ylabel("Loss")
-            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 1), borderaxespad=0.)
+            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 0.5), borderaxespad=0.)
             fig.tight_layout(pad=0.3)
 
             if save_plot:
@@ -184,7 +185,7 @@ def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_am
 
             plt.show()
 
-def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initial_input_amplitudes, loss_coefficient, strategy, save_plot=False):
+def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initial_input_amplitudes, loss_coefficient, cutoff_dimension, strategy, save_plot=False):
 
     convergence_grid = np.zeros((len(initial_weight_amplitudes), len(initial_input_amplitudes)))
     final_acc_grid = np.zeros((len(initial_weight_amplitudes), len(initial_input_amplitudes)))
@@ -199,7 +200,8 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
         if(config["initial_weight_amplitudes"] in initial_weight_amplitudes
             and config["initial_input_amplitude"] in initial_input_amplitudes
             and config["loss_coefficient"]==loss_coefficient
-            and config["cutoff_management"]==strategy):
+            and config["cutoff_management"]==strategy
+            and config["cutoff_dimension"]==cutoff_dimension):
 
             metrics = get_metrics(filepath+'/'+str(file_num)+'/metrics.json')
             n_epochs = len(metrics['Training Accuracy'])
@@ -223,9 +225,9 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
 
     def density_plot(grid_vals, param_name, save_name):
         fig, axes = plt.subplots(1, figsize=(3.2, 3.2))
-        cs = axes.contourf(initial_weight_amplitudes, initial_input_amplitudes, grid_vals, cmap='Blues')
-        axes.set_xlabel("Initial Weight Value")
-        axes.set_ylabel("Initial Input Amplitude")
+        cs = axes.contourf(initial_input_amplitudes, initial_weight_amplitudes, grid_vals, cmap='Blues')
+        axes.set_xlabel("Initial Input Value")
+        axes.set_ylabel("Initial Weight Amplitude")
 
         norm = mpl.colors.Normalize(vmin=cs.cvalues.min(), vmax=cs.cvalues.max())
         sm = plt.cm.ScalarMappable(norm=norm, cmap=cs.cmap)
@@ -244,6 +246,8 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
 
         plt.show()
 
+    print(file_num)
+
     density_plot(convergence_grid, "Iterations to 90% Testing Accuracy", "convergence")
     density_plot(final_acc_grid, "Final Accuracy", "final_accuracy")
     density_plot(initial_norm, "Initial State Size", "initial_norm")
@@ -251,21 +255,24 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
     density_plot(delta_norm, "Change in State Size", "delta_norm")
 
 #%%
-plot_metrics(filepath='',
-             num_files=1,
-             initial_weight_amplitude=0.5,
-             initial_input_amplitude=0.5,
-             loss_coefficient=0,
-             strategy=None,
+plot_metrics(filepath='./Iris_Experiment/Experiment_Data1',
+             num_files=770,
+             initial_weight_amplitude=2.0,
+             initial_input_amplitude=2.0,
+             loss_coefficient=0.01,
+             cutoff_dimension = 30,
+             strategy="L1",
              save_plot=True)
 
 #%%
-plot_convergence_speed(filepath='../Iris_Experiment1',
-                       num_files=5,
-                       initial_weight_amplitudes=[0.1, 0.25],
-                       initial_input_amplitudes=[0.1, 0.25],
-                       loss_coefficient=0,
-                       strategy=None,
+plot_convergence_speed(filepath='./Iris_Experiment/Experiment_Data1',
+                       num_files=768,
+                       initial_weight_amplitudes=[0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
+                       initial_input_amplitudes=[0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
+                       loss_coefficient=0.01,
+                       cutoff_dimension = 30,
+                       strategy="L2",
                        save_plot=True)
+
 
 
