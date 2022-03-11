@@ -1,0 +1,65 @@
+2022-03-11 04:09:08.471153: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/lib64/nvidia:
+2022-03-11 04:09:08.471364: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+2022-03-11 04:09:08.471479: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (cac032): /proc/driver/nvidia/version does not exist
+2022-03-11 04:09:08.473029: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Epoch 1/30
+6/8 [=====================>........] - ETA: 5s - loss: 0.5051 - accuracy: 0.5333 - net_norm: 0.4748  88 - val_loss: 0.4609 - val_accuracy: 0.6000 - val_net_norm: 0.4497
+Epoch 2/30
+3/8 [==========>...................] - ETA: 14s - loss: 0.5279 - accuracy: 0.6000 - net_norm: 0.3640558 - val_loss: 0.4451 - val_accuracy: 0.9500 - val_net_norm: 0.4535
+Epoch 3/30
+1/8 [==>...........................] - ETA: 19s - loss: 0.3514 - accuracy: 1.0000 - net_norm: 0.6011712 - val_loss: 0.4292 - val_accuracy: 0.9500 - val_net_norm: 0.4743
+Epoch 4/30
+2/8 [======>.......................] - ETA: 16s - loss: 0.4940 - accuracy: 0.8500 - net_norm: 0.5330911 - val_loss: 0.4121 - val_accuracy: 0.9000 - val_net_norm: 0.4960
+Epoch 5/30
+3/8 [==========>...................] - ETA: 14s - loss: 0.4106 - accuracy: 0.9667 - net_norm: 0.4760158 - val_loss: 0.3652 - val_accuracy: 0.9500 - val_net_norm: 0.5231
+Epoch 6/30
+5/8 [=================>............] - ETA: 7s - loss: 0.3446 - accuracy: 1.0000 - net_norm: 0.5274 455 - val_loss: 0.3013 - val_accuracy: 1.0000 - val_net_norm: 0.5660
+Epoch 7/30
+2/8 [======>.......................] - ETA: 15s - loss: 0.3038 - accuracy: 1.0000 - net_norm: 0.5424929 - val_loss: 0.2533 - val_accuracy: 1.0000 - val_net_norm: 0.6331
+Epoch 8/30
+8/8 [==============================] - 26s 3s/step - loss: 0.2190 - accuracy: 0.9875 - net_norm: 0.6596 - val_loss: 0.2223 - val_accuracy: 1.0000 - val_net_norm: 0.6932
+Epoch 9/30
+8/8 [==============================] - 28s 4s/step - loss: 0.1712 - accuracy: 0.9875 - net_norm: 0.7272 - val_loss: 0.1988 - val_accuracy: 1.0000 - val_net_norm: 0.7440
+Epoch 10/30
+8/8 [==============================] - 24s 3s/step - loss: 0.1305 - accuracy: 0.9875 - net_norm: 0.7938 - val_loss: 0.1727 - val_accuracy: 1.0000 - val_net_norm: 0.7818
+Epoch 11/30
+8/8 [==============================] - 25s 3s/step - loss: 0.1038 - accuracy: 0.9875 - net_norm: 0.8476 - val_loss: 0.1465 - val_accuracy: 1.0000 - val_net_norm: 0.8105
+Epoch 12/30
+3/8 [==========>...................] - ETA: 13s - loss: 0.0950 - accuracy: 1.0000 - net_norm: 0.8877813 - val_loss: 0.1226 - val_accuracy: 1.0000 - val_net_norm: 0.8331
+Epoch 13/30
+6/8 [=====================>........] - ETA: 5s - loss: 0.0709 - accuracy: 1.0000 - net_norm: 0.9045 017 - val_loss: 0.1054 - val_accuracy: 1.0000 - val_net_norm: 0.8489
+Epoch 14/30
+8/8 [==============================] - 24s 3s/step - loss: 0.0754 - accuracy: 1.0000 - net_norm: 0.9118 - val_loss: 0.0951 - val_accuracy: 1.0000 - val_net_norm: 0.8592
+Epoch 15/30
+8/8 [==============================] - 26s 3s/step - loss: 0.0722 - accuracy: 1.0000 - net_norm: 0.9174 - val_loss: 0.0853 - val_accuracy: 1.0000 - val_net_norm: 0.8701
+Epoch 16/30
+8/8 [==============================] - 28s 3s/step - loss: 0.0693 - accuracy: 1.0000 - net_norm: 0.9228 - val_loss: 0.0774 - val_accuracy: 1.0000 - val_net_norm: 0.8807
+Epoch 17/30
+8/8 [==============================] - 23s 3s/step - loss: 0.0662 - accuracy: 1.0000 - net_norm: 0.9261 - val_loss: 0.0725 - val_accuracy: 1.0000 - val_net_norm: 0.8890
+Epoch 18/30
+8/8 [==============================] - 24s 3s/step - loss: 0.0624 - accuracy: 1.0000 - net_norm: 0.9270 - val_loss: 0.0693 - val_accuracy: 1.0000 - val_net_norm: 0.8937
+Epoch 19/30
+8/8 [==============================] - 24s 3s/step - loss: 0.0597 - accuracy: 1.0000 - net_norm: 0.9276 - val_loss: 0.0667 - val_accuracy: 1.0000 - val_net_norm: 0.9000
+Epoch 20/30
+8/8 [==============================] - 25s 3s/step - loss: 0.0571 - accuracy: 1.0000 - net_norm: 0.9313 - val_loss: 0.0649 - val_accuracy: 1.0000 - val_net_norm: 0.9077
+Epoch 21/30
+1/8 [==>...........................] - ETA: 15s - loss: 0.0601 - accuracy: 1.0000 - net_norm: 0.8710342 - val_loss: 0.0645 - val_accuracy: 1.0000 - val_net_norm: 0.9123
+Epoch 22/30
+8/8 [==============================] - 27s 3s/step - loss: 0.0524 - accuracy: 1.0000 - net_norm: 0.9357 - val_loss: 0.0650 - val_accuracy: 1.0000 - val_net_norm: 0.9151
+Epoch 23/30
+8/8 [==============================] - ETA: 0s - loss: 0.0510 - accuracy: 1.0000 - net_norm: 0.9353 353 - val_loss: 0.0660 - val_accuracy: 1.0000 - val_net_norm: 0.9166
+Epoch 24/30
+3/8 [==========>...................] - ETA: 13s - loss: 0.0489 - accuracy: 1.0000 - net_norm: 0.9349360 - val_loss: 0.0653 - val_accuracy: 1.0000 - val_net_norm: 0.9201
+Epoch 25/30
+4/8 [==============>...............] - ETA: 11s - loss: 0.0451 - accuracy: 1.0000 - net_norm: 0.9413394 - val_loss: 0.0635 - val_accuracy: 1.0000 - val_net_norm: 0.9249
+Epoch 26/30
+2/8 [======>.......................] - ETA: 16s - loss: 0.0473 - accuracy: 1.0000 - net_norm: 0.9554425 - val_loss: 0.0606 - val_accuracy: 1.0000 - val_net_norm: 0.9276
+Epoch 27/30
+3/8 [==========>...................] - ETA: 14s - loss: 0.0456 - accuracy: 1.0000 - net_norm: 0.9576447 - val_loss: 0.0572 - val_accuracy: 1.0000 - val_net_norm: 0.9306
+Epoch 28/30
+1/8 [==>...........................] - ETA: 18s - loss: 0.0346 - accuracy: 1.0000 - net_norm: 0.9615476 - val_loss: 0.0557 - val_accuracy: 1.0000 - val_net_norm: 0.9338
+Epoch 29/30
+3/8 [==========>...................] - ETA: 14s - loss: 0.0387 - accuracy: 1.0000 - net_norm: 0.9667507 - val_loss: 0.0565 - val_accuracy: 1.0000 - val_net_norm: 0.9368
+Epoch 30/30
+1/8 [==>...........................] - ETA: 18s - loss: 0.0374 - accuracy: 1.0000 - net_norm: 0.9337
