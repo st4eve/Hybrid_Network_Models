@@ -12,10 +12,10 @@ def AmplitudePhaseDisplacementEncoding(features, wires):
     encoded as amplitudes and phases of the displacement gate.
     Later, this should be modified to alter each pair to be complex valued,
     and then converted to angle and phase to put the data points on equal footing.
-    Assumes ordering of (displacement, angle, displacement, angle, ...)"""
-    for idx, f in enumerate(features):
-        if(idx%2==0):
-            qml.Displacement(f, features[idx+1], wires=wires[int(idx/2)])
+    Assumes ordering of (displacements, angles)"""
+
+    for i in range(int(len(features)/2)):
+        qml.Displacement(1.0*features[i], 2*np.pi*features[i + int(len(features)/2)], wires=wires[i])
 
 #%% CV Quantum Nodes
 """Builds a quantum node based on the specifications"""
@@ -68,7 +68,7 @@ class Norm(tf.keras.regularizers.Regularizer):
 #%% Single CV Keras Layer
 """Builds a Keras Layer using a quantum node"""
 
-def build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding_method, regularizer, input_amplitude, meas_method="X_quadrature"):
+def build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding_method, regularizer, meas_method="X_quadrature"):
 
     # Make quantum node
     cv_nn = build_cv_quantum_node(n_qumodes, n_outputs, cutoff_dim, encoding_method, meas_method)
@@ -98,14 +98,14 @@ def build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding
         "phi_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "varphi_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
 
-        "r": {"initializer": tf.keras.initializers.Constant(input_amplitude), "regularizer": regularizer},
+        "r": {"initializer": tf.random_uniform_initializer(minval=0, maxval=0.5, seed=tf.random.set_seed(seed)), "regularizer": regularizer},
 
         "phi_r": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "theta_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "phi_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "varphi_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
 
-        "a": {"initializer": tf.keras.initializers.Constant(input_amplitude), "regularizer": regularizer},
+        "a": {"initializer": tf.random_uniform_initializer(minval=0, maxval=0.5, seed=tf.random.set_seed(seed)), "regularizer": regularizer},
 
         "phi_a": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "k": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))}
@@ -116,21 +116,18 @@ def build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding
 
 # %% Full CV Keras Layers
 class QuantumLayer_MultiQunode(keras.Model):
-    """ This class builds a quantum layer that can be directly used in model building.
-    Note that while it is not strictly necessary for this case, it will be expanding upon
-    to build more complex layers later on. """
 
     def __init__(self, n_inputs, n_outputs, n_circuits, n_qumodes, n_layers, cutoff_dim, encoding_method, cutoff_management,
-                 cutoff_management_coefficient, input_amplitude):
+                 cutoff_management_coefficient):
         super().__init__()
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
         self.n_circuits = n_circuits
-        self.n_outputs_per_circuit = int(n_circuits*n_qumodes)
+        self.n_outputs_per_circuit = int(n_outputs/n_circuits)
 
         # Create regularizer
         if cutoff_management == "L1":
-            self.regularizer = tf.keras.regularizers.L1(l1=10000)
+            self.regularizer = tf.keras.regularizers.L1(l1=cutoff_management_coefficient)
         elif cutoff_management == "L2":
             self.regularizer = tf.keras.regularizers.L2(l2=cutoff_management_coefficient)
         elif cutoff_management == "Loss":
@@ -141,11 +138,9 @@ class QuantumLayer_MultiQunode(keras.Model):
         self.cutoff_management = cutoff_management
         self.cutoff_management_coefficient = cutoff_management_coefficient
 
-        self.normalization_qnode = build_cv_quantum_node(n_qumodes, self.n_outputs_per_circuit, cutoff_dim, encoding_method,
-                                                         meas_method="Fock")
-
+        # Build circuits
         self.circuit_layer = [build_cv_neural_network(n_qumodes, self.n_outputs_per_circuit, n_layers, cutoff_dim, encoding_method,
-                                                     self.regularizer, input_amplitude, meas_method="X_quadrature")
+                                                     self.regularizer, meas_method="X_quadrature")
                               for i in range(self.n_circuits)]
 
         self.normalization_qnode = [build_cv_quantum_node(n_qumodes, self.n_outputs_per_circuit, cutoff_dim, encoding_method,
@@ -154,49 +149,19 @@ class QuantumLayer_MultiQunode(keras.Model):
 
     def call(self, x):
         x_split = list(tf.split(x, self.n_circuits, axis=1))
-        print(x_split[0])
-        test = self.circuit_layer[0](x_split[0])
         output = tf.concat([self.circuit_layer[i](x_split[i]) for i in range(self.n_circuits)], axis=1)
-        output = x
-
-        # # Get normalization
-        # net_norm = 0
-        # for i in range(self.n_circuits):
-        #     x = x_split[i]
-        #     weights = tuple(self.trainable_weights) # Need to change this to get weight of current block
-        #     for sample in x:
-        #         fock_dist = self.normalization_qnode[i](sample, *weights)
-        #         net_norm += np.sum(tf.math.real(fock_dist)) / self.n_outputs
-        # net_norm = net_norm / len(x)
-        # self.add_metric(net_norm, "net_norm")
-        #
-        # if (self.cutoff_management == "Loss"):
-        #     self.regularizer.set_norm(net_norm)
-
         return output
 
 
-#%%
-my_tensor = tf.constant([[0.86084825, 1.445816  ],
- [0.54117095, 0.        ],
- [0.,         0.        ],
- [0. ,        0.        ],
- [0.25268555, 0.        ],
- [0.,         0.11375546],
- [0.52103823, 1.9420428 ],
- [0.6122444,  0.21734607],
- [0.8781822 , 0.6938043 ],
- [0.86895525, 0.74130666]])
+    def check_normalization(self, x):
+        x_split = list(tf.split(x, self.n_circuits, axis=1))
+        net_norm = 0
+        for i in range(self.n_circuits):
+            x = x_split[i]
+            weights = tuple(self.circuit_layer[i].trainable_weights)
+            for sample in x:
+                fock_dist = self.normalization_qnode[i](sample, *weights)
+                net_norm += np.sum(tf.math.real(fock_dist)) / self.n_outputs
+        net_norm = net_norm / len(x)
 
-
-# model1 = build_cv_neural_network(2, 2, 1, 10, AmplitudePhaseDisplacementEncoding, None, 0.5, meas_method="X_quadrature")
-#
-# output = model1(my_tensor)
-#
-#print(output)
-
-model2 = QuantumLayer_MultiQunode(4, 4, 2, 2, 1, 10, AmplitudePhaseDisplacementEncoding, None, 0, 0.5)
-
-output = model2.circuit_layer[0](my_tensor)
-
-print(output)
+        return net_norm
