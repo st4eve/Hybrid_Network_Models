@@ -28,14 +28,15 @@ from Diabetes_dataset import data_ingredient, load_data
 
 #%% Setup Experiment
 ex = Experiment('Diabetes', ingredients=[data_ingredient])
-ex.observers.append(FileStorageObserver('Experiment_Data1'))
+ex.observers.append(FileStorageObserver('Experiment_Data2'))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 #%% Experiment Parameters
 @ex.config
 def confnet_config():
     encoding_strategy = "None"
-    cutoff_dimension = 30
+    cutoff_dimension = 5
+    num_layers = 1
 
 #%% Logs
 @ex.capture
@@ -50,7 +51,7 @@ def log_performance(_run, logs, epoch, time, norm):
 
 #%% Main
 @ex.automain
-def define_and_train(encoding_strategy, cutoff_dimension):
+def define_and_train(encoding_strategy, cutoff_dimension, num_layers):
 
     # Fixed parameters
     batch_size = 20
@@ -80,6 +81,27 @@ def define_and_train(encoding_strategy, cutoff_dimension):
     # Load dataset
     x_train, y_train, x_test, y_test = load_data()
 
+    # Finding input encoding value:
+    def find_max_displacement(cutoff_dim, min_normalization):
+        cutoff_dim = int(cutoff_dim)
+        dev = qml.device("strawberryfields.tf", wires=1, cutoff_dim=cutoff_dim)
+
+        @qml.qnode(dev, interface="tf")
+        def qc(a):
+            qml.Displacement(a, 0, wires=0)
+            return qml.probs(wires=0)
+
+        a = 0
+        norm = 1
+        while (norm > min_normalization):
+            fock_dist = qc(a)
+            norm = np.sum(fock_dist)
+            a += 0.02
+
+        return a
+
+    max_input_val = find_max_displacement(cutoff_dimension, 0.999)
+
     # Define model
     class Net(tf.keras.Model):
         def __init__(self):
@@ -90,8 +112,9 @@ def define_and_train(encoding_strategy, cutoff_dimension):
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
                              bias_initializer='zeros')])
 
-            self.quantum_layer = QuantumLayer_MultiQunode(8, 4, 2, 2, 1, cutoff_dimension, AmplitudePhaseDisplacementEncoding,
+            self.quantum_layer = QuantumLayer_MultiQunode(8, 4, 2, 2, num_layers, cutoff_dimension, AmplitudePhaseDisplacementEncoding,
                                          cutoff_management, loss_coefficient)
+
 
             self.sequential_2 = tf.keras.Sequential([
                 self.quantum_layer,
@@ -109,10 +132,19 @@ def define_and_train(encoding_strategy, cutoff_dimension):
 
             if (encoding_strategy == "Sigmoid_BatchNorm"):
                 x = self.normalization(x)
+
+            if(encoding_strategy=="Sigmoid" or encoding_strategy == "Sigmoid_BatchNorm"):
                 x = activations.sigmoid(x)
 
-            if(encoding_strategy=="Sigmoid"):
-                x = activations.sigmoid(x)
+                # Scale sigmoid outputs based on number of circuits
+                # This code sucks. Need some desperate cleanup
+                # Currently hardcoded to 2 circuits
+                x_split = list(tf.split(x, 4, axis=1))
+                x_split[0] = max_input_val * x_split[0]
+                x_split[1] = 2 * np.pi * x_split[1]
+                x_split[2] = max_input_val * x_split[2]
+                x_split[3] = 2 * np.pi * x_split[3]
+                x = tf.concat([x_split[i] for i in range(4)], axis=1)
 
             x = self.sequential_2(x)
             return x

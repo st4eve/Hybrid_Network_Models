@@ -8,7 +8,8 @@ if __name__ == "__main__":
     args = sys.argv[1:]
 
     parameters = {'encoding_strategy': ["None", "Sigmoid", "Sigmoid_BatchNorm"],
-                  'cutoff_dimension':[15]
+                  'cutoff_dimension':[5, 10, 15],
+                  'num_layers':[1,2,3]
     }
 
     fields = {

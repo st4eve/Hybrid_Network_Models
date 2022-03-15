@@ -15,7 +15,7 @@ def AmplitudePhaseDisplacementEncoding(features, wires):
     Assumes ordering of (displacements, angles)"""
 
     for i in range(int(len(features)/2)):
-        qml.Displacement(1.0*features[i], 2*np.pi*features[i + int(len(features)/2)], wires=wires[i])
+        qml.Displacement(features[i], features[i + int(len(features)/2)], wires=wires[i])
 
 #%% CV Quantum Nodes
 """Builds a quantum node based on the specifications"""
@@ -98,14 +98,14 @@ def build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding
         "phi_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "varphi_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
 
-        "r": {"initializer": tf.random_uniform_initializer(minval=0, maxval=0.5, seed=tf.random.set_seed(seed)), "regularizer": regularizer},
+        "r": {"initializer": tf.random_uniform_initializer(minval=0, maxval=0.1, seed=tf.random.set_seed(seed)), "regularizer": regularizer},
 
         "phi_r": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "theta_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "phi_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "varphi_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
 
-        "a": {"initializer": tf.random_uniform_initializer(minval=0, maxval=0.5, seed=tf.random.set_seed(seed)), "regularizer": regularizer},
+        "a": {"initializer": tf.random_uniform_initializer(minval=0, maxval=0.1, seed=tf.random.set_seed(seed)), "regularizer": regularizer},
 
         "phi_a": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
         "k": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))}
