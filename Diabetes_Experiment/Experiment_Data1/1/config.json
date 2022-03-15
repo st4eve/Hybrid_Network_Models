@@ -3,6 +3,6 @@
   "dataset": {
     "filename": "diabetes.csv"
   },
-  "encoding_strategy": null,
+  "encoding_strategy": "None",
   "seed": 861963993
 }
