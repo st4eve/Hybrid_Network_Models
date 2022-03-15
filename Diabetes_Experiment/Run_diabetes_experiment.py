@@ -25,7 +25,7 @@ if __name__ == "__main__":
              ex.run(config_updates=parameter_combo)
 
     elif(args[0]=='build_slurm'):
-        save_script('Diabetes.sh', 'Iris_Experiment.py', fields, parameters)
+        save_script('Diabetes.sh', 'Diabetes_Experiment.py', fields, parameters)
 
     else:
         print("please enter 'run' or 'build_slurm'")
