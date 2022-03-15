@@ -28,7 +28,7 @@ from Diabetes_dataset import data_ingredient, load_data
 
 #%% Setup Experiment
 ex = Experiment('Diabetes', ingredients=[data_ingredient])
-ex.observers.append(FileStorageObserver('Experiment_Data2'))
+ex.observers.append(FileStorageObserver('Experiment_Data3'))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 #%% Experiment Parameters
@@ -118,7 +118,7 @@ def define_and_train(encoding_strategy, cutoff_dimension, num_layers):
 
             self.sequential_2 = tf.keras.Sequential([
                 self.quantum_layer,
-                layers.Dense(8, activation="relu",
+                layers.Dense(4, activation="relu",
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
                              bias_initializer='zeros'),
                 layers.Dense(2, activation="sigmoid",
