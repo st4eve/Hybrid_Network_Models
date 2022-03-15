@@ -16,4 +16,4 @@ encoding_strategy=${encoding_strategy_values[$(( trial % ${#encoding_strategy_va
 trial=$(( trial / ${#encoding_strategy_values[@]} ))
 cutoff_dimension=${cutoff_dimension_values[$(( trial % ${#cutoff_dimension_values[@]} ))]}
 
-python Iris_Experiment.py with encoding_strategy=${encoding_strategy} cutoff_dimension=${cutoff_dimension} 
+python Diabetes_Experiment.py with encoding_strategy=${encoding_strategy} cutoff_dimension=${cutoff_dimension} 
