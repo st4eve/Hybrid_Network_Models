@@ -1,0 +1,105 @@
+2022-03-14 22:13:12.447304: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/lib64/nvidia:
+2022-03-14 22:13:12.447471: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+2022-03-14 22:13:12.447613: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (cac033): /proc/driver/nvidia/version does not exist
+2022-03-14 22:13:12.450471: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Epoch 1/50
+ 1/31 [..............................] - ETA: 9:26 - loss: 0.6245 - accuracy: 0.60007068 - val_loss: 0.4649 - val_accuracy: 0.7857
+Epoch 2/50
+ 1/31 [..............................] - ETA: 4:35 - loss: 0.6871 - accuracy: 0.65007476 - val_loss: 0.4261 - val_accuracy: 0.8052
+Epoch 3/50
+ 1/31 [..............................] - ETA: 4:41 - loss: 0.2999 - accuracy: 0.85007720 - val_loss: 0.4135 - val_accuracy: 0.8052
+Epoch 4/50
+ 1/31 [..............................] - ETA: 4:33 - loss: 0.3900 - accuracy: 0.90007720 - val_loss: 0.4142 - val_accuracy: 0.7922
+Epoch 5/50
+ 1/31 [..............................] - ETA: 4:51 - loss: 0.5140 - accuracy: 0.70007801 - val_loss: 0.4051 - val_accuracy: 0.8052
+Epoch 6/50
+ 2/31 [>.............................] - ETA: 4:06 - loss: 0.3605 - accuracy: 0.92507801 - val_loss: 0.4064 - val_accuracy: 0.8052
+Epoch 7/50
+ 1/31 [..............................] - ETA: 4:51 - loss: 0.5240 - accuracy: 0.75007769 - val_loss: 0.4038 - val_accuracy: 0.8117
+Epoch 8/50
+ 1/31 [..............................] - ETA: 4:44 - loss: 0.2749 - accuracy: 0.90007785 - val_loss: 0.4011 - val_accuracy: 0.8182
+Epoch 9/50
+ 2/31 [>.............................] - ETA: 4:18 - loss: 0.4048 - accuracy: 0.80007704 - val_loss: 0.4062 - val_accuracy: 0.8052
+Epoch 10/50
+ 1/31 [..............................] - ETA: 4:52 - loss: 0.4145 - accuracy: 0.80007671 - val_loss: 0.4001 - val_accuracy: 0.7987
+Epoch 11/50
+ 1/31 [..............................] - ETA: 4:58 - loss: 0.3828 - accuracy: 0.90007834 - val_loss: 0.4007 - val_accuracy: 0.8052
+Epoch 12/50
+ 2/31 [>.............................] - ETA: 4:26 - loss: 0.4532 - accuracy: 0.77507736 - val_loss: 0.4004 - val_accuracy: 0.8117
+Epoch 13/50
+ 2/31 [>.............................] - ETA: 4:23 - loss: 0.4286 - accuracy: 0.85007769 - val_loss: 0.4185 - val_accuracy: 0.7987
+Epoch 14/50
+ 1/31 [..............................] - ETA: 4:29 - loss: 0.4177 - accuracy: 0.75007704 - val_loss: 0.4225 - val_accuracy: 0.7922
+Epoch 15/50
+ 1/31 [..............................] - ETA: 4:13 - loss: 0.5249 - accuracy: 0.80007818 - val_loss: 0.4398 - val_accuracy: 0.7792
+Epoch 16/50
+ 1/31 [..............................] - ETA: 4:37 - loss: 0.3824 - accuracy: 0.75007899 - val_loss: 0.4513 - val_accuracy: 0.7857
+Epoch 17/50
+ 1/31 [..............................] - ETA: 4:25 - loss: 0.3006 - accuracy: 0.90007736 - val_loss: 0.4664 - val_accuracy: 0.7532
+Epoch 18/50
+ 1/31 [..............................] - ETA: 4:53 - loss: 0.3386 - accuracy: 0.80007850 - val_loss: 0.4742 - val_accuracy: 0.7532
+Epoch 19/50
+ 1/31 [..............................] - ETA: 4:33 - loss: 0.3687 - accuracy: 0.80007834 - val_loss: 0.4530 - val_accuracy: 0.7792
+Epoch 20/50
+ 1/31 [..............................] - ETA: 4:43 - loss: 0.4961 - accuracy: 0.75007785 - val_loss: 0.4702 - val_accuracy: 0.7532
+Epoch 21/50
+ 1/31 [..............................] - ETA: 4:25 - loss: 0.4133 - accuracy: 0.75007850 - val_loss: 0.4702 - val_accuracy: 0.7662
+Epoch 22/50
+ 1/31 [..............................] - ETA: 4:10 - loss: 0.6582 - accuracy: 0.65007850 - val_loss: 0.4700 - val_accuracy: 0.7662
+Epoch 23/50
+ 1/31 [..............................] - ETA: 4:18 - loss: 0.4806 - accuracy: 0.65007915 - val_loss: 0.4767 - val_accuracy: 0.7662
+Epoch 24/50
+ 1/31 [..............................] - ETA: 4:49 - loss: 0.5667 - accuracy: 0.65008029 - val_loss: 0.5021 - val_accuracy: 0.7662
+Epoch 25/50
+ 1/31 [..............................] - ETA: 4:21 - loss: 0.3782 - accuracy: 0.80007866 - val_loss: 0.4708 - val_accuracy: 0.7987
+Epoch 26/50
+ 1/31 [..............................] - ETA: 5:00 - loss: 0.4578 - accuracy: 0.80007964 - val_loss: 0.5130 - val_accuracy: 0.7597
+Epoch 27/50
+ 1/31 [..............................] - ETA: 4:18 - loss: 0.4672 - accuracy: 0.75008111 - val_loss: 0.5338 - val_accuracy: 0.7338
+Epoch 28/50
+ 1/31 [..............................] - ETA: 4:23 - loss: 0.2229 - accuracy: 1.00008013 - val_loss: 0.5222 - val_accuracy: 0.7922
+Epoch 29/50
+ 1/31 [..............................] - ETA: 4:31 - loss: 0.4257 - accuracy: 0.75007883 - val_loss: 0.5196 - val_accuracy: 0.7727
+Epoch 30/50
+ 1/31 [..............................] - ETA: 4:38 - loss: 0.3359 - accuracy: 0.90008111 - val_loss: 0.5060 - val_accuracy: 0.7727
+Epoch 31/50
+ 1/31 [..............................] - ETA: 5:03 - loss: 0.2729 - accuracy: 0.85008192 - val_loss: 0.5582 - val_accuracy: 0.7338
+Epoch 32/50
+ 1/31 [..............................] - ETA: 4:22 - loss: 0.2478 - accuracy: 0.90008013 - val_loss: 0.5547 - val_accuracy: 0.7403
+Epoch 33/50
+ 1/31 [..............................] - ETA: 4:31 - loss: 0.4354 - accuracy: 0.75008013 - val_loss: 0.5569 - val_accuracy: 0.7727
+Epoch 34/50
+ 1/31 [..............................] - ETA: 4:22 - loss: 0.6151 - accuracy: 0.65008046 - val_loss: 0.5278 - val_accuracy: 0.7792
+Epoch 35/50
+ 1/31 [..............................] - ETA: 4:40 - loss: 0.2521 - accuracy: 0.95008062 - val_loss: 0.5325 - val_accuracy: 0.7403
+Epoch 36/50
+ 1/31 [..............................] - ETA: 4:38 - loss: 0.1782 - accuracy: 0.95008176 - val_loss: 0.5231 - val_accuracy: 0.7727
+Epoch 37/50
+ 2/31 [>.............................] - ETA: 4:12 - loss: 0.3973 - accuracy: 0.80008046 - val_loss: 0.5611 - val_accuracy: 0.7727
+Epoch 38/50
+ 1/31 [..............................] - ETA: 4:57 - loss: 0.3396 - accuracy: 0.85008127 - val_loss: 0.6032 - val_accuracy: 0.7273
+Epoch 39/50
+ 1/31 [..............................] - ETA: 4:15 - loss: 0.5710 - accuracy: 0.65007997 - val_loss: 0.5226 - val_accuracy: 0.7662
+Epoch 40/50
+ 1/31 [..............................] - ETA: 4:15 - loss: 0.2233 - accuracy: 0.95008241 - val_loss: 0.5315 - val_accuracy: 0.7662
+Epoch 41/50
+ 2/31 [>.............................] - ETA: 4:36 - loss: 0.3489 - accuracy: 0.82508111 - val_loss: 0.5722 - val_accuracy: 0.7273
+Epoch 42/50
+ 1/31 [..............................] - ETA: 4:15 - loss: 0.4292 - accuracy: 0.80008208 - val_loss: 0.5501 - val_accuracy: 0.7727
+Epoch 43/50
+ 1/31 [..............................] - ETA: 4:28 - loss: 0.2457 - accuracy: 0.95008176 - val_loss: 0.5564 - val_accuracy: 0.7662
+Epoch 44/50
+ 1/31 [..............................] - ETA: 4:28 - loss: 0.6681 - accuracy: 0.70008013 - val_loss: 0.5758 - val_accuracy: 0.7532
+Epoch 45/50
+ 1/31 [..............................] - ETA: 4:32 - loss: 0.3465 - accuracy: 0.90008290 - val_loss: 0.5931 - val_accuracy: 0.7403
+Epoch 46/50
+ 1/31 [..............................] - ETA: 4:28 - loss: 0.2772 - accuracy: 0.90008062 - val_loss: 0.5888 - val_accuracy: 0.7532
+Epoch 47/50
+ 1/31 [..............................] - ETA: 4:38 - loss: 0.3514 - accuracy: 0.85008143 - val_loss: 0.6252 - val_accuracy: 0.7468
+Epoch 48/50
+ 1/31 [..............................] - ETA: 4:44 - loss: 0.4461 - accuracy: 0.75008176 - val_loss: 0.6206 - val_accuracy: 0.7078
+Epoch 49/50
+ 1/31 [..............................] - ETA: 4:28 - loss: 0.2399 - accuracy: 0.90008176 - val_loss: 0.5825 - val_accuracy: 0.7727
+Epoch 50/50
+ 1/31 [..............................] - ETA: 4:27 - loss: 0.3817 - accuracy: 0.80008160 - val_loss: 0.5833 - val_accuracy: 0.7597
