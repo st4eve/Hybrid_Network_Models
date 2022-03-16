@@ -1,9 +1,9 @@
 #!/bin/env bash
-#SBATCH --array=0-26
+#SBATCH --array=0-17
 #SBATCH --job-name=test_sweep
 #SBATCH --output=output.txt
 #SBATCH --mem=32GB
-#SBATCH --time=0-12:0:0
+#SBATCH --time=0-24:0:0
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=23
 #SBATCH --mail-type=ALL
@@ -11,7 +11,7 @@
 
 encoding_strategy_values=( None Sigmoid Sigmoid_BatchNorm )
 cutoff_dimension_values=( 5 10 15 )
-num_layers_values=( 1 2 3 )
+num_layers_values=( 1 2 )
 trial=${SLURM_ARRAY_TASK_ID}
 encoding_strategy=${encoding_strategy_values[$(( trial % ${#encoding_strategy_values[@]} ))]}
 trial=$(( trial / ${#encoding_strategy_values[@]} ))

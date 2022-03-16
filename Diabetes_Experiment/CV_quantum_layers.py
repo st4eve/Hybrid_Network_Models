@@ -123,6 +123,7 @@ class QuantumLayer_MultiQunode(keras.Model):
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
         self.n_circuits = n_circuits
+        self.n_qumodes = n_qumodes
         self.n_outputs_per_circuit = int(n_outputs/n_circuits)
 
         # Create regularizer
@@ -148,8 +149,26 @@ class QuantumLayer_MultiQunode(keras.Model):
                               for i in range(self.n_circuits)]
 
     def call(self, x):
+        # Split Input
         x_split = list(tf.split(x, self.n_circuits, axis=1))
+
+        # Output
         output = tf.concat([self.circuit_layer[i](x_split[i]) for i in range(self.n_circuits)], axis=1)
+
+        # Normalization Metric
+        norm = []
+        for i in range(self.n_circuits):
+            x = x_split[i]
+            weights = tuple(self.circuit_layer[i].trainable_weights)
+            for sample in x:
+                fock_dist = self.normalization_qnode[i](sample, *weights)
+                norm.append(np.sum(tf.math.real(fock_dist))/self.n_qumodes)
+
+        self.add_metric(sum(norm) / len(norm), "avg_norm")
+        for i in range(100):
+            name = "norm_" + str(i)
+            self.add_metric(len([i for val in norm if val >= i/100 and val < (i+1)/100]), name)
+
         return output
 
 

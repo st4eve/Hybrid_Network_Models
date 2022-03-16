@@ -40,14 +40,19 @@ def confnet_config():
 
 #%% Logs
 @ex.capture
-def log_performance(_run, logs, epoch, time, norm):
+def log_performance(_run, logs, epoch, time):
     _run.log_scalar("loss", float(logs.get('loss')), epoch)
     _run.log_scalar("accuracy", float(logs.get('accuracy')), epoch)
     _run.log_scalar("val_loss", float(logs.get('val_loss')), epoch)
     _run.log_scalar("val_accuracy", float(logs.get('val_accuracy')), epoch)
-    _run.log_scalar("normalization", float(norm), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
     _run.log_scalar("time", float(time), epoch)
+
+    _run.log_scalar("avg_norm", float(logs.get('avg_norm')), epoch)
+    for i in range(100):
+        name = "norm_" + str(i)
+        _run.log_scalar(name, float(logs.get(name)), epoch)
+
 
 #%% Main
 @ex.automain
@@ -70,13 +75,9 @@ def define_and_train(encoding_strategy, cutoff_dimension, num_layers):
             self.start_time = time.time()
 
         def on_epoch_end(self, epoch, logs={}):
-            indexes = np.random.randint(10, size=3)
-            samples = tf.concat([[x_train[indexes[i], :]] for i in range(3)], 0)
-            net_norm = model.quantum_layer.check_normalization(samples)
-
             stop_time = time.time()
             duration = stop_time - self.start_time
-            log_performance(logs=logs, epoch=epoch, time=duration, norm=net_norm)
+            log_performance(logs=logs, epoch=epoch, time=duration)
 
     # Load dataset
     x_train, y_train, x_test, y_test = load_data()
@@ -108,7 +109,7 @@ def define_and_train(encoding_strategy, cutoff_dimension, num_layers):
             super(Net, self).__init__()
 
             self.sequential_1 = tf.keras.Sequential([
-                layers.Dense(8, activation="relu",
+                layers.Dense(8,
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
                              bias_initializer='zeros')])
 
@@ -129,7 +130,6 @@ def define_and_train(encoding_strategy, cutoff_dimension, num_layers):
 
         def call(self, inputs):
             x = self.sequential_1(inputs)
-
             if (encoding_strategy == "Sigmoid_BatchNorm"):
                 x = self.normalization(x)
 

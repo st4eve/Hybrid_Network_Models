@@ -7,15 +7,15 @@ import sys
 if __name__ == "__main__":
     args = sys.argv[1:]
 
-    parameters = {'encoding_strategy': ["None", "Sigmoid", "Sigmoid_BatchNorm"],
+    parameters = {'encoding_strategy': [None, "Sigmoid", "Sigmoid_BatchNorm"],
                   'cutoff_dimension':[5, 10, 15],
-                  'num_layers':[1,2,3]
+                  'num_layers':[1, 2]
     }
 
     fields = {
         'memory': 32,
         'job_name': 'test_sweep',
-        'time_h': 12,
+        'time_h': 24,
         'num_cpus': 23
     }
 
