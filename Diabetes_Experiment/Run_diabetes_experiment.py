@@ -7,9 +7,10 @@ import sys
 if __name__ == "__main__":
     args = sys.argv[1:]
 
-    parameters = {'encoding_strategy': ["RELU", "Sigmoid_LayerNorm"],
-                  'cutoff_dimension':[5, 10, 15],
-                  'num_layers':[1, 2]
+    parameters = {'encoding_strategy': [None, "RELU", "Sigmoid_LayerNorm", "Sigmoid_BatchNorm", "Sigmoid"],
+                  'cutoff_dimension':[10],
+                  'num_layers':[2],
+                  'num_pre_classical':[1, 5, 10]
     }
 
     fields = {

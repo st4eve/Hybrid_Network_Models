@@ -28,7 +28,7 @@ from Diabetes_dataset import data_ingredient, load_data
 
 #%% Setup Experiment
 ex = Experiment('Diabetes', ingredients=[data_ingredient])
-ex.observers.append(FileStorageObserver('Experiment_Data3'))
+ex.observers.append(FileStorageObserver('Experiment_Data4'))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 #%% Experiment Parameters
@@ -37,6 +37,7 @@ def confnet_config():
     encoding_strategy = "None"
     cutoff_dimension = 5
     num_layers = 1
+    num_pre_classical = 2
 
 #%% Logs
 @ex.capture
@@ -56,7 +57,7 @@ def log_performance(_run, logs, epoch, time):
 
 #%% Main
 @ex.automain
-def define_and_train(encoding_strategy, cutoff_dimension, num_layers):
+def define_and_train(encoding_strategy, cutoff_dimension, num_layers, num_pre_classical):
 
     # Fixed parameters
     batch_size = 20
@@ -108,10 +109,18 @@ def define_and_train(encoding_strategy, cutoff_dimension, num_layers):
         def __init__(self):
             super(Net, self).__init__()
 
-            self.sequential_1 = tf.keras.Sequential([
-                layers.Dense(8,
+
+            pre_quantum_network = []
+            for i in range(num_pre_classical):
+                pre_quantum_network.append(layers.Dense(8,activation="relu",
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
-                             bias_initializer='zeros')])
+                             bias_initializer='zeros'))
+
+            pre_quantum_network.append(layers.Dense(8,
+                             kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
+                             bias_initializer='zeros'))
+
+            self.sequential_1 = tf.keras.Sequential(pre_quantum_network)
 
             self.quantum_layer = QuantumLayer_MultiQunode(8, 4, 2, 2, num_layers, cutoff_dimension, AmplitudePhaseDisplacementEncoding,
                                          cutoff_management, loss_coefficient)
