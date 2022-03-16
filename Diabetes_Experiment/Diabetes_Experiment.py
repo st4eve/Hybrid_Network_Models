@@ -28,7 +28,7 @@ from Diabetes_dataset import data_ingredient, load_data
 
 #%% Setup Experiment
 ex = Experiment('Diabetes', ingredients=[data_ingredient])
-ex.observers.append(FileStorageObserver('Experiment_Data3'))
+ex.observers.append(FileStorageObserver('Experiment_Data4'))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 #%% Experiment Parameters
