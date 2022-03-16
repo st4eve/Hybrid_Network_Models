@@ -7,7 +7,7 @@ import sys
 if __name__ == "__main__":
     args = sys.argv[1:]
 
-    parameters = {'encoding_strategy': [None, "Sigmoid", "Sigmoid_BatchNorm"],
+    parameters = {'encoding_strategy': ["RELU", "Sigmoid_LayerNorm"],
                   'cutoff_dimension':[5, 10, 15],
                   'num_layers':[1, 2]
     }

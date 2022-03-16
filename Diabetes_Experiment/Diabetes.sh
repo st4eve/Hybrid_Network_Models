@@ -1,5 +1,5 @@
 #!/bin/env bash
-#SBATCH --array=0-17
+#SBATCH --array=0-11
 #SBATCH --job-name=test_sweep
 #SBATCH --output=output.txt
 #SBATCH --mem=32GB
@@ -9,7 +9,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=18arth@queensu.ca
 
-encoding_strategy_values=( None Sigmoid Sigmoid_BatchNorm )
+encoding_strategy_values=( RELU Sigmoid_LayerNorm )
 cutoff_dimension_values=( 5 10 15 )
 num_layers_values=( 1 2 )
 trial=${SLURM_ARRAY_TASK_ID}
