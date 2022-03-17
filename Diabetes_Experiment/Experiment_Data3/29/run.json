@@ -1,0 +1,97 @@
+{
+  "artifacts": [],
+  "command": "define_and_train",
+  "experiment": {
+    "base_dir": "/global/home/hpc4987/Hybrid_Network_Models/Diabetes_Experiment",
+    "dependencies": [
+      "keras==2.7.0+computecanada",
+      "numpy==1.22.2+computecanada",
+      "pandas==1.4.0+computecanada",
+      "PennyLane==0.21.0",
+      "sacred==0.8.2",
+      "scikit-learn==1.0.1+computecanada",
+      "tensorflow==2.7.0+computecanada"
+    ],
+    "mainfile": "Diabetes_Experiment.py",
+    "name": "Diabetes",
+    "repositories": [
+      {
+        "commit": "07fa1662dc51147b9dbd0aaee64ad54828099970",
+        "dirty": false,
+        "url": "https://github.com/hayman314/Hybrid_Network_Models"
+      },
+      {
+        "commit": "07fa1662dc51147b9dbd0aaee64ad54828099970",
+        "dirty": false,
+        "url": "https://github.com/hayman314/Hybrid_Network_Models"
+      },
+      {
+        "commit": "07fa1662dc51147b9dbd0aaee64ad54828099970",
+        "dirty": false,
+        "url": "https://github.com/hayman314/Hybrid_Network_Models"
+      }
+    ],
+    "sources": [
+      [
+        "CV_quantum_layers.py",
+        "_sources/CV_quantum_layers_8862e5e147a022248d4de82f25fb2036.py"
+      ],
+      [
+        "Diabetes_Experiment.py",
+        "_sources/Diabetes_Experiment_bd462f0daa10f4a659d788df6b02a836.py"
+      ],
+      [
+        "Diabetes_dataset.py",
+        "_sources/Diabetes_dataset_ca192cde07941b839831e807bbce00c9.py"
+      ]
+    ]
+  },
+  "heartbeat": "2022-03-16T23:04:18.543096",
+  "host": {
+    "ENV": {},
+    "cpu": "Intel(R) Xeon(R) CPU E5-2650 v4 @ 2.20GHz",
+    "hostname": "cac071",
+    "os": [
+      "Linux",
+      "Linux-3.10.0-862.9.1.el7.x86_64-x86_64-with-glibc2.30"
+    ],
+    "python_version": "3.9.6"
+  },
+  "meta": {
+    "command": "define_and_train",
+    "options": {
+      "--beat-interval": null,
+      "--capture": null,
+      "--comment": null,
+      "--debug": false,
+      "--enforce_clean": false,
+      "--file_storage": null,
+      "--force": false,
+      "--help": false,
+      "--loglevel": null,
+      "--mongo_db": null,
+      "--name": null,
+      "--pdb": false,
+      "--print-config": false,
+      "--priority": null,
+      "--queue": false,
+      "--s3": null,
+      "--sql": null,
+      "--tiny_db": null,
+      "--unobserved": false,
+      "COMMAND": null,
+      "UPDATE": [
+        "encoding_strategy=Sigmoid_LayerNorm",
+        "cutoff_dimension=15",
+        "num_layers=2"
+      ],
+      "help": false,
+      "with": true
+    }
+  },
+  "resources": [],
+  "result": null,
+  "start_time": "2022-03-16T15:23:26.166155",
+  "status": "COMPLETED",
+  "stop_time": "2022-03-16T23:04:18.460044"
+}
