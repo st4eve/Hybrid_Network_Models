@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # %% Imports
 import tensorflow as tf
 from tensorflow import keras
@@ -222,7 +221,7 @@ class QuantumLayer_MultiQunode(keras.Model):
             self.regularizer.set_norm(net_norm)
 
         return output
-=======
+
 # %% Imports
 import tensorflow as tf
 from tensorflow import keras
@@ -626,4 +625,3 @@ def get_max_input(initial_weight, cutoff_dim, n_layers, n_qumodes, norm_threshol
 #             self.regularizer.set_norm(net_norm)
 #
 #         return output
->>>>>>> 6f14f7656b8a613a22383be9bc0b4d80fb2017b9

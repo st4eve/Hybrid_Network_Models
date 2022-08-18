@@ -1,7 +1,5 @@
-<<<<<<< HEAD
 # Hybrid_Network_Models
 Working repo for ENPH455 Thesis on Hybrid Quantum-Classical Neural Networks
-=======
 # Hybrid_Network_Models
 This repo uses the Sacred package to manage the parameter sweeps and experiment runs (https://sacred.readthedocs.io/en/stable/quickstart.html). 
 We use PennyLane to build the CV networks (https://pennylane.readthedocs.io/en/stable/) and use the "strawberryfields.tf" backend.
@@ -50,4 +48,3 @@ To make the code results publication-ready, we need the following:
 2. Refine the cutoff dimension management strategy and finalize our CV approach in CV_quantum_layers.py (this will include moving the get_max_input() and any other algorithms we come up with inside CV_quantum_layers.py)
 3. Come up with a testing plan to carefully validate our cutoff dimension strategy (this may involve tracking normalization over epochs) 
 4. Select better datasets and pre-process them 
->>>>>>> 6f14f7656b8a613a22383be9bc0b4d80fb2017b9
