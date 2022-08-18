@@ -18,9 +18,27 @@ def get_metrics(filename):
     metrics['Training Loss'] = data['loss']["values"]
     metrics['Testing Accuracy'] = data['val_accuracy']["values"]
     metrics['Testing Loss'] = data['val_loss']["values"]
-    metrics['Norm'] = data['normalization']["values"]
+    metrics['Norm'] = data['avg_norm']["values"]
+
+    for i in range(100):
+        name = "norm_" + str(i)
+        metrics[name] = data[name]["values"]
 
     return metrics
+
+def get_metrics_classical(filename):
+    with open(filename) as json_file:
+        data = json.load(json_file)
+
+    metrics = {}
+    metrics['Training Accuracy'] = data['accuracy']["values"]
+    metrics['Training Loss'] = data['loss']["values"]
+    metrics['Testing Accuracy'] = data['val_accuracy']["values"]
+    metrics['Testing Loss'] = data['val_loss']["values"]
+
+    return metrics
+
+
 
 def get_accuracy_data(filepath, num_files):
 
@@ -251,10 +269,12 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
     density_plot(final_norm, "Final State Size", "final_norm")
     density_plot(delta_norm, "Change in State Size", "delta_norm")
 
-def compare_metric(filepath, num_files, metric, cutoff_dimension, encoding_strategies, save_plot=False):
+def compare_metric(filepath, num_files, metric, cutoff_dimension, encoding_strategies, num_layers, num_pre_classical, save_name="", classical_file=None):
 
     fig, axes = plt.subplots(1, figsize=(3, 3))
-    colors = ['r', 'b', 'g']
+    colors = ['r', 'b', 'g', 'y', 'c']
+    i=0
+    labels=[]
 
     # Loop through files until desired configuration found
     for file_num in range(1,num_files+1):
@@ -262,28 +282,78 @@ def compare_metric(filepath, num_files, metric, cutoff_dimension, encoding_strat
             config = json.load(json_file)
 
         if(config["cutoff_dimension"] == cutoff_dimension
-            and config["encoding_strategy"] in encoding_strategies):
+            and config["encoding_strategy"] in encoding_strategies
+            and config["num_layers"] == num_layers
+            and config["num_pre_classical"] == num_pre_classical
+        ):
+
+            if config["encoding_strategy"] is None:
+                labels.append("None")
+            else:
+                labels.append(config["encoding_strategy"])
             metrics = get_metrics(filepath+'/'+str(file_num)+'/metrics.json')
 
             n_epochs = len(metrics['Training Accuracy'])
             epochs = np.arange(1, n_epochs + 1)
 
-            axes.plot(epochs, metrics[metric], colors[file_num-1])
+            axes.plot(epochs, metrics[metric], colors[i])
+            i+=1
+
+    if classical_file is not None:
+        metrics = get_metrics_classical(classical_file + '/metrics.json')
+        axes.plot(epochs, metrics[metric], 'y')
+        labels.append("Classical")
 
     axes.set_xlim(0)
     axes.grid(True, linestyle=':')
     axes.set_xlabel("Epoch")
     axes.set_ylabel(metric)
-    fig.legend(labels=encoding_strategies, ncol=2, loc="lower left", bbox_to_anchor=(0.01, 0.15), borderaxespad=0.)
+    encoding_strategies[0] = "None"
+    fig.legend(labels=labels, ncol=2, loc="lower left", bbox_to_anchor=(0.01, 1.0), borderaxespad=0.)
     fig.tight_layout(pad=0.3)
 
-    if save_plot:
-        plt.savefig(filepath+'/'+str(file_num)+'/acc_norm' + '.pdf',
-                    format='pdf',
-                    dpi=1200,
-                    bbox_inches='tight')
+    plt.savefig(save_name + '.pdf',
+                format='pdf',
+                dpi=1200,
+                bbox_inches='tight')
 
     plt.show()
+
+def plot_norm_histogram(filepath, num_files, epoch, cutoff_dimension, encoding_strategy, num_layers, num_pre_classical, savename):
+    for file_num in range(1,num_files+1):
+        with open(filepath+'/'+str(file_num)+'/config.json') as json_file:
+            config = json.load(json_file)
+
+        if(config["cutoff_dimension"] == cutoff_dimension
+            and config["encoding_strategy"] in encoding_strategy
+            and config["num_layers"] == num_layers
+                #and config["num_pre_classical"] == num_pre_classical
+                ):
+
+            metrics = get_metrics(filepath + '/' + str(file_num) + '/metrics.json')
+
+            bins = np.zeros(100)
+            norms = np.zeros(100)
+            for i in range(100):
+                name = "norm_" + str(i)
+                bins[i] = i
+                norms[i] = metrics[name][epoch]
+
+            norms = norms/sum(norms)
+
+            fig, axes = plt.subplots(1, figsize=(3, 3))
+            plt.bar(bins, norms)
+            plt.ylabel("Average counts per batch over epoch")
+            plt.xlabel("Trace")
+            fig.tight_layout(pad=0.3)
+
+
+            plt.savefig(savename + '.pdf',
+                        format='pdf',
+                        dpi=1200,
+                        bbox_inches='tight')
+
+            plt.show()
 
 #%%
 plot_metrics(filepath='./Diabetes_Experiment/Experiment_Data1',
@@ -294,11 +364,22 @@ plot_metrics(filepath='./Diabetes_Experiment/Experiment_Data1',
 
 #%%
 
-compare_metric(filepath='./Diabetes_Experiment/Experiment_Data1',
-             num_files=3,
-             metric = "Training Accuracy",
-             cutoff_dimension = 15,
-             encoding_strategies=["None", "Sigmoid_BatchNorm", "Sigmoid"],
-             save_plot=True)
+compare_metric(filepath='./Diabetes_Experiment/Experiment_Data4',
+             num_files=15,
+             metric = "Testing Accuracy",
+             cutoff_dimension = 10,
+             encoding_strategies=[None, "Sigmoid_BatchNorm", "Sigmoid", "RELU", "Sigmoid_LayerNorm"],
+             num_layers=2,
+             num_pre_classical=1,
+             save_name ='./Diabetes_Experiment/Diabetes_TestingAcc')
 
+#%%
 
+plot_norm_histogram(filepath='./Diabetes_Experiment/Experiment_Data3',
+             num_files=30,
+             epoch = 20,
+             cutoff_dimension = 5,
+             encoding_strategy=["Sigmoid"],
+             num_layers=2,
+             num_pre_classical=1,
+             savename = './Diabetes_Experiment/Sigmoid_Strategy')

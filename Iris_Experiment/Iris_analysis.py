@@ -123,7 +123,7 @@ def plot_final_accuracy_loss(filepath, num_files, initial_weight_amplitudes, ini
     fig.tight_layout(pad=0.3)
     plt.show()
 
-def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_amplitude, loss_coefficient, cutoff_dimension, strategy, save_plot=False):
+def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_amplitude, loss_coefficient, cutoff_dimension, strategy, save_plot=False, save_name=""):
 
     # Loop through files until desired configuration found
     for file_num in range(1,num_files+1):
@@ -152,11 +152,13 @@ def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_am
             axes.grid(True, linestyle=':')
             axes.set_xlabel("Epoch")
             axes.set_ylabel("Accuracy & Normalization")
-            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 0.5), borderaxespad=0.)
+
+            metric_names1 = ['Training Accuracy', 'Testing Accuracy', 'Average Trace']
+            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 1.0), borderaxespad=0.)
             fig.tight_layout(pad=0.3)
 
             if save_plot:
-                plt.savefig(filepath+'/'+str(file_num)+'/acc_norm' + '.pdf',
+                plt.savefig(save_name+'_acc_norm' + '.pdf',
                             format='pdf',
                             dpi=1200,
                             bbox_inches='tight')
@@ -174,11 +176,11 @@ def plot_metrics(filepath, num_files, initial_weight_amplitude, initial_input_am
             axes.grid(True, linestyle=':')
             axes.set_xlabel("Epoch")
             axes.set_ylabel("Loss")
-            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 0.5), borderaxespad=0.)
+            fig.legend(labels=metric_names1, ncol=2, loc="lower left", bbox_to_anchor=(0.1, 1.0), borderaxespad=0.)
             fig.tight_layout(pad=0.3)
 
             if save_plot:
-                plt.savefig(filepath+'/'+str(file_num)+'/loss' + '.pdf',
+                plt.savefig(save_name+'_loss' + '.pdf',
                             format='pdf',
                             dpi=1200,
                             bbox_inches='tight')
@@ -224,10 +226,10 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
             delta_norm[idx_1, idx_2] = metrics['State Size'][-1] - metrics['State Size'][0]
 
     def density_plot(grid_vals, param_name, save_name):
-        fig, axes = plt.subplots(1, figsize=(3.2, 3.2))
+        fig, axes = plt.subplots(1, figsize=(5, 3.2))
         cs = axes.contourf(initial_input_amplitudes, initial_weight_amplitudes, grid_vals, cmap='Blues')
-        axes.set_xlabel("Initial Input Value")
-        axes.set_ylabel("Initial Weight Amplitude")
+        axes.set_xlabel("Max Input Amplitude")
+        axes.set_ylabel("Max Initial Weight Amplitude")
 
         norm = mpl.colors.Normalize(vmin=cs.cvalues.min(), vmax=cs.cvalues.max())
         sm = plt.cm.ScalarMappable(norm=norm, cmap=cs.cmap)
@@ -239,7 +241,7 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
         fig.tight_layout(pad=0.3)
 
         if save_plot:
-            plt.savefig(filepath + '/' + str(file_num) + '/' + save_name + '.pdf',
+            plt.savefig('./Iris_Experiment/' + save_name + '.pdf',
                         format='pdf',
                         dpi=300,
                         bbox_inches='tight')
@@ -248,21 +250,22 @@ def plot_convergence_speed(filepath, num_files, initial_weight_amplitudes, initi
 
     print(file_num)
 
-    density_plot(convergence_grid, "Iterations to 90% Testing Accuracy", "convergence")
+    #density_plot(convergence_grid, "Iterations to 90% Testing Accuracy", "convergence")
     density_plot(final_acc_grid, "Final Accuracy", "final_accuracy")
-    density_plot(initial_norm, "Initial State Size", "initial_norm")
-    density_plot(final_norm, "Final State Size", "final_norm")
-    density_plot(delta_norm, "Change in State Size", "delta_norm")
+    #density_plot(initial_norm, "Initial State Size", "initial_norm")
+    #density_plot(final_norm, "Final State Size", "final_norm")
+    #density_plot(delta_norm, "Change in State Size", "delta_norm")
 
 #%%
 plot_metrics(filepath='./Iris_Experiment/Experiment_Data1',
-             num_files=770,
+             num_files=768,
              initial_weight_amplitude=2.0,
              initial_input_amplitude=2.0,
              loss_coefficient=0.01,
-             cutoff_dimension = 30,
-             strategy="L1",
-             save_plot=True)
+             cutoff_dimension = 10,
+             strategy=None,
+             save_plot=True,
+             save_name="./Iris_Experiment/No_Reg")
 
 #%%
 plot_convergence_speed(filepath='./Iris_Experiment/Experiment_Data1',
@@ -270,9 +273,10 @@ plot_convergence_speed(filepath='./Iris_Experiment/Experiment_Data1',
                        initial_weight_amplitudes=[0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
                        initial_input_amplitudes=[0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
                        loss_coefficient=0.01,
-                       cutoff_dimension = 30,
-                       strategy="L2",
+                       cutoff_dimension = 10,
+                       strategy=None,
                        save_plot=True)
+
 
 
 
