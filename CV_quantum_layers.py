@@ -13,15 +13,15 @@ def AmplitudePhaseDisplacementEncoding(features, wires):
     Later, this should be modified to alter each pair to be complex valued,
     and then converted to angle and phase to put the data points on equal footing.
     Assumes ordering of (displacement, angle, displacement, angle, ...)"""
-    for idx, f in enumerate(features):
+    for idx in range(features.shape[-1]):
         if(idx%2==0):
-            qml.Displacement(f, features[idx+1], wires=wires[int(idx/2)])
+            qml.Displacement(features[idx], features[idx+1]*np.pi, wires=wires[int(idx/2)])
 
 #%% CV Quantum Nodes
 """Builds a quantum node based on the specifications"""
 
 def build_cv_quantum_node(n_qumodes, n_outputs, cutoff_dim, encoding_method, meas_method="X_quadrature"):
-    dev = qml.device("strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim)
+    dev = qml.device("strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim, shots=None)
     @qml.qnode(dev, interface="tf")
     def cv_nn(inputs, theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k):
         encoding_method(inputs, wires=range(n_qumodes))
@@ -41,6 +41,8 @@ def build_cv_quantum_node(n_qumodes, n_outputs, cutoff_dim, encoding_method, mea
             return [qml.expval(qml.X(wires=i)) for i in range(n_outputs)]
         elif(meas_method=="Fock"):
             return [qml.probs(wires=i) for i in range(n_outputs)]
+        elif(meas_method=='TensorN'):
+            return [qml.expval(qml.TensorN(wires=[i for i in range(n_outputs)]))]
         else:
             print("Please enter valid measurement type")
 
@@ -94,21 +96,21 @@ def build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding
     seed = 16
 
     circuit = qml.qnn.KerasLayer(cv_nn, weight_shapes, output_dim=n_outputs, weight_specs={
-        "theta_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
-        "phi_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
-        "varphi_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
+        "theta_1": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
+        "phi_1": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
+        "varphi_1": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
 
         "r": {"initializer": tf.keras.initializers.Constant(input_amplitude), "regularizer": regularizer},
 
-        "phi_r": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
-        "theta_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
-        "phi_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
-        "varphi_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
+        "phi_r": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
+        "theta_2": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
+        "phi_2": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
+        "varphi_2": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
 
         "a": {"initializer": tf.keras.initializers.Constant(input_amplitude), "regularizer": regularizer},
 
-        "phi_a": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))},
-        "k": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2*np.pi, seed=tf.random.set_seed(seed))}
+        "phi_a": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))},
+        "k": {"initializer": tf.random_uniform_initializer(minval=-0.1, maxval=0.1, seed=tf.random.set_seed(seed))}
     })
 
     return circuit
@@ -118,7 +120,7 @@ class QuantumLayer(keras.Model):
     """ This class builds a quantum layer that can be directly used in model building.
     Note that while it is not strictly necessary for this case, it will be expanding upon
     to build more complex layers later on. """
-    def __init__(self, n_qumodes, n_outputs, n_layers, cutoff_dim, encoding_method, cutoff_management, cutoff_management_coefficient, input_amplitude):
+    def __init__(self, n_qumodes, n_outputs, n_layers, cutoff_dim, encoding_method, cutoff_management, cutoff_management_coefficient, input_amplitude, meas_method='X_quadrature', name='QuantumLayer'):
         super().__init__()
         self.n_outputs = n_outputs
 
@@ -132,10 +134,11 @@ class QuantumLayer(keras.Model):
         else:
             self.regularizer = None
         
-        self.circuit_layer = build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding_method, self.regularizer, input_amplitude, meas_method = "X_quadrature")
+        self.circuit_layer = build_cv_neural_network(n_qumodes, n_outputs, n_layers, cutoff_dim, encoding_method, self.regularizer, input_amplitude, meas_method=meas_method)
         self.normalization_qnode= build_cv_quantum_node(n_qumodes, n_outputs, cutoff_dim, encoding_method, meas_method = "Fock")
         self.cutoff_management = cutoff_management
         self.cutoff_management_coefficient = cutoff_management_coefficient
+        self.input_amplitude = input_amplitude
 
     def call(self, x):
         output = self.circuit_layer(x)

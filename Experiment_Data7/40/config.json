@@ -1,0 +1,10 @@
+{
+  "cutoff_dimension": 15,
+  "dataset": {
+    "filename": "diabetes.csv"
+  },
+  "encoding_strategy": "RELU",
+  "num_layers": 4,
+  "num_pre_classical": 1,
+  "seed": 686543484
+}

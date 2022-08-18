@@ -1,0 +1,10 @@
+{
+  "cutoff_dimension": 10,
+  "dataset": {
+    "filename": "diabetes.csv"
+  },
+  "encoding_strategy": "Sigmoid_LayerNorm",
+  "num_layers": 1,
+  "num_pre_classical": 1,
+  "seed": 525264753
+}

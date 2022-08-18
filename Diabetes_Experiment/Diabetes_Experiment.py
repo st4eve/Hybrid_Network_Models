@@ -114,11 +114,13 @@ def define_and_train(encoding_strategy, cutoff_dimension, num_layers, num_pre_cl
             for i in range(num_pre_classical):
                 pre_quantum_network.append(layers.Dense(8,activation="relu",
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
-                             bias_initializer='zeros'))
+                             bias_initializer='zeros'),
+                             constraint=lambda t: tf.clip_by_value(t, 0.0, 1.0))
 
             pre_quantum_network.append(layers.Dense(8,
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
-                             bias_initializer='zeros'))
+                             bias_initializer='zeros',
+                             lambda t: tf.clip_by_value(t, 0.0, 1.0)))
 
             self.sequential_1 = tf.keras.Sequential(pre_quantum_network)
 
@@ -130,10 +132,12 @@ def define_and_train(encoding_strategy, cutoff_dimension, num_layers, num_pre_cl
                 self.quantum_layer,
                 layers.Dense(4, activation="relu",
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
-                             bias_initializer='zeros'),
+                             bias_initializer='zeros',
+                             lambda t: tf.clip_by_value(t, 0.0, 1.0)),
                 layers.Dense(2, activation="sigmoid",
                              kernel_initializer=tf.keras.initializers.GlorotUniform(seed=tf.random.set_seed(seed)),
-                             bias_initializer='zeros')])
+                             bias_initializer='zeros',
+                             lambda t: tf.clip_by_value(t, 0.0, 1.0))])
 
             self.batch_norm = layers.BatchNormalization()
             self.layer_norm = layers.LayerNormalization()
