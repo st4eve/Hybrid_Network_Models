@@ -9,7 +9,8 @@ from tensorflow.keras import layers
 from tensorflow.keras import activations
 
 # %% CV Data Encoding
-"""This class wraps around the encoding methods to make them simpler to access"""
+"""This class wraps around the encoding methods to make them simpler to access.
+The conversion factor defines the number of inputs relative to the number of qumodes."""
 class CV_Encoding():
     def __init__(self, mode, phase_amplitude=0):
         if(mode=="Amplitude"):
@@ -49,31 +50,35 @@ class CV_Measurement():
 
 # %% Quantum Activation Layer
 class Activation_Layer():
-    """This class builds the activation layers that must be placed before the quantum layer"""
+    """This class builds the activation layers that must be placed before the quantum layer.
+    Note that the ReLU is a CAPPED ReLU: 1) x<0 -> 0 2) 0<=x<=1 -> x 3) x>1 -> 1."""
     def __init__(self, activation_type, encoding_object):
         self.activation_type = activation_type
         self.encoding_object = encoding_object
-        self.encoding_object.phase_amplitude
 
     def __call__(self, x):
-        # Normalize inputs to [-0.5, 0.5] range, regarldess of the activation type
-        if (self.activation_type == "ReLU"):
-            x = activations.relu
-            x -= 0.5
-        if (self.activation_type == "Sigmoid"):
+
+        # Normalize inputs to [0, 1] range, regarldess of the activation type
+        if (self.activation_type == "ReLU"): #[0,1]
+            x = activations.relu(x, 1)
+        if (self.activation_type == "Sigmoid"): #[0,1]
             x = activations.sigmoid(x)
-            x -= 0.5
-        if (self.activation_type == "TanH"):
+        if (self.activation_type == "TanH"): #[-1,1]
             x = activations.tanh(x)
             x /= 2
+            x += 0.5
 
+        print(x)
         if self.encoding_object.mode == "Amplitude":
-            x *= 2*self.encoding_object.phase_amplitude
+            # Displace [0, max_value] with constant phase of 0
+            x *= self.encoding_object.phase_amplitude
         if self.encoding_object.mode == "Phase":
+            # Displace max_value with phase of [0, 2pi]
             x *= 2*np.pi
         if self.encoding_object.mode == "Amplitude_Phase":
+            # Displace [0, max_value] with phase of [0, 2pi]
+            # Split up input to set correct ranges, then join back together
             x_split = list(tf.split(x, 2, axis=1))
-            x_split[0] += 0.5 #Move range to [0, 1]
             x_split[0] *= self.encoding_object.phase_amplitude
             x_split[1] *= 2*np.pi
             x = tf.concat([x_split[i] for i in range(2)], axis=1)
@@ -83,7 +88,7 @@ class Activation_Layer():
 # %% CV Quantum Nodes
 def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_object):
     """
-    Create CV quantum node
+    Create CV quantum node. This is the lower level CV object.
     :param n_qumodes: Number of qumodes in the circuit
     :param cutoff_dim: Cutoff dimension to simulate
     :param encoding_object: Encoding object
@@ -103,7 +108,7 @@ def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_ob
 # %% Full CV Keras Layers
 class QuantumLayer_MultiQunode(keras.Model):
 
-    def __init__(self, n_qumodes, n_circuits, n_layers, cutoff_dim, encoding_object = CV_Encoding("Amplitude_Phase"), regularizer = None, max_initial_weight = 0.1, measurement_object=CV_Measurement("X_quadrature")):
+    def __init__(self, n_qumodes, n_circuits, n_layers, cutoff_dim, encoding_method = "Amplitude_Phase", regularizer = None, max_initial_weight=None, measurement_object=CV_Measurement("X_quadrature")):
         """
         Initialize Keras NN layer. Example:
         8 inputs coming in from previous layer
@@ -113,10 +118,10 @@ class QuantumLayer_MultiQunode(keras.Model):
         This results in a single circuit with 4 qumodes because the amplitude+phase encoding
         divides the inputs from the previous layer by 2
 
-        :param n_qumodes: Total number of qumodes
-        :param n_circuits: Number of circuits in the layer
-        :param n_layers: Number of layers within the CV circuits
-        :param cutoff_dim: Cutoff dimension for the layer simulation
+        :param n_qumodes: Total number of qumodes in the network
+        :param n_circuits: Number of circuits in the network
+        :param n_layers: Number of layers within the network
+        :param cutoff_dim: Cutoff dimension for the simulation
         :param encoding_object: Encoding method
         :param regularizer: Regularizer object
         :param max_initial_weight: Maximum value allowed for non-phase parameters
@@ -124,9 +129,27 @@ class QuantumLayer_MultiQunode(keras.Model):
         """
         super().__init__()
         self.n_circuits = n_circuits
+        self.n_qumodes = n_qumodes
+        self.n_layers = n_layers
+        self.cutoff_dim = cutoff_dim
+        self.regularizer = regularizer
+        self.encoding_method = encoding_method
+        self.measurement_object = measurement_object
 
+        # If we do not have an max weight, run our max initial weight finder algorithm
+        if(max_initial_weight is None):
+            self.max_initial_weight = self.get_max_non_phase_parameter(trace_threshold=0.99)
+        else:
+            self.max_initial_weight = max_initial_weight
+
+        # Now that we have our max initial weight, we can define our encoding methods and initialize the circuit
+        self.encoding_object = CV_Encoding(self.encoding_method, self.max_initial_weight)
+        self.initialize_circuit()
+
+
+    def initialize_circuit(self):
         # Calculate number of qumodes based on the down-scaling from encoding and number of circuits
-        n_qumodes_per_circuit = n_qumodes/n_circuits
+        n_qumodes_per_circuit = self.n_qumodes/self.n_circuits
         if(n_qumodes_per_circuit.is_integer()):
             n_qumodes_per_circuit = int(n_qumodes_per_circuit)
         else:
@@ -134,55 +157,39 @@ class QuantumLayer_MultiQunode(keras.Model):
 
         # Create the specified number of circuits
         self.circuit_layer = []
-        for i in range(n_circuits):
+        for i in range(self.n_circuits):
 
             # Make quantum node
-            cv_nn = build_cv_quantum_node(n_qumodes_per_circuit, cutoff_dim, encoding_object, measurement_object)
+            cv_nn = build_cv_quantum_node(n_qumodes_per_circuit, self.cutoff_dim, self.encoding_object, self.measurement_object)
 
             # Define weight shapes
-            weight_shapes = self.define_weight_shapes(L = n_layers, M = n_qumodes_per_circuit)
+            weight_shapes = self.define_weight_shapes(L = self.n_layers, M = n_qumodes_per_circuit)
 
             # Define weight specifications
-            weight_specs = self.define_weight_specs(max_initial_weight = max_initial_weight, regularizer = regularizer)
+            weight_specs = self.define_weight_specs()
 
             # Build circuit
             circuit = qml.qnn.KerasLayer(cv_nn, weight_shapes, output_dim=n_qumodes_per_circuit, weight_specs=weight_specs)
 
             self.circuit_layer.append(circuit)
 
-    def define_weight_specs(self, max_initial_weight, regularizer):
+    def define_weight_specs(self):
         """
         Define the initial weights and regularizers on each parameter
-        :param max_initial_weight: maximum allowable value for random initializaiton for non-phase parameters
-        :param regularizer: L1, L2 or None regularizer
         :return: dictionary of parameters with their initializers and regularizers
         """
         weight_specs = {
-            "theta_1": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-            "phi_1": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-            "varphi_1": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-
-            "r": {"initializer": tf.random_uniform_initializer(minval=0, maxval=max_initial_weight),
-                  "regularizer": regularizer},
-
-            "phi_r": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-            "theta_2": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-            "phi_2": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-            "varphi_2": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-
-            "a": {"initializer": tf.random_uniform_initializer(minval=0, maxval=max_initial_weight),
-                  "regularizer": regularizer},
-
-            "phi_a": {
-                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
-            "k": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)}
+            "theta_1":  {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "phi_1":    {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "varphi_1": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "phi_r":    {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "theta_2":  {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "phi_2":    {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "varphi_2": {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "phi_a":    {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "k":        {"initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)},
+            "r":        {"initializer": tf.keras.initializers.Constant(self.max_initial_weight),"regularizer": self.regularizer},
+            "a":        {"initializer": tf.keras.initializers.Constant(self.max_initial_weight),"regularizer": self.regularizer}
         }
         return weight_specs
 
@@ -194,91 +201,101 @@ class QuantumLayer_MultiQunode(keras.Model):
         :return: dictionary of parameters with sets of dimensions
         """
         K = int(M * (M - 1) / 2)
-        weight_shapes = {"theta_1": (L, K),
-                         "phi_1": (L, K),
-                         "varphi_1": (L, M),
-                         "r": (L, M),
-                         "phi_r": (L, M),
-                         "theta_2": (L, K),
-                         "phi_2": (L, K),
-                         "varphi_2": (L, M),
-                         "a": (L, M),
-                         "phi_a": (L, M),
-                         "k": (L, M)
+        weight_shapes = {"theta_1":     (L, K),
+                         "phi_1":       (L, K),
+                         "varphi_1":    (L, M),
+                         "r":           (L, M),
+                         "phi_r":       (L, M),
+                         "theta_2":     (L, K),
+                         "phi_2":       (L, K),
+                         "varphi_2":    (L, M),
+                         "a":           (L, M),
+                         "phi_a":       (L, M),
+                         "k":           (L, M)
                          }
         return weight_shapes
 
+    def get_max_non_phase_parameter(self, trace_threshold=0.99):
+        """
+        Find the maximum value for the non-phase weights and encoding bounds.
+        First, we get an initial guess (upper bound) with a basic displacement gate.
+        Then, we create a random set of inputs bounded by our 'max_value' and
+        initialize a network using the 'max_value' as the upper bound on the non-phase parameters.
+        We run the inputs through this random and check if the resulting trace is within our threshold.
+        If not, we lower our 'max_value' and repeat until we get lots of iterations with a good trace.
+        You can adjust the count value as needed.
+        """
+        # Get initial guess by basic max displacement algorithm
+        max_value = find_max_displacement(self.cutoff_dim, trace_threshold)
+
+        # Define the value to decrement by. This is a heuristic based on values observed.
+        # We could alternatively decrement the value by something like 1% of the current value
+        # but that gets slow as the values get smaller.
+        decrement = max_value/200
+
+        count = 0
+        while (count < 100):
+
+            # Get inputs using our
+            if (self.encoding_method == "Phase"):
+                inputs = tf.random.uniform([self.n_qumodes], minval=0, maxval=2 * np.pi)
+            if (self.encoding_method == "Amplitude"):
+                inputs = max_value * tf.ones(self.n_qumodes)
+            if (self.encoding_method == "Amplitude_Phase"):
+                t1 = max_value * tf.ones(int(self.n_qumodes))
+                t2 = tf.random.uniform([int(self.n_qumodes)], minval=0, maxval=2 * np.pi)
+                inputs = tf.concat([t1, t2], 0)
+
+            keras_network = QuantumLayer_MultiQunode(n_qumodes=self.n_qumodes,
+                                                     n_circuits=1,
+                                                     n_layers=self.n_layers,
+                                                     cutoff_dim=self.cutoff_dim,
+                                                     encoding_method=self.encoding_method,
+                                                     regularizer=None,
+                                                     max_initial_weight=max_value,
+                                                     measurement_object=CV_Measurement("Fock"))
+
+            network = keras_network.circuit_layer[0]
+
+            fock_distribution = network(inputs)
+            traces = [np.sum(dist) for dist in fock_distribution]
+            trace = sum(traces)/self.n_qumodes
+
+            if(trace < trace_threshold):
+                print("Trace: ", trace, "Value: ", max_value, "Count: ", count)
+                max_value-=decrement
+                count=0
+            else:
+                count+=1
+
+            if(max_value<=0):
+                raise Exception('Max value found to be less than or equal to zero, which is invalid.')
+                return
+
+        print("max input: ", max_value)
+        return max_value
 
     def call(self, x):
-        """
-        Call the neural network
-        :param x: Input tensor
-        :return: Output tensor
-        """
         x_split = list(tf.split(x, self.n_circuits, axis=1))
         output = tf.concat([self.circuit_layer[i](x_split[i]) for i in range(self.n_circuits)], axis=1)
         return output
 
 #%% Accessory Algorithms
-# TO-DO: refactor this section and add clarification
-def find_max_displacement(cutoff_dim, norm_threshold):
-    """Increase the displacement until de-normlized"""
+def find_max_displacement(cutoff_dim, trace_threshold):
+    """Increase the displacement until the trace treshold is reached"""
     cutoff_dim = int(cutoff_dim)
     dev = qml.device("strawberryfields.tf", wires=1, cutoff_dim=cutoff_dim)
 
     @qml.qnode(dev, interface="tf")
     def qc(a):
         qml.Displacement(a, 0, wires=0)
-        qml.Kerr(np.pi / 4, wires=0)
         return qml.probs(wires=0)
 
     a = 0
-    norm = 1
-    while (norm > norm_threshold):
+    trace = 1
+    while (trace > trace_threshold):
         a += 0.01
         fock_dist = qc(a)
-        norm = np.sum(fock_dist)
+        trace = np.sum(fock_dist)
 
     return a
-
-def get_max_input(initial_weight, cutoff_dim, n_layers, n_qumodes, norm_threshold):
-
-    # Use this function to give us an initial guess
-    guess = find_max_displacement(cutoff_dim, norm_threshold)
-    t1 = guess*tf.ones(n_qumodes)
-
-    # We create a network initialized with random values over and over again
-    # and test to see how many counts we get above our normalized threshold
-    # Once the counts are above some number, the max input can be considered
-    # to be a "safe" value
-    count = 0
-    while(count<20):
-        t2 = tf.random.uniform([n_qumodes], minval=0, maxval=2 * np.pi)
-        inputs = tf.concat([t1, t2], 0)
-
-        keras_network = QuantumLayer_MultiQunode(n_qumodes=n_qumodes,
-                                                 n_circuits=1,
-                                                 n_layers=n_layers,
-                                                 cutoff_dim=cutoff_dim,
-                                                 encoding_object=CV_Encoding("Amplitude_Phase"),
-                                                 regularizer=None,
-                                                 max_initial_weight = initial_weight,
-                                                 measurement_object=CV_Measurement("Fock"))
-        network = keras_network.circuit_layer[0]
-
-        fock_dist = network(inputs)
-        norms = [np.sum(dist) for dist in fock_dist]
-        norm = sum(norms)/n_qumodes
-        if(norm<norm_threshold):
-            print("Norm: ", norm, "Inputs: ", inputs[0], "Count: ", count)
-            t1*=0.99
-            count=0
-        else:
-            count+=1
-
-        if(inputs[0]<0):
-            print("Need a larger cutoff dimension")
-            return
-
-    print("max input: ", t1[0])
-    return t1[0]

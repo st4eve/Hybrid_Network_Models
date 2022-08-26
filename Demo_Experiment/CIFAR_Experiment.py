@@ -81,27 +81,24 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
             self.base_model.trainable = False
 
             # Quantum Layer
-            # TO-DO: refine the get_max_input algorithm
-            self.max_encoding_val = get_max_input(initial_weight=max_initial_weight,
-                                                  cutoff_dim=cutoff_dimension,
-                                                  n_layers=num_layers,
-                                                  n_qumodes=n_qumodes,
-                                                  norm_threshold=norm_threshold)
-            encoding_object = CV_Encoding(encoding_method, self.max_encoding_val)
             regularizer = get_regularizer(regularizer_string)
-            self.quantum_layer = QuantumLayer_MultiQunode(n_qumodes=n_qumodes,
-                                                          n_circuits=n_circuits,
-                                                          n_layers=num_layers,
-                                                          cutoff_dim=cutoff_dimension,
-                                                          encoding_object=encoding_object,
-                                                          regularizer=regularizer,
-                                                          max_initial_weight=max_initial_weight)
+            self.quantum_layer = QuantumLayer_MultiQunode( n_qumodes=n_qumodes,
+                                                      n_circuits=n_circuits,
+                                                      n_layers=num_layers,
+                                                      cutoff_dim=cutoff_dimension,
+                                                      encoding_method=encoding_method,
+                                                      regularizer=regularizer,
+                                                      max_initial_weight=None)
 
             # Quantum preparation layer with custom activation (classical)
+            # Use the encoding conversion factor to get the number of inputs right
+            # Example: 4 qumodes
+            # Phase or amplitude encoding: conversion=1 -> 4 classical outputs to feed into quantum circuit
+            # Phase+amplitude encoding: conversion=2 -> 8 classical outputs to feed into quantum circuit
             self.classical1 = models.Sequential([
                 layers.Flatten(),
-                layers.Dense(n_qumodes*encoding_object.conversion, activation=None)])
-            self.activation = Activation_Layer(activation, encoding_object)
+                layers.Dense(n_qumodes*self.quantum_layer.encoding_object.conversion, activation=None)])
+            self.activation = Activation_Layer(activation, self.quantum_layer.encoding_object)
 
             # Post quantum layer (classical)
             self.classical2 = layers.Dense(n_qumodes, activation='softmax')

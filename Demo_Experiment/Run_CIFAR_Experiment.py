@@ -6,7 +6,7 @@ import sys
 
 # Note that the regularizers follow the format "Mode=param" to avoid duplicate experiments with no regularizer (None)
 parameters = {'encoding_method': ["Amplitude_Phase"],
-              'cutoff_dimension':[5],
+              'cutoff_dimension':[4],
               'num_layers':[1, 2],
               'n_qumodes': [4],
               'n_circuits': [1],
