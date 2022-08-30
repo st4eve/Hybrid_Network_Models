@@ -41,12 +41,13 @@ def confnet_config():
 
 #%% Logs
 @ex.capture
-def log_performance(_run, logs, epoch):
+def log_performance(_run, logs, epoch, traces):
     _run.log_scalar("loss", float(logs.get('loss')), epoch)
     _run.log_scalar("accuracy", float(logs.get('accuracy')), epoch)
     _run.log_scalar("val_loss", float(logs.get('val_loss')), epoch)
     _run.log_scalar("val_accuracy", float(logs.get('val_accuracy')), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
+    _run.log_scalar("traces", traces, epoch)
 
 #%% Metric Logging Callback Class
 class LogPerformance(Callback):
@@ -54,7 +55,10 @@ class LogPerformance(Callback):
         super(LogPerformance, self).__init__()
 
     def on_epoch_end(self, epoch, logs={}):
-        log_performance(logs=logs, epoch=epoch)
+        log_performance(logs=logs, epoch=epoch, traces=self.model.quantum_layer.traces)
+
+        # Reset the traces for the next epoch
+        self.model.quantum_layer.traces = []
 
 #%% Get regularizer
 def get_regularizer(regularizer_string):
@@ -88,7 +92,9 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
                                                       cutoff_dim=cutoff_dimension,
                                                       encoding_method=encoding_method,
                                                       regularizer=regularizer,
-                                                      max_initial_weight=None)
+                                                      max_initial_weight=None,
+                                                      measurement_object=CV_Measurement("X_quadrature"),
+                                                      trace_tracking=True)
 
             # Quantum preparation layer with custom activation (classical)
             # Use the encoding conversion factor to get the number of inputs right

@@ -68,7 +68,6 @@ class Activation_Layer():
             x /= 2
             x += 0.5
 
-        print(x)
         if self.encoding_object.mode == "Amplitude":
             # Displace [0, max_value] with constant phase of 0
             x *= self.encoding_object.phase_amplitude
@@ -108,7 +107,7 @@ def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_ob
 # %% Full CV Keras Layers
 class QuantumLayer_MultiQunode(keras.Model):
 
-    def __init__(self, n_qumodes, n_circuits, n_layers, cutoff_dim, encoding_method = "Amplitude_Phase", regularizer = None, max_initial_weight=None, measurement_object=CV_Measurement("X_quadrature")):
+    def __init__(self, n_qumodes, n_circuits, n_layers, cutoff_dim, encoding_method = "Amplitude_Phase", regularizer = None, max_initial_weight=None, measurement_object=CV_Measurement("X_quadrature"), trace_tracking=False):
         """
         Initialize Keras NN layer. Example:
         8 inputs coming in from previous layer
@@ -126,6 +125,7 @@ class QuantumLayer_MultiQunode(keras.Model):
         :param regularizer: Regularizer object
         :param max_initial_weight: Maximum value allowed for non-phase parameters
         :param measurement_method: Measurement method
+        :param trace_tracking: Whether you want traces tracked during training
         """
         super().__init__()
         self.n_circuits = n_circuits
@@ -135,6 +135,15 @@ class QuantumLayer_MultiQunode(keras.Model):
         self.regularizer = regularizer
         self.encoding_method = encoding_method
         self.measurement_object = measurement_object
+        self.trace_tracking = trace_tracking
+        self.traces = []
+
+        # Calculate number of qumodes based on the down-scaling from encoding and number of circuits
+        self.n_qumodes_per_circuit = self.n_qumodes / self.n_circuits
+        if (self.n_qumodes_per_circuit.is_integer()):
+            self.n_qumodes_per_circuit = int(self.n_qumodes_per_circuit)
+        else:
+            raise ValueError('Please ensure the number of inputs divides evenly into the encoding method & number of circuits')
 
         # If we do not have an max weight, run our max initial weight finder algorithm
         if(max_initial_weight is None):
@@ -146,30 +155,23 @@ class QuantumLayer_MultiQunode(keras.Model):
         self.encoding_object = CV_Encoding(self.encoding_method, self.max_initial_weight)
         self.initialize_circuit()
 
-
     def initialize_circuit(self):
-        # Calculate number of qumodes based on the down-scaling from encoding and number of circuits
-        n_qumodes_per_circuit = self.n_qumodes/self.n_circuits
-        if(n_qumodes_per_circuit.is_integer()):
-            n_qumodes_per_circuit = int(n_qumodes_per_circuit)
-        else:
-            raise ValueError('Please ensure the number of inputs divides evenly into the encoding method & number of circuits')
 
         # Create the specified number of circuits
         self.circuit_layer = []
         for i in range(self.n_circuits):
 
             # Make quantum node
-            cv_nn = build_cv_quantum_node(n_qumodes_per_circuit, self.cutoff_dim, self.encoding_object, self.measurement_object)
+            cv_nn = build_cv_quantum_node(self.n_qumodes_per_circuit, self.cutoff_dim, self.encoding_object, self.measurement_object)
 
             # Define weight shapes
-            weight_shapes = self.define_weight_shapes(L = self.n_layers, M = n_qumodes_per_circuit)
+            weight_shapes = self.define_weight_shapes(L = self.n_layers, M = self.n_qumodes_per_circuit)
 
             # Define weight specifications
             weight_specs = self.define_weight_specs()
 
             # Build circuit
-            circuit = qml.qnn.KerasLayer(cv_nn, weight_shapes, output_dim=n_qumodes_per_circuit, weight_specs=weight_specs)
+            circuit = qml.qnn.KerasLayer(cv_nn, weight_shapes, output_dim=self.n_qumodes_per_circuit, weight_specs=weight_specs)
 
             self.circuit_layer.append(circuit)
 
@@ -214,6 +216,33 @@ class QuantumLayer_MultiQunode(keras.Model):
                          "k":           (L, M)
                          }
         return weight_shapes
+    
+    def get_traces(self, x):
+        # Re-initialize the circuit with Fock measurement
+        fock_measurer = QuantumLayer_MultiQunode(n_qumodes=self.n_qumodes,
+                                                 n_circuits=self.n_circuits,
+                                                 n_layers=self.n_layers,
+                                                 cutoff_dim=self.cutoff_dim,
+                                                 encoding_method=self.encoding_method,
+                                                 regularizer=None,
+                                                 max_initial_weight=self.max_initial_weight,
+                                                 measurement_object=CV_Measurement("Fock"))
+
+        # Split the inputs across the number of circuits
+        x_split = list(tf.split(x, self.n_circuits, axis=1))
+
+        # Initialize the model, so the weights can be copied.
+        # Without sending one input through, the weights don't get set.
+        # Then, initialize the weights, and find the traces.
+        for i in range(self.n_circuits):
+            x_subsample = x_split[i]
+            fock_measurer.circuit_layer[i](x_subsample[0])
+            fock_measurer.circuit_layer[i].set_weights(self.circuit_layer[i].get_weights())
+
+            for sample in x_subsample:
+                fock_dist = fock_measurer.circuit_layer[i](sample)
+                average_trace = np.sum(tf.math.real(fock_dist)) / self.n_qumodes_per_circuit
+                self.traces.append(average_trace)
 
     def get_max_non_phase_parameter(self, trace_threshold=0.99):
         """
@@ -259,7 +288,7 @@ class QuantumLayer_MultiQunode(keras.Model):
 
             fock_distribution = network(inputs)
             traces = [np.sum(dist) for dist in fock_distribution]
-            trace = sum(traces)/self.n_qumodes
+            trace = sum(traces)/self.n_qumodes_per_circuit
 
             if(trace < trace_threshold):
                 print("Trace: ", trace, "Value: ", max_value, "Count: ", count)
@@ -278,6 +307,8 @@ class QuantumLayer_MultiQunode(keras.Model):
     def call(self, x):
         x_split = list(tf.split(x, self.n_circuits, axis=1))
         output = tf.concat([self.circuit_layer[i](x_split[i]) for i in range(self.n_circuits)], axis=1)
+        if(self.trace_tracking):
+            self.get_traces(x)
         return output
 
 #%% Accessory Algorithms
