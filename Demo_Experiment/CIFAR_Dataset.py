@@ -10,22 +10,29 @@ def prepare_dataset():
     # https://huggingface.co/datasets/cifar100
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar100.load_data(label_mode="fine")
 
-    n1 = 300
-    n2 = 60
+    # Photos to use
     # indices = [13, 8, 48, 90] # bus, bicycle, motorcycle, train
     indices = [22, 39, 86, 87]  # clock, keyboard, telephone, television
 
-    filter_train = np.array([np.where(y_train.flatten() == idx)[0][:n1] for idx in indices]).flatten()
-    filter_test = np.array([np.where(y_test.flatten() == idx)[0][:n2] for idx in indices]).flatten()
+    # Filter out based on desired dataset size
+    num_training_samples = 300
+    num_testing_samples = 60
+    filter_train = np.array([np.where(y_train.flatten() == idx)[0][:num_training_samples] for idx in indices]).flatten()
+    filter_test = np.array([np.where(y_test.flatten() == idx)[0][:num_testing_samples] for idx in indices]).flatten()
 
+    # Normalize inputs to [0,1]
     x_train = x_train[filter_train] / 255.0
     y_train = y_train[filter_train]
     x_test = x_test[filter_test] / 255.0
     y_test = y_test[filter_test]
+
+    # Change categories from indices selected above to [0:N]
     for i in range(len(indices)):
         y_train[y_train == indices[i]] = i
         y_test[y_test == indices[i]] = i
 
+    # Make y values categorical
     y_train = to_categorical(y_train)
     y_test = to_categorical(y_test)
+
     return x_train, x_test, y_train, y_test
