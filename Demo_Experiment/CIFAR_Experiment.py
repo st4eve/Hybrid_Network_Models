@@ -41,7 +41,7 @@ def confnet_config():
 
 #%% Logs
 @ex.capture
-def log_performance(_run, logs, epoch, traces):
+def log_performance(_run, logs, epoch, traces, model):
     _run.log_scalar("loss", float(logs.get('loss')), epoch)
     _run.log_scalar("accuracy", float(logs.get('accuracy')), epoch)
     _run.log_scalar("val_loss", float(logs.get('val_loss')), epoch)
@@ -55,7 +55,7 @@ class LogPerformance(Callback):
         super(LogPerformance, self).__init__()
 
     def on_epoch_end(self, epoch, logs={}):
-        log_performance(logs=logs, epoch=epoch, traces=self.model.quantum_layer.traces)
+        log_performance(logs=logs, epoch=epoch, traces=self.model.quantum_layer.traces, model=self.model)
 
         # Reset the traces for the next epoch
         self.model.quantum_layer.traces = []
