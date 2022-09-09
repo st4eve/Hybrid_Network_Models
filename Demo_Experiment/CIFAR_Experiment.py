@@ -22,8 +22,9 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 #%% Setup Experiment
-ex = Experiment('CIFAR')
-ex.observers.append(FileStorageObserver('Experiment_Data'))
+ex_name = 'CIFAR'
+ex = Experiment(ex_name)
+ex.observers.append(FileStorageObserver('Experiment_Data_%s'%ex_name))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 #%% Experiment Parameters
@@ -48,6 +49,8 @@ def log_performance(_run, logs, epoch, traces, model):
     _run.log_scalar("val_accuracy", float(logs.get('val_accuracy')), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
     _run.log_scalar("traces", traces, epoch)
+    
+    model.save_weights('Experiment_Data_%s/%s/weights/weight%d' % (_run.experiment_info["name"], _run._id, epoch))
 
 #%% Metric Logging Callback Class
 class LogPerformance(Callback):
@@ -103,7 +106,9 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
             # Phase+amplitude encoding: conversion=2 -> 8 classical outputs to feed into quantum circuit
             self.classical1 = models.Sequential([
                 layers.Flatten(),
-                layers.Dense(n_qumodes*self.quantum_layer.encoding_object.conversion, activation=None)])
+                layers.Dense(n_qumodes*self.quantum_layer.encoding_object.conversion, activation=None,
+                                bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                                kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)))])
             self.activation = Activation_Layer(activation, self.quantum_layer.encoding_object)
 
             # Post quantum layer (classical)

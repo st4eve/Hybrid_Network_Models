@@ -15,6 +15,7 @@ parameters = {'encoding_method': ["Amplitude_Phase"],
               'activation':["Sigmoid"],
               'norm_threshold': [0.99]
               }
+              
 
 fields = {
         'memory': 32,

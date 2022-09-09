@@ -3,7 +3,7 @@ import json
 import sys
 
 def loadConfig(exNum):
-    with open('../%d'%exNum + '/config.json') as json_file:
+    with open('./%d'%exNum + '/config.json') as json_file:
         return json.load(json_file)
         
 def main():

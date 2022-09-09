@@ -53,6 +53,8 @@ def log_performance(_run, logs, epoch, time):
     _run.log_scalar("val_accuracy", float(logs.get('val_accuracy')), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
     _run.log_scalar("time", float(time), epoch)
+    
+    
 
     _run.log_scalar("avg_norm", float(logs.get('avg_norm')), epoch)
     for i in range(100):
@@ -198,12 +200,12 @@ def define_and_test(encoding_strategy, cutoff_dimension, num_layers, num_pre_cla
     # Test model
     if PWB_ON: print('Photonic Weight Banks Engaged')
     else: print('Tensorflow Dense Engaged')
-    loss, acc, norm = model.evaluate(x_test, y_test, verbose=3)[0:3]
+    loss, acc, norm = model.evaluate(x_train, y_train, verbose=3)[0:3]
     print('Untrained Network')
     print('Loss: %.3f \t Accuracy: %.3f \t Norm:%.3f' % (loss, acc, norm))
-    model.load_weights('../Experiment_Data7/11/weights/weight49.ckpt')
+    model.load_weights('../Experiment_Data7/21/weights/weight15.ckpt')
     print('Pretrained Network')
-    loss, acc, norm = model.evaluate(x_test, y_test, verbose=3)[0:3]
+    loss, acc, norm = model.evaluate(x_train, y_train, verbose=3)[0:3]
     print('Loss: %.3f \t Accuracy: %.3f \t Norm:%.3f' % (loss, acc, norm))
     
     
