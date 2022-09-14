@@ -108,7 +108,7 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
                 layers.Flatten(),
                 layers.Dense(n_qumodes*self.quantum_layer.encoding_object.conversion, activation=None,
                                 bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                                kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)))])
+                                kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0))])
             self.activation = Activation_Layer(activation, self.quantum_layer.encoding_object)
 
             # Post quantum layer (classical)
@@ -124,8 +124,9 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
 
     # Get dataset
     x_train, x_test, y_train, y_test = prepare_dataset()
+    x_train, x_test, y_train, y_test = x_train[0:4], x_test[0:2], y_train[0:4], y_test[0:2]
 
     # Build and train model
     model = Net()
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    model.fit(x_train, y_train, epochs=30, batch_size=20, validation_data=(x_test, y_test),callbacks=[LogPerformance()])
+    model.fit(x_train, y_train, epochs=15, batch_size=4, validation_data=(x_test, y_test),callbacks=[LogPerformance()])

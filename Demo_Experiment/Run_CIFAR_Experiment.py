@@ -1,5 +1,6 @@
 #%% Sweep Hyperparameters Sequentially
 from CIFAR_Experiment import ex
+from CIFAR_PWBTest_Experiment import ex as ex_test
 from sklearn.model_selection import ParameterGrid
 from SLURM_Script_Factory import save_script
 import sys
@@ -30,5 +31,19 @@ if(sys.argv[1]=='run'):
         ex.run(config_updates=parameter_combo)
 elif(sys.argv[1]=='slurm'):
     save_script('Run_CIFAR_Experiment.sh', 'CIFAR_Experiment.py', fields, parameters)
+elif(sys.argv[1]=='run_test'):
+    parameters = {'encoding_method': "Amplitude_Phase",
+              'cutoff_dimension':4,
+              'num_layers':1,
+              'n_qumodes': 4,
+              'n_circuits': 1,
+              'regularizer_string': "L1=0.01",
+              'max_initial_weight': 0.1,
+              'activation':"Sigmoid",
+              'norm_threshold': 0.99
+              }
+    ex.run(config_updates=parameters)
+    ex_test.run()
+    
 else:
     print("please enter 'run' or 'build_slurm'")

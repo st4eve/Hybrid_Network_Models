@@ -85,7 +85,7 @@ class Activation_Layer():
         return x
 
 # %% CV Quantum Nodes
-def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_object):
+def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_object, shots=None):
     """
     Create CV quantum node. This is the lower level CV object.
     :param n_qumodes: Number of qumodes in the circuit
@@ -96,7 +96,7 @@ def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_ob
     """
     dev = qml.device("strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim)
 
-    @qml.qnode(dev, interface="tf")
+    @qml.qnode(dev, interface="tf", shots=shots)
     def cv_nn(inputs, theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k):
         encoding_object.get_encoding(inputs, wires=range(n_qumodes))
         qml.templates.CVNeuralNetLayers(theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k, wires=range(n_qumodes))
@@ -107,7 +107,7 @@ def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_ob
 # %% Full CV Keras Layers
 class QuantumLayer_MultiQunode(keras.Model):
 
-    def __init__(self, n_qumodes, n_circuits, n_layers, cutoff_dim, encoding_method = "Amplitude_Phase", regularizer = None, max_initial_weight=None, measurement_object=CV_Measurement("X_quadrature"), trace_tracking=False):
+    def __init__(self, n_qumodes, n_circuits, n_layers, cutoff_dim, encoding_method = "Amplitude_Phase", regularizer = None, max_initial_weight=None, measurement_object=CV_Measurement("X_quadrature"), trace_tracking=False, shots=None):
         """
         Initialize Keras NN layer. Example:
         8 inputs coming in from previous layer
@@ -162,7 +162,7 @@ class QuantumLayer_MultiQunode(keras.Model):
         for i in range(self.n_circuits):
 
             # Make quantum node
-            cv_nn = build_cv_quantum_node(self.n_qumodes_per_circuit, self.cutoff_dim, self.encoding_object, self.measurement_object)
+            cv_nn = build_cv_quantum_node(self.n_qumodes_per_circuit, self.cutoff_dim, self.encoding_object, self.measurement_object, shots=None)
 
             # Define weight shapes
             weight_shapes = self.define_weight_shapes(L = self.n_layers, M = self.n_qumodes_per_circuit)
