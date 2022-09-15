@@ -2,12 +2,13 @@
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 import numpy as np
+import json
 
 #%% Preprocess dataset
-def prepare_dataset():
+def save_dataset():
     """This function should return the data ready to feed into the network"""
     # Import data subset and normalize from 0-1
-    # https://huggingface.co/datasets/cifar100
+    # https://huggingface.co/datasets/cifar100i
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar100.load_data(label_mode="fine")
 
     # Photos to use
@@ -34,5 +35,20 @@ def prepare_dataset():
     # Make y values categorical
     y_train = to_categorical(y_train)
     y_test = to_categorical(y_test)
+    
+    
+    data = np.array([x_train, x_test, y_train, y_test], dtype='object')
+    np.save('./CIFAR_Dataset/CIFAR.npy', data, allow_pickle=True)
+    return 0
 
-    return x_train, x_test, y_train, y_test
+def prepare_dataset():
+    return np.load('./CIFAR_Dataset/CIFAR.npy', allow_pickle=True)
+
+
+if __name__ == '__main__':
+    save_dataset()
+    x_train, x_test, y_train, y_test = prepare_dataset()
+    print(x_train)
+
+
+

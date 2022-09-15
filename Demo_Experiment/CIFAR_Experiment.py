@@ -50,7 +50,7 @@ def log_performance(_run, logs, epoch, traces, model):
     _run.log_scalar("epoch", int(epoch), epoch)
     _run.log_scalar("traces", traces, epoch)
     
-    model.save_weights('Experiment_Data_%s/%s/weights/weight%d' % (_run.experiment_info["name"], _run._id, epoch))
+    model.save_weights('Experiment_Data_%s/%s/weights/weight%d.ckpt' % (_run.experiment_info["name"], _run._id, epoch))
 
 #%% Metric Logging Callback Class
 class LogPerformance(Callback):
@@ -95,7 +95,7 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
                                                       cutoff_dim=cutoff_dimension,
                                                       encoding_method=encoding_method,
                                                       regularizer=regularizer,
-                                                      max_initial_weight=None,
+                                                      max_initial_weight=max_initial_weight,
                                                       measurement_object=CV_Measurement("X_quadrature"),
                                                       trace_tracking=True)
 
@@ -124,9 +124,8 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
 
     # Get dataset
     x_train, x_test, y_train, y_test = prepare_dataset()
-    x_train, x_test, y_train, y_test = x_train[0:4], x_test[0:2], y_train[0:4], y_test[0:2]
 
     # Build and train model
     model = Net()
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    model.fit(x_train, y_train, epochs=15, batch_size=4, validation_data=(x_test, y_test),callbacks=[LogPerformance()])
+    model.fit(x_train, y_train, epochs=50, batch_size=16, validation_data=(x_test, y_test),callbacks=[LogPerformance()])

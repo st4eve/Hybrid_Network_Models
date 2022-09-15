@@ -1,5 +1,0 @@
-('Experiment_Data_CIFAR', ['_sources', '1'], [])
-('Experiment_Data_CIFAR/_sources', [], ['CIFAR_Experiment_270bed78669defa3bba625fa425c40ed.py', 'CIFAR_Dataset_0371155fc939d5fa86d608020579a691.py', 'CV_quantum_layers_adb4b757088d09a92b978454bee59daf.py'])
-('Experiment_Data_CIFAR/1', ['weights'], ['cout.txt', 'run.json', 'config.json', 'metrics.json'])
-('Experiment_Data_CIFAR/1/weights', [], ['weight5.data-00000-of-00001', 'weight4.data-00000-of-00001', 'weight4.index', 'weight7.index', 'weight14.data-00000-of-00001', 'weight0.data-00000-of-00001', 'weight13.data-00000-of-00001', 'checkpoint', 'weight3.index', 'weight0.index', 'weight10.index', 'weight12.index', 'weight9.data-00000-of-00001', 'weight2.index', 'weight10.data-00000-of-00001', 'weight5.index', 'weight6.index', 'weight1.data-00000-of-00001', 'weight12.data-00000-of-00001', 'weight6.data-00000-of-00001', 'weight9.index', 'weight13.index', 'weight3.data-00000-of-00001', 'weight14.index', 'weight11.data-00000-of-00001', 'weight7.data-00000-of-00001', 'weight8.data-00000-of-00001', 'weight11.index', 'weight2.data-00000-of-00001', 'weight1.index', 'weight8.index'])
-0

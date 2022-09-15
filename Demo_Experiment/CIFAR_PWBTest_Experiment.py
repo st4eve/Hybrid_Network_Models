@@ -46,6 +46,10 @@ def confnet_config():
     regularizer_string = "L1=0.01"
     max_initial_weight = 0.1
     norm_threshold = 0.99
+    precision = 127
+    shots = None
+    max_epoch = 1
+    exp_train = 1
 
 #%% Logs
 @ex.capture
@@ -57,14 +61,16 @@ def log_performance(_run, val_accuracy, val_loss, precision, shots):
     
     
 def findMaxAcc():
-    def getAccuracy(filename):
+    def getAccuracy(filedir):
+        filename = filedir + 'metrics.json'
         with open(filename) as json_file:
             data = json.load(json_file)
     
         acc = data['val_accuracy']['values']
         return acc
     
-    def getConfig(filename):
+    def getConfig(filedir):
+        filename = filedir + 'config.json'
         with open(filename) as json_file:
             return json.load(json_file)
         
@@ -77,8 +83,18 @@ def findMaxAcc():
     
     dir_name = 'Experiment_Data_%s'%ex_name
     
-    for dir in os.walk(dir_name):
-        
+    dirs = os.listdir(dir_name)[1::]
+    for directory in dirs:
+        filedir = dir_name + '/' + directory + '/'
+        acc = getAccuracy(filedir)
+        curr_max, curr_epoch = findMax(acc)
+        if curr_max > max_val:
+            max_val = curr_max
+            epoch = curr_epoch
+            exp = int(directory)
+    print(dirs)
+    return exp, max_val, epoch
+
     
     
     
@@ -95,11 +111,21 @@ def get_regularizer(regularizer_string):
 
 #%% Main
 @ex.automain
-def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, n_qumodes, n_circuits, regularizer_string, max_initial_weight, norm_threshold):
+def define_and_test(encoding_method, 
+                    cutoff_dimension, 
+                    num_layers, activation, 
+                    n_qumodes, n_circuits, 
+                    regularizer_string, 
+                    max_initial_weight, 
+                    norm_threshold, 
+                    precision, 
+                    shots, 
+                    max_epoch,
+                    exp_train):
 
     # Create neural network class using the parameters
     class Net(tf.keras.Model):
-        def __init__(self, shots=None, precision=127):
+        def __init__(self, shots=shots, precision=precision):
             super(Net, self).__init__()
 
             # Base model for transfer learning
@@ -114,7 +140,7 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
                                                       cutoff_dim=cutoff_dimension,
                                                       encoding_method=encoding_method,
                                                       regularizer=regularizer,
-                                                      max_initial_weight=None,
+                                                      max_initial_weight=0.2,
                                                       measurement_object=CV_Measurement("X_quadrature"),
                                                       trace_tracking=True,
                                                       shots=shots)
@@ -126,11 +152,11 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
             # Phase+amplitude encoding: conversion=2 -> 8 classical outputs to feed into quantum circuit
             self.classical1 = models.Sequential([
                 layers.Flatten(),
-                layers.PWBLinearLayer(n_qumodes*self.quantum_layer.encoding_object.conversion, activation=None, precision=precision)])
+                PWBLinearLayer(n_qumodes*self.quantum_layer.encoding_object.conversion, activation=None, precision=precision)])
             self.activation = Activation_Layer(activation, self.quantum_layer.encoding_object)
 
             # Post quantum layer (classical)
-            self.classical2 = layers.PWBLinearLayer(n_qumodes, activation='softmax', precision=precision)
+            self.classical2 = PWBLinearLayer(n_qumodes, activation='softmax', precision=precision)
 
         def call(self, inputs):
             x = self.base_model(inputs)
@@ -143,8 +169,16 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
     # Get dataset
     x_train, x_test, y_train, y_test = prepare_dataset()
 
+
     # Build and train model
-    print(findMaxAcc())
+    model = Net()
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.load_weights('./Experiment_Data_%s/%d/weights/weight%d.ckpt'%(ex_name, exp_train, max_epoch))
+    val_loss, val_acc = model.evaluate(x_train, y_train, verbose=3)
+    log_performance(val_accuracy=val_acc, 
+                    val_loss=val_loss,  
+                    precision=precision, 
+                    shots=shots)
     
     
     
