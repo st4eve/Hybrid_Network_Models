@@ -25,23 +25,24 @@ def findMaxAcc(filedir):
         with open(filename) as json_file:
             return json.load(json_file)
         
-    exp = []
-    max_val = [0.0]
-    epoch = []
+    exp = 1
+    max_val = 0
+    epoch = 0
     
     dir_name = 'Experiment_Data_%s'%filedir
     
     dirs = os.listdir(dir_name)
-    dirs.remove('_sources')
+    if '_sources' in dirs:
+        dirs.remove('_sources')
     for directory in dirs:
         filedir = dir_name + '/' + directory + '/'
         acc = getAccuracy(filedir)
         curr_max, curr_epoch = findMax(acc)
-        if curr_max > max_val[-1]:
-            max_val.append(curr_max)
-            epoch.append(curr_epoch)
-            exp.append(int(directory))
-    return np.array([exp, max_val[1:], epoch])
+        if curr_max > max_val:
+            max_val = curr_max
+            epoch = curr_epoch
+            exp = int(directory)
+    return exp, max_val, epoch
 
 def main():
     if sys.argv[1] != None:

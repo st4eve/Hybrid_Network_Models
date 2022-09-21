@@ -21,7 +21,7 @@ import numpy as np
 
 # Custom
 from CV_quantum_layers import *
-from CIFAR_Dataset import *
+from WINE_Dataset import *
 
 # Sacred Package for Experiment Management
 from sacred import Experiment
@@ -29,7 +29,7 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 #%% Setup Experiment
-ex_name = 'CIFAR'
+ex_name = 'WINE'
 ex = Experiment(ex_name)
 ex.observers.append(FileStorageObserver('Experiment_Test_%s'%ex_name))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -46,11 +46,12 @@ def confnet_config():
     regularizer_string = "L1=0.01"
     max_initial_weight = 0.1
     norm_threshold = 0.99
-    n_classes = 4
+    n_classes = 11
     precision = 127
     shots = None
     max_epoch = 1
     exp_train = 1
+    ff_activation = None
 
 #%% Logs
 @ex.capture
@@ -121,7 +122,8 @@ def define_and_test(encoding_method,
                     precision, 
                     shots, 
                     max_epoch,
-                    exp_train):
+                    exp_train,
+                    ff_activation):
 
     # Create neural network class using the parameters
     class Net(tf.keras.Model):
@@ -129,8 +131,7 @@ def define_and_test(encoding_method,
             super(Net, self).__init__()
 
             # Base model for transfer learning
-            self.base_model = VGG16(weights="imagenet", include_top=False, input_shape=x_train[0].shape)
-            self.base_model.trainable = False
+            self.base_model = PWBLinearLayer(24, activation=ff_activation)
 
             # Quantum Layer
             regularizer = get_regularizer(regularizer_string)
@@ -140,7 +141,7 @@ def define_and_test(encoding_method,
                                                       cutoff_dim=cutoff_dimension,
                                                       encoding_method=encoding_method,
                                                       regularizer=regularizer,
-                                                      max_initial_weight=0.2,
+                                                      max_initial_weight=max_initial_weight,
                                                       measurement_object=CV_Measurement("X_quadrature"),
                                                       trace_tracking=True,
                                                       shots=shots)
@@ -173,10 +174,18 @@ def define_and_test(encoding_method,
     model = Net()
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     model.load_weights('./Experiment_Data_%s/%d/weights/weight%d.ckpt'%(ex_name, exp_train, max_epoch))
-    val_loss, val_acc = model.evaluate(x_test, y_test, verbose=3)
-    log_performance(val_accuracy=val_acc,
+    if shots != None:
+        n_tests = 100
+        for i in range(n_tests):
+            val_loss, val_acc = model.evaluate(x_train, y_train, verbose=3)
+            log_performance(val_accuracy=val_acc,
                         val_loss=val_loss)
 
+    else:
+        val_loss, val_acc = model.evaluate(x_train, y_train, verbose=3)
+        log_performance(val_accuracy=val_acc,
+                        val_loss=val_loss)
+    
     
     
     

@@ -36,19 +36,22 @@ def save_dataset():
     y_train = to_categorical(y_train)
     y_test = to_categorical(y_test)
     
-    
-    data = np.array([x_train, x_test, y_train, y_test], dtype='object')
+
+    data = np.array([x_train, x_test, y_train, y_test], dtype=object)
     np.save('./CIFAR_Dataset/CIFAR.npy', data, allow_pickle=True)
     return 0
 
-def prepare_dataset():
-    return np.load('./CIFAR_Dataset/CIFAR.npy', allow_pickle=True)
+def prepare_dataset(n_samples=None):
+    if (n_samples == None):
+        return np.load('./CIFAR_Dataset/CIFAR.npy', allow_pickle=True)
+    elif(n_samples > 0):
+        x_train, x_test, y_train, y_test = np.load('./CIFAR_Dataset/CIFAR.npy', allow_pickle=True)
+        return x_train[0:n_samples], x_test[0:n_samples//2], y_train[0:n_samples], y_test[0:n_samples//2]
+    else:
+        return None
 
 
 if __name__ == '__main__':
     save_dataset()
     x_train, x_test, y_train, y_test = prepare_dataset()
-    print(x_train)
-
-
-
+    print(x_train.shape, y_train.shape)

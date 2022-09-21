@@ -39,6 +39,7 @@ def confnet_config():
     regularizer_string = "L1=0.01"
     max_initial_weight = 0.1
     norm_threshold = 0.99
+    n_classes=4
 
 #%% Logs
 @ex.capture
@@ -65,18 +66,18 @@ class LogPerformance(Callback):
 
 #%% Get regularizer
 def get_regularizer(regularizer_string):
+    if regularizer_string == None:
+        return None
     type = regularizer_string.split('=')[0]
     value = float(regularizer_string.split('=')[1])
     if(type=="L1"):
         return tf.keras.regularizers.L1(l1=value)
     if(type=="L2"):
         return tf.keras.regularizers.L2(l2=value)
-    else:
-        return None
 
 #%% Main
 @ex.automain
-def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, n_qumodes, n_circuits, regularizer_string, max_initial_weight, norm_threshold):
+def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, n_qumodes, n_circuits, regularizer_string, max_initial_weight, norm_threshold, n_classes):
 
     # Create neural network class using the parameters
     class Net(tf.keras.Model):
@@ -112,7 +113,7 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
             self.activation = Activation_Layer(activation, self.quantum_layer.encoding_object)
 
             # Post quantum layer (classical)
-            self.classical2 = layers.Dense(n_qumodes, activation='softmax')
+            self.classical2 = layers.Dense(n_classes, activation='softmax')
 
         def call(self, inputs):
             x = self.base_model(inputs)
@@ -124,8 +125,7 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, activation, 
 
     # Get dataset
     x_train, x_test, y_train, y_test = prepare_dataset()
-
     # Build and train model
     model = Net()
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy']) 
     model.fit(x_train, y_train, epochs=50, batch_size=16, validation_data=(x_test, y_test),callbacks=[LogPerformance()])
