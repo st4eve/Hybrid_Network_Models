@@ -19,7 +19,7 @@ for key in parameters:
     parameters[key] = [parameters[key]]
 #parameters['precision'] = [int(2**i) for i in range(10)]
 parameters['shots'] = [int(2**i) for i in range(10)]
-parameters['sigma'] = list(np.logspace(-10, -2, 11))
+parameters['sigma'] = list(np.logspace(-10, 0, 20))
 parameters['precision'] = [int(2**16)]
 parameters['max_epoch'] = [epoch] 
 parameters['exp_train'] = [exp]

@@ -41,7 +41,7 @@ def save_dataset():
     data = np.array([np.array([x_val], dtype=object), np.array(y_val, dtype=object)], dtype=object)
     np.save('./WINE_Dataset/WINE_val.npy', data, allow_pickle=True)
     
-    sigmas = np.logspace(-10, -2, 11)
+    sigmas = np.logspace(-10, 0, 20)
     for sigma in sigmas:  
         x_train_noisy = np.random.normal(0, sigma, x_train.shape) + x_train
         x_test_noisy = np.random.normal(0, sigma, x_test.shape) + x_test
