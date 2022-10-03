@@ -29,7 +29,7 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 #%% Setup Experiment
-ex_name = 'WINE'
+ex_name = 'WINE_NOISY'
 ex = Experiment(ex_name)
 ex.observers.append(FileStorageObserver('Experiment_Test_%s'%ex_name))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -54,7 +54,7 @@ def confnet_config():
     max_epoch = 1
     exp_train = 1
     ff_activation = None
-    noisy = False
+    sigma = None
 
 #%% Logs
 @ex.capture
@@ -129,7 +129,7 @@ def define_and_test(encoding_method,
                     max_epoch,
                     exp_train,
                     ff_activation,
-                    noisy):
+                    sigma):
 
     # Create neural network class using the parameters
     class Net(tf.keras.Model):
@@ -175,17 +175,17 @@ def define_and_test(encoding_method,
             return x
 
     # Get dataset
-    if noisy:
-        x_train, x_test, y_train, y_test = load_dataset_noisy()
+    if sigma:
+        x_train, x_test, y_train, y_test = load_noisy_data(sigma)
     else:
         x_train, x_test, y_train, y_test = prepare_dataset()
 
     # Build and train model
     model = Net()
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    model.load_weights('./Experiment_Data_%s/%d/weights/weight%d.ckpt'%(ex_name, exp_train, max_epoch))
+    model.load_weights('./Experiment_Data_%s/%d/weights/weight%d.ckpt'%('WINE', exp_train, max_epoch))
     if shots != None:
-        n_tests = 100
+        n_tests = 10
         for i in range(n_tests):
             val_loss, val_acc = model.evaluate(x_train, y_train, verbose=3)
             log_performance(val_accuracy=val_acc,

@@ -94,7 +94,7 @@ def build_cv_quantum_node(n_qumodes, cutoff_dim, encoding_object, measurement_ob
     :param measurement_object: Measurement object
     :return: CV qnode
     """
-    dev = qml.device("strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim)
+    dev = qml.device("strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim, shots=shots)
 
     @qml.qnode(dev, interface="tf", shots=shots)
     def cv_nn(inputs, theta_1, phi_1, varphi_1, r, phi_r, theta_2, phi_2, varphi_2, a, phi_a, k):
@@ -137,6 +137,7 @@ class QuantumLayer_MultiQunode(keras.Model):
         self.measurement_object = measurement_object
         self.trace_tracking = trace_tracking
         self.traces = []
+        self.shots = shots
 
         # Calculate number of qumodes based on the down-scaling from encoding and number of circuits
         self.n_qumodes_per_circuit = self.n_qumodes / self.n_circuits
@@ -162,7 +163,7 @@ class QuantumLayer_MultiQunode(keras.Model):
         for i in range(self.n_circuits):
 
             # Make quantum node
-            cv_nn = build_cv_quantum_node(self.n_qumodes_per_circuit, self.cutoff_dim, self.encoding_object, self.measurement_object, shots=None)
+            cv_nn = build_cv_quantum_node(self.n_qumodes_per_circuit, self.cutoff_dim, self.encoding_object, self.measurement_object, shots=self.shots)
 
             # Define weight shapes
             weight_shapes = self.define_weight_shapes(L = self.n_layers, M = self.n_qumodes_per_circuit)

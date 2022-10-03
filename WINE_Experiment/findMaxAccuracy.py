@@ -36,12 +36,16 @@ def findMaxAcc(filedir):
         dirs.remove('_sources')
     for directory in dirs:
         filedir = dir_name + '/' + directory + '/'
-        acc = getAccuracy(filedir)
-        curr_max, curr_epoch = findMax(acc)
-        if curr_max > max_val:
-            max_val = curr_max
-            epoch = curr_epoch
-            exp = int(directory)
+        try:
+            acc = getAccuracy(filedir)
+        except:
+            print('Experiment %s was invalid'%directory)
+        else:
+            curr_max, curr_epoch = findMax(acc)
+            if curr_max > max_val:
+                max_val = curr_max
+                epoch = curr_epoch
+                exp = int(directory)
     return exp, max_val, epoch
 
 def main():

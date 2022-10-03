@@ -45,9 +45,9 @@ def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=
         plt.gca().add_patch(a)
 
     if (save_name is not None):
-        plt.savefig(save_name + '.pdf',
-                    format='pdf',
-                    dpi=100,
+        plt.savefig(save_name + '.jpg',
+                    format='jpg',
+                    dpi=300,
                     bbox_inches='tight')
     fig.tight_layout(pad=0.5)
     plt.show()
@@ -77,9 +77,9 @@ def plot_pdf_overlay(X, P, Z1, Z2, source_pt=None, dest_pt=None, line_curve=Fals
             plt.gca().add_patch(a)
 
     if (save_name is not None):
-        plt.savefig(save_name + '.pdf',
-                    format='pdf',
-                    dpi=100,
+        plt.savefig(save_name + '.jpg',
+                    format='jpg',
+                    dpi=300,
                     bbox_inches='tight')
     fig.tight_layout(pad=0.5)
     plt.show()
@@ -143,13 +143,63 @@ plot_pdf(X, P, Z, source_pt, dest_pt, line_curve=False, save_name="CV_Plots/Disp
 #%% Squeezed State
 prog = sf.Program(1)
 with prog.context as q:
+    Sgate(-1, 0) | q[0]
+eng = sf.Engine('gaussian')
+state = eng.run(prog).state
+Z = state.wigner(0, X, P)
+
+plot_pdf(X, P, Z, save_name="CV_Plots/SqueezedVacuumState")
+
+#%% Squeezed State
+prog = sf.Program(1)
+with prog.context as q:
     Dgate(1, 0) | q[0]
-    Sgate(-1, np.pi) | q[0]
+    Sgate(-1, 0) | q[0]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
 plot_pdf(X, P, Z, save_name="CV_Plots/SqueezedState")
+
+#%% Squeezed State
+prog = sf.Program(1)
+with prog.context as q:
+    Sgate(-1, 0) | q[0]
+    Dgate(2, np.pi/4) | q[0]
+    eng = sf.Engine('gaussian')
+state = eng.run(prog).state
+Z = state.wigner(0, X, P)
+
+plot_pdf(X, P, Z, save_name="CV_Plots/SqueezedRotatedState")
+
+#%% Two-Mode Squeezed State
+prog = sf.Program(2)
+with prog.context as q:
+    S2gate(-1,0) | (q[0], q[1])
+    BSgate() | (q[0], q[1])
+    eng = sf.Engine('gaussian')
+state = eng.run(prog).state
+Z_1 = state.wigner(0, X, P)
+Z_2 = state.wigner(1, X, P)
+
+plot_pdf(X, P, Z_1, save_name="CV_Plots/TwoModeSqueezedState1.1")
+plot_pdf(X, P, Z_2, save_name="CV_Plots/TwoModeSqueezedState1.2")
+
+#%% Two-Mode Squeezed State
+prog = sf.Program(2)
+with prog.context as q:
+    S2gate(-1,0) | (q[0], q[1])
+    Rgate(np.pi/2) | q[0]
+    BSgate() | (q[0], q[1])
+    eng = sf.Engine('gaussian')
+state = eng.run(prog).state
+Z_1 = state.wigner(0, X, P)
+Z_2 = state.wigner(1, X, P)
+
+plot_pdf(X, P, Z_1, save_name="CV_Plots/TwoModeSqueezedState2.1")
+plot_pdf(X, P, Z_2, save_name="CV_Plots/TwoModeSqueezedState2.2")
+
+#
 
 #%% Cubic Phase Gate
 prog = sf.Program(1)
