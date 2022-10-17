@@ -48,7 +48,7 @@ def confnet_config():
     regularizer_string = "L1=0.01"
     max_initial_weight = 0.1
     norm_threshold = 0.99
-    n_classes = 11
+    n_classes = 10
     precision = 127
     shots = None
     max_epoch = 1

@@ -47,6 +47,7 @@ if(sys.argv[1]=='run'):
         ex.run(config_updates=parameter_combo)
 elif(sys.argv[1]=='slurm'):
     save_script('Run_WINE_Experiment.sh', 'WINE_Experiment.py', fields, parameters)
+# A smaller testing version to verify code is working.
 elif(sys.argv[1]=='run_test'):
     parameters = {'encoding_method': ["Amplitude_Phase"],
               'cutoff_dimension':[4],

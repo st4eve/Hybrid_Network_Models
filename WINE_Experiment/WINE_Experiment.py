@@ -104,7 +104,7 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, num_classica
                                                       regularizer=regularizer,
                                                       max_initial_weight=max_initial_weight,
                                                       measurement_object=CV_Measurement("X_quadrature"),
-                                                      trace_tracking=True)
+                                                      trace_tracking=False)
 
             # Quantum preparation layer with custom activation (classical)
             # Use the encoding conversion factor to get the number of inputs right

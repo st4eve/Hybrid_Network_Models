@@ -10,7 +10,6 @@ import json
 def save_dataset():
     """This function should return the data ready to feed into the network"""
     # Import data subset and normalize from 0-1
-    # https://huggingface.co/datasets/cifar100i 
     (x_train, y_train), (x_test, y_test), (x_val, y_val) = tfds.as_numpy(tfds.load(
         'wine_quality', 
         split=['train[:40%]', 'train[40%:50%]', 'train[50%:60%]'], 
@@ -18,14 +17,18 @@ def save_dataset():
         shuffle_files=True, 
         batch_size=-1))
 
+    # Preprocessing stuff
     x_train = np.array(list(x_train.values())).T
     x_test = np.array(list(x_test.values())).T
     x_val = np.array(list(x_val.values())).T
 
+    # Mean of 0 and STD of 1
     scaler = preprocessing.StandardScaler().fit(x_train)
     x_train = scaler.transform(x_train)
     x_test = scaler.transform(x_test)
     x_val = scaler.transform(x_val)
+    
+    # Scale between 0 and 1
     x_train = (x_train - np.min(x_train, axis=1, keepdims=True))/np.ptp(x_train, axis=1, keepdims=True)
     x_test = (x_test - np.min(x_test, axis=1, keepdims=True))/np.ptp(x_test, axis=1, keepdims=True)
     x_val = (x_val - np.min(x_val, axis=1, keepdims=True))/np.ptp(x_val, axis=1, keepdims=True)
@@ -41,6 +44,7 @@ def save_dataset():
     data = np.array([np.array([x_val], dtype=object), np.array(y_val, dtype=object)], dtype=object)
     np.save('./WINE_Dataset/WINE_val.npy', data, allow_pickle=True)
     
+    # Add gaussian noise for ENOB
     sigmas = np.logspace(-10, 0, 20)
     for sigma in sigmas:  
         x_train_noisy = np.random.normal(0, sigma, x_train.shape) + x_train
@@ -80,7 +84,7 @@ def load_noisy_data(sigma, n_samples=None):
         return None
 
 
-
+# Run script once to save datasets and verify the function works properly.
 if __name__ == '__main__':
     save_dataset()
     x_train, x_test, y_train, y_test = prepare_dataset()

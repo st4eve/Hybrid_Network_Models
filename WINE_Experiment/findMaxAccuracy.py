@@ -9,6 +9,8 @@ def getConfig(filedir, exp):
     with open(filename) as json_file:
         return json.load(json_file)
 
+# This function will look through all the test data to find the maximum test accuracy experiment and epoch
+# Takes in the experiment name: "WINE", "CIFAR"
 def findMaxAcc(filedir):
     def getAccuracy(filedir):
         filename = filedir + 'metrics.json'

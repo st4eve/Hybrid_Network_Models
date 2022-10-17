@@ -13,10 +13,14 @@ fields = {
         'num_cpus': 4
         }
 
+# Find highest testing accuracy experiment
 exp, max_val, epoch = findMaxAcc('WINE') 
 parameters = getConfig('WINE', exp)
+# Updater parameters based on experiment
 for key in parameters:
     parameters[key] = [parameters[key]]
+
+# If running noisy data leave commented. If testing precision with DEAP, uncomment and comment sigma and second precision update.
 #parameters['precision'] = [int(2**i) for i in range(10)]
 parameters['shots'] = [int(2**i) for i in range(10)]
 parameters['sigma'] = list(np.logspace(-10, 0, 20))
