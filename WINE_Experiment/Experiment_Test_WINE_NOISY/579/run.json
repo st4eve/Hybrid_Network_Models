@@ -1,0 +1,101 @@
+{
+  "artifacts": [],
+  "command": "define_and_test",
+  "experiment": {
+    "base_dir": "/project/6071153/st4eve/WINE_Experiment",
+    "dependencies": [
+      "keras==2.9.0+computecanada",
+      "numpy==1.22.2+computecanada",
+      "PennyLane==0.26.0",
+      "sacred==0.8.2+computecanada",
+      "scikit-learn==1.1.2+computecanada",
+      "tensorflow==2.9.0+computecanada",
+      "tensorflow-datasets==4.3.0+computecanada"
+    ],
+    "mainfile": "WINE_NoisyTest_Experiment.py",
+    "name": "WINE_NOISY",
+    "repositories": [],
+    "sources": [
+      [
+        "CV_quantum_layers.py",
+        "_sources/CV_quantum_layers_3516705579ce6c90ee14580e35903210.py"
+      ],
+      [
+        "PWBLayer_TF.py",
+        "_sources/PWBLayer_TF_f98ee772004751b99b99379d733f4ec1.py"
+      ],
+      [
+        "WINE_Dataset.py",
+        "_sources/WINE_Dataset_e37a7ab8a447a4287bdb18cd7c91a346.py"
+      ],
+      [
+        "WINE_NoisyTest_Experiment.py",
+        "_sources/WINE_NoisyTest_Experiment_e827bf0957da17e25c4e5271fbfe964e.py"
+      ]
+    ]
+  },
+  "heartbeat": "2022-10-04T02:15:17.462591",
+  "host": {
+    "ENV": {},
+    "cpu": "Intel(R) Xeon(R) CPU E5-2683 v4 @ 2.10GHz",
+    "hostname": "gra632",
+    "os": [
+      "Linux",
+      "Linux-3.10.0-1160.66.1.el7.x86_64-x86_64-with-glibc2.30"
+    ],
+    "python_version": "3.9.6"
+  },
+  "meta": {
+    "command": "define_and_test",
+    "options": {
+      "--beat-interval": null,
+      "--capture": null,
+      "--comment": null,
+      "--debug": false,
+      "--enforce_clean": false,
+      "--file_storage": null,
+      "--force": false,
+      "--help": false,
+      "--loglevel": null,
+      "--mongo_db": null,
+      "--name": null,
+      "--pdb": false,
+      "--print-config": false,
+      "--priority": null,
+      "--queue": false,
+      "--s3": null,
+      "--sql": null,
+      "--tiny_db": null,
+      "--unobserved": false,
+      "COMMAND": null,
+      "UPDATE": [
+        "activation=TanH",
+        "classical_size=20",
+        "cutoff_dimension=5",
+        "encoding_method=Amplitude_Phase",
+        "ff_activation=relu",
+        "max_initial_weight=None",
+        "n_circuits=1",
+        "n_classes=10",
+        "n_qumodes=2",
+        "norm_threshold=0.99",
+        "num_classical=4",
+        "num_layers=1",
+        "regularizer_string=L1=0.1",
+        "seed=809275366",
+        "shots=64",
+        "sigma=0.046415888336127774",
+        "precision=65536",
+        "max_epoch=31",
+        "exp_train=224"
+      ],
+      "help": false,
+      "with": true
+    }
+  },
+  "resources": [],
+  "result": null,
+  "start_time": "2022-10-04T00:09:37.714260",
+  "status": "COMPLETED",
+  "stop_time": "2022-10-04T02:15:17.430375"
+}

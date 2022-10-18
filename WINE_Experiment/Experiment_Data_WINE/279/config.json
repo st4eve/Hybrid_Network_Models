@@ -1,0 +1,16 @@
+{
+  "activation": "TanH",
+  "classical_size": 20,
+  "cutoff_dimension": 5,
+  "encoding_method": "Amplitude_Phase",
+  "ff_activation": "relu",
+  "max_initial_weight": null,
+  "n_circuits": 1,
+  "n_classes": 10,
+  "n_qumodes": 4,
+  "norm_threshold": 0.99,
+  "num_classical": 1,
+  "num_layers": 4,
+  "regularizer_string": "L2=0.01",
+  "seed": 394933768
+}
