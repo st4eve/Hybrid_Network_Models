@@ -1,4 +1,6 @@
 # Hybrid_Network_Models
+Working repo for ENPH455 Thesis on Hybrid Quantum-Classical Neural Networks
+# Hybrid_Network_Models
 This repo uses the Sacred package to manage the parameter sweeps and experiment runs (https://sacred.readthedocs.io/en/stable/quickstart.html). 
 We use PennyLane to build the CV networks (https://pennylane.readthedocs.io/en/stable/) and use the "strawberryfields.tf" backend.
 

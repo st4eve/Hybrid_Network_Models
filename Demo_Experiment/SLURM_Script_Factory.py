@@ -18,7 +18,8 @@ DEFAULT_SLURM_FIELDS = {
     'time_d': 0, 'time_h': 0, 'time_m': 0, 'time_s': 0,
     'reserve': 'nqit',
     'job_name': 'myjob',
-    'output': 'output.txt'
+    'output': 'output%A%a.txt',
+    'error' : 'error%A%a.txt'
 }
 
 # a template for the entire submit script
@@ -30,10 +31,15 @@ TEMPLATE = '''
 #SBATCH --array=0-{num_jobs}
 #SBATCH --job-name={job_name}
 #SBATCH --output={output}
+#SBATCH --error={error}
 #SBATCH --mem={memory}{memory_unit}
 #SBATCH --time={time_d}-{time_h}:{time_m}:{time_s}
 #SBATCH --nodes={num_nodes}
 #SBATCH --cpus-per-task={num_cpus}
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=17tna@queensu.ca
+#SBATCH --account=def-bshastri
+input$SLURM_ARRAY_TASK_ID.dat
 
 {param_arr_init}
 trial=${{SLURM_ARRAY_TASK_ID}}

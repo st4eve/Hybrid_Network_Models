@@ -1,0 +1,17 @@
+{
+  "activation": "Sigmoid",
+  "cutoff_dimension": 5,
+  "encoding_method": "Amplitude_Phase",
+  "exp_train": 14.0,
+  "max_epoch": 29.0,
+  "max_initial_weight": 0.2,
+  "n_circuits": 1,
+  "n_classes": 4,
+  "n_qumodes": 4,
+  "norm_threshold": 0.99,
+  "num_layers": 2,
+  "precision": 2,
+  "regularizer_string": "L1=0.1",
+  "seed": 110101990,
+  "shots": 256
+}
