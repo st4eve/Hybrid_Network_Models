@@ -1,0 +1,254 @@
+2022-09-20 21:16:14.258588: E tensorflow/stream_executor/cuda/cuda_driver.cc:271] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+2022-09-20 21:16:14.259099: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (gra1280): /proc/driver/nvidia/version does not exist
+2022-09-20 21:16:14.265791: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F AVX512_VNNI FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Trace:  (0.15777337551116943+0j) Value:  1.1400000000000008 Count:  0
+Trace:  (0.07689374312758446+0j) Value:  1.1343000000000008 Count:  0
+Trace:  (0.11697705835103989+0j) Value:  1.1286000000000007 Count:  0
+Trace:  (0.39963462948799133+0j) Value:  1.1229000000000007 Count:  0
+Trace:  (0.039193907752633095+0j) Value:  1.1172000000000006 Count:  0
+Trace:  (0.21393829584121704+0j) Value:  1.1115000000000006 Count:  0
+Trace:  (0.17778615653514862+0j) Value:  1.1058000000000006 Count:  0
+Trace:  (0.062462277710437775+0j) Value:  1.1001000000000005 Count:  0
+Trace:  (0.12493350729346275+0j) Value:  1.0944000000000005 Count:  0
+Trace:  (0.3778845816850662+0j) Value:  1.0887000000000004 Count:  0
+Trace:  (0.03697565756738186+0j) Value:  1.0830000000000004 Count:  0
+Trace:  (0.04387347772717476+0j) Value:  1.0773000000000004 Count:  0
+Trace:  (0.41706061363220215+0j) Value:  1.0716000000000003 Count:  0
+Trace:  (0.11857196688652039+0j) Value:  1.0659000000000003 Count:  0
+Trace:  (0.053098974749445915+0j) Value:  1.0602000000000003 Count:  0
+Trace:  (0.033350853249430656+0j) Value:  1.0545000000000002 Count:  0
+Trace:  (0.09401936829090118+0j) Value:  1.0488000000000002 Count:  0
+Trace:  (0.383442223072052+0j) Value:  1.0431000000000001 Count:  0
+Trace:  (0.05025187134742737+0j) Value:  1.0374 Count:  0
+Trace:  (0.36673538386821747+0j) Value:  1.0317 Count:  0
+Trace:  (0.10952164977788925+0j) Value:  1.026 Count:  0
+Trace:  (0.05594504438340664+0j) Value:  1.0203 Count:  0
+Trace:  (0.09039287269115448+0j) Value:  1.0146 Count:  0
+Trace:  (0.07444697618484497+0j) Value:  1.0089 Count:  0
+Trace:  (0.1734456568956375+0j) Value:  1.0031999999999999 Count:  0
+Trace:  (0.1993487924337387+0j) Value:  0.9974999999999998 Count:  0
+Trace:  (0.15705491602420807+0j) Value:  0.9917999999999998 Count:  0
+Trace:  (0.05655059404671192+0j) Value:  0.9860999999999998 Count:  0
+Trace:  (0.12225212156772614+0j) Value:  0.9803999999999997 Count:  0
+Trace:  (0.23895714432001114+0j) Value:  0.9746999999999997 Count:  0
+Trace:  (0.24774255603551865+0j) Value:  0.9689999999999996 Count:  0
+Trace:  (0.08925450965762138+0j) Value:  0.9632999999999996 Count:  0
+Trace:  (0.1667284294962883+0j) Value:  0.9575999999999996 Count:  0
+Trace:  (0.25213688611984253+0j) Value:  0.9518999999999995 Count:  0
+Trace:  (0.5205735862255096+0j) Value:  0.9461999999999995 Count:  0
+Trace:  (0.08984357118606567+0j) Value:  0.9404999999999994 Count:  0
+Trace:  (0.19259093701839447+0j) Value:  0.9347999999999994 Count:  0
+Trace:  (0.2511094808578491+0j) Value:  0.9290999999999994 Count:  0
+Trace:  (0.44909410178661346+0j) Value:  0.9233999999999993 Count:  0
+Trace:  (0.3491849899291992+0j) Value:  0.9176999999999993 Count:  0
+Trace:  (0.2503543496131897+0j) Value:  0.9119999999999993 Count:  0
+Trace:  (0.25410643219947815+0j) Value:  0.9062999999999992 Count:  0
+Trace:  (0.6981770098209381+0j) Value:  0.9005999999999992 Count:  0
+Trace:  (0.39266790449619293+0j) Value:  0.8948999999999991 Count:  0
+Trace:  (0.29683808982372284+0j) Value:  0.8891999999999991 Count:  0
+Trace:  (0.07585621997714043+0j) Value:  0.8834999999999991 Count:  0
+Trace:  (0.5665701329708099+0j) Value:  0.877799999999999 Count:  0
+Trace:  (0.6339113414287567+0j) Value:  0.872099999999999 Count:  0
+Trace:  (0.17975541204214096+0j) Value:  0.866399999999999 Count:  0
+Trace:  (0.36144155263900757+0j) Value:  0.8606999999999989 Count:  0
+Trace:  (0.6988100707530975+0j) Value:  0.8549999999999989 Count:  0
+Trace:  (0.7153417468070984+0j) Value:  0.8492999999999988 Count:  0
+Trace:  (0.631073385477066+0j) Value:  0.8435999999999988 Count:  0
+Trace:  (0.32828500866889954+0j) Value:  0.8378999999999988 Count:  0
+Trace:  (0.49348360300064087+0j) Value:  0.8321999999999987 Count:  0
+Trace:  (0.3910393714904785+0j) Value:  0.8264999999999987 Count:  0
+Trace:  (0.29664599895477295+0j) Value:  0.8207999999999986 Count:  0
+Trace:  (0.3601343035697937+0j) Value:  0.8150999999999986 Count:  0
+Trace:  (0.6424444317817688+0j) Value:  0.8093999999999986 Count:  0
+Trace:  (0.5061063766479492+0j) Value:  0.8036999999999985 Count:  0
+Trace:  (0.7494442462921143+0j) Value:  0.7979999999999985 Count:  0
+Trace:  (0.515343964099884+0j) Value:  0.7922999999999984 Count:  0
+Trace:  (0.334525465965271+0j) Value:  0.7865999999999984 Count:  0
+Trace:  (0.5883856117725372+0j) Value:  0.7808999999999984 Count:  0
+Trace:  (0.4347449541091919+0j) Value:  0.7751999999999983 Count:  0
+Trace:  (0.7826172709465027+0j) Value:  0.7694999999999983 Count:  0
+Trace:  (0.5827777981758118+0j) Value:  0.7637999999999983 Count:  0
+Trace:  (0.6379874348640442+0j) Value:  0.7580999999999982 Count:  0
+Trace:  (0.6746470034122467+0j) Value:  0.7523999999999982 Count:  0
+Trace:  (0.6520218849182129+0j) Value:  0.7466999999999981 Count:  0
+Trace:  (0.8540427386760712+0j) Value:  0.7409999999999981 Count:  0
+Trace:  (0.5662471055984497+0j) Value:  0.7352999999999981 Count:  0
+Trace:  (0.7932514548301697+0j) Value:  0.729599999999998 Count:  0
+Trace:  (0.6018059849739075+0j) Value:  0.723899999999998 Count:  0
+Trace:  (0.8697092533111572+0j) Value:  0.718199999999998 Count:  0
+Trace:  (0.761945515871048+0j) Value:  0.7124999999999979 Count:  0
+Trace:  (0.7849159240722656+0j) Value:  0.7067999999999979 Count:  0
+Trace:  (0.5562234818935394+0j) Value:  0.7010999999999978 Count:  0
+Trace:  (0.9236002564430237+0j) Value:  0.6953999999999978 Count:  0
+Trace:  (0.7599785327911377+0j) Value:  0.6896999999999978 Count:  0
+Trace:  (0.5559309124946594+0j) Value:  0.6839999999999977 Count:  0
+Trace:  (0.5297399163246155+0j) Value:  0.6782999999999977 Count:  0
+Trace:  (0.6284749805927277+0j) Value:  0.6725999999999976 Count:  0
+Trace:  (0.6768255531787872+0j) Value:  0.6668999999999976 Count:  0
+Trace:  (0.7794212996959686+0j) Value:  0.6611999999999976 Count:  0
+Trace:  (0.6799127757549286+0j) Value:  0.6554999999999975 Count:  0
+Trace:  (0.8264054954051971+0j) Value:  0.6497999999999975 Count:  0
+Trace:  (0.8878688514232635+0j) Value:  0.6440999999999975 Count:  0
+Trace:  (0.5269137918949127+0j) Value:  0.6383999999999974 Count:  0
+Trace:  (0.7664715647697449+0j) Value:  0.6326999999999974 Count:  0
+Trace:  (0.8096779584884644+0j) Value:  0.6269999999999973 Count:  0
+Trace:  (0.739372968673706+0j) Value:  0.6212999999999973 Count:  0
+Trace:  (0.6958048343658447+0j) Value:  0.6155999999999973 Count:  0
+Trace:  (0.8174755275249481+0j) Value:  0.6098999999999972 Count:  0
+Trace:  (0.8931423425674438+0j) Value:  0.6041999999999972 Count:  0
+Trace:  (0.7644495964050293+0j) Value:  0.5984999999999971 Count:  0
+Trace:  (0.9323024451732635+0j) Value:  0.5927999999999971 Count:  0
+Trace:  (0.9349408745765686+0j) Value:  0.5870999999999971 Count:  0
+Trace:  (0.9373727440834045+0j) Value:  0.581399999999997 Count:  0
+Trace:  (0.7908480763435364+0j) Value:  0.575699999999997 Count:  0
+Trace:  (0.808334231376648+0j) Value:  0.569999999999997 Count:  0
+Trace:  (0.8293725550174713+0j) Value:  0.5642999999999969 Count:  0
+Trace:  (0.8481490314006805+0j) Value:  0.5585999999999969 Count:  0
+Trace:  (0.9204329252243042+0j) Value:  0.5528999999999968 Count:  0
+Trace:  (0.9308390617370605+0j) Value:  0.5471999999999968 Count:  0
+Trace:  (0.9280590713024139+0j) Value:  0.5414999999999968 Count:  0
+Trace:  (0.8091254830360413+0j) Value:  0.5357999999999967 Count:  0
+Trace:  (0.915505051612854+0j) Value:  0.5300999999999967 Count:  0
+Trace:  (0.9525801539421082+0j) Value:  0.5243999999999966 Count:  0
+Trace:  (0.9515816271305084+0j) Value:  0.5186999999999966 Count:  0
+Trace:  (0.9611475169658661+0j) Value:  0.5129999999999966 Count:  0
+Trace:  (0.9315393567085266+0j) Value:  0.5072999999999965 Count:  0
+Trace:  (0.9519451856613159+0j) Value:  0.5015999999999965 Count:  0
+Trace:  (0.905027836561203+0j) Value:  0.4958999999999965 Count:  0
+Trace:  (0.9486509561538696+0j) Value:  0.4901999999999965 Count:  0
+Trace:  (0.8836939632892609+0j) Value:  0.48449999999999654 Count:  0
+Trace:  (0.9265007674694061+0j) Value:  0.47879999999999656 Count:  0
+Trace:  (0.9372523427009583+0j) Value:  0.4730999999999966 Count:  0
+Trace:  (0.9064781069755554+0j) Value:  0.4673999999999966 Count:  0
+Trace:  (0.9549657702445984+0j) Value:  0.4616999999999966 Count:  0
+Trace:  (0.9084863066673279+0j) Value:  0.45599999999999663 Count:  0
+Trace:  (0.9753342568874359+0j) Value:  0.45029999999999665 Count:  0
+Trace:  (0.9538801312446594+0j) Value:  0.44459999999999666 Count:  0
+Trace:  (0.9592059254646301+0j) Value:  0.4388999999999967 Count:  0
+Trace:  (0.9667288362979889+0j) Value:  0.4331999999999967 Count:  0
+Trace:  (0.983835756778717+0j) Value:  0.4274999999999967 Count:  0
+Trace:  (0.9624831676483154+0j) Value:  0.42179999999999673 Count:  0
+Trace:  (0.9504208266735077+0j) Value:  0.41609999999999675 Count:  0
+Trace:  (0.9410319328308105+0j) Value:  0.41039999999999677 Count:  0
+Trace:  (0.9806651473045349+0j) Value:  0.4046999999999968 Count:  0
+Trace:  (0.9622514545917511+0j) Value:  0.3989999999999968 Count:  0
+Trace:  (0.9627656638622284+0j) Value:  0.3932999999999968 Count:  0
+Trace:  (0.969306230545044+0j) Value:  0.38759999999999684 Count:  0
+Trace:  (0.9604425132274628+0j) Value:  0.38189999999999685 Count:  0
+Trace:  (0.9779058694839478+0j) Value:  0.37619999999999687 Count:  0
+Trace:  (0.985124260187149+0j) Value:  0.3704999999999969 Count:  0
+Trace:  (0.9845883548259735+0j) Value:  0.3647999999999969 Count:  1
+Trace:  (0.9740245342254639+0j) Value:  0.3590999999999969 Count:  2
+Trace:  (0.9858382046222687+0j) Value:  0.35339999999999694 Count:  1
+Trace:  (0.9852429628372192+0j) Value:  0.34769999999999696 Count:  0
+Trace:  (0.9892220199108124+0j) Value:  0.341999999999997 Count:  3
+Trace:  (0.9800322651863098+0j) Value:  0.336299999999997 Count:  8
+Trace:  (0.9822631776332855+0j) Value:  0.330599999999997 Count:  2
+Trace:  (0.9866611063480377+0j) Value:  0.324899999999997 Count:  0
+Trace:  (0.9838093519210815+0j) Value:  0.31919999999999704 Count:  0
+Trace:  (0.9839805364608765+0j) Value:  0.31349999999999706 Count:  0
+Trace:  (0.9878380596637726+0j) Value:  0.3077999999999971 Count:  8
+Trace:  (0.9859509170055389+0j) Value:  0.3020999999999971 Count:  10
+Trace:  (0.9884810149669647+0j) Value:  0.2963999999999971 Count:  14
+max input:  0.2906999999999971
+Epoch 1/50
+  3/215 [..............................] - ETA: 8:15 - loss: 2.4498 - accuracy: 0.0417      val_loss: 1.6612 - val_accuracy: 0.4523
+Epoch 2/50
+  2/215 [..............................] - ETA: 8:30 - loss: 1.6799 - accuracy: 0.2812526 - val_loss: 1.4256 - val_accuracy: 0.4523
+Epoch 3/50
+  4/215 [..............................] - ETA: 9:01 - loss: 1.4714 - accuracy: 0.3750 26 - val_loss: 1.3536 - val_accuracy: 0.4523
+Epoch 4/50
+  4/215 [..............................] - ETA: 7:58 - loss: 1.3536 - accuracy: 0.4844526 - val_loss: 1.3219 - val_accuracy: 0.4523
+Epoch 5/50
+  2/215 [..............................] - ETA: 11:40 - loss: 1.1470 - accuracy: 0.625026 - val_loss: 1.3045 - val_accuracy: 0.4523
+Epoch 6/50
+  2/215 [..............................] - ETA: 13:06 - loss: 1.0896 - accuracy: 0.625026 - val_loss: 1.2953 - val_accuracy: 0.4523
+Epoch 7/50
+  1/215 [..............................] - ETA: 11:07 - loss: 1.2047 - accuracy: 0.562526 - val_loss: 1.2834 - val_accuracy: 0.4550
+Epoch 8/50
+  3/215 [..............................] - ETA: 9:27 - loss: 1.1660 - accuracy: 0.5417 41 - val_loss: 1.2748 - val_accuracy: 0.4523
+Epoch 9/50
+  4/215 [..............................] - ETA: 11:08 - loss: 1.3075 - accuracy: 0.500076 - val_loss: 1.2618 - val_accuracy: 0.4782
+Epoch 10/50
+  1/215 [..............................] - ETA: 10:48 - loss: 1.2105 - accuracy: 0.500027 - val_loss: 1.2426 - val_accuracy: 0.4741
+Epoch 11/50
+  2/215 [..............................] - ETA: 10:54 - loss: 1.2616 - accuracy: 0.406286 - val_loss: 1.2367 - val_accuracy: 0.4755
+Epoch 12/50
+  2/215 [..............................] - ETA: 7:54 - loss: 1.4773 - accuracy: 0.4062 34 - val_loss: 1.2246 - val_accuracy: 0.4986
+Epoch 13/50
+  3/215 [..............................] - ETA: 8:06 - loss: 1.2967 - accuracy: 0.5000007 - val_loss: 1.2081 - val_accuracy: 0.4986
+Epoch 14/50
+  3/215 [..............................] - ETA: 7:34 - loss: 1.1021 - accuracy: 0.6667016 - val_loss: 1.2064 - val_accuracy: 0.5000
+Epoch 15/50
+  5/215 [..............................] - ETA: 7:50 - loss: 1.3048 - accuracy: 0.4625 39 - val_loss: 1.1948 - val_accuracy: 0.5123
+Epoch 16/50
+  4/215 [..............................] - ETA: 10:35 - loss: 1.0671 - accuracy: 0.656279 - val_loss: 1.1846 - val_accuracy: 0.5123
+Epoch 17/50
+  4/215 [..............................] - ETA: 10:04 - loss: 0.9248 - accuracy: 0.703170 - val_loss: 1.1938 - val_accuracy: 0.4973
+Epoch 18/50
+  3/215 [..............................] - ETA: 10:22 - loss: 1.1317 - accuracy: 0.458341 - val_loss: 1.1767 - val_accuracy: 0.5082
+Epoch 19/50
+  3/215 [..............................] - ETA: 10:00 - loss: 1.1732 - accuracy: 0.458373 - val_loss: 1.1692 - val_accuracy: 0.5068
+Epoch 20/50
+  1/215 [..............................] - ETA: 10:35 - loss: 1.1244 - accuracy: 0.375032 - val_loss: 1.1656 - val_accuracy: 0.5232
+Epoch 21/50
+  2/215 [..............................] - ETA: 8:32 - loss: 0.9777 - accuracy: 0.6250 32 - val_loss: 1.1545 - val_accuracy: 0.5123
+Epoch 22/50
+  3/215 [..............................] - ETA: 9:06 - loss: 1.1808 - accuracy: 0.5417793 - val_loss: 1.1606 - val_accuracy: 0.5014
+Epoch 23/50
+  3/215 [..............................] - ETA: 7:08 - loss: 1.1411 - accuracy: 0.5417 84 - val_loss: 1.1552 - val_accuracy: 0.5054
+Epoch 24/50
+  1/215 [..............................] - ETA: 8:13 - loss: 0.9515 - accuracy: 0.7500 93 - val_loss: 1.1479 - val_accuracy: 0.5027
+Epoch 25/50
+  4/215 [..............................] - ETA: 7:50 - loss: 1.1291 - accuracy: 0.5625 37 - val_loss: 1.1518 - val_accuracy: 0.5014
+Epoch 26/50
+  1/215 [..............................] - ETA: 7:30 - loss: 1.2265 - accuracy: 0.4375 04 - val_loss: 1.1500 - val_accuracy: 0.5136
+Epoch 27/50
+  5/215 [..............................] - ETA: 7:08 - loss: 1.0595 - accuracy: 0.5500 01 - val_loss: 1.1489 - val_accuracy: 0.5123
+Epoch 28/50
+  3/215 [..............................] - ETA: 9:05 - loss: 1.1642 - accuracy: 0.5000581 - val_loss: 1.1457 - val_accuracy: 0.5109
+Epoch 29/50
+  3/215 [..............................] - ETA: 10:15 - loss: 1.0424 - accuracy: 0.562513 - val_loss: 1.1582 - val_accuracy: 0.4946
+Epoch 30/50
+  2/215 [..............................] - ETA: 8:55 - loss: 0.9775 - accuracy: 0.5938589 - val_loss: 1.1641 - val_accuracy: 0.5041
+Epoch 31/50
+  2/215 [..............................] - ETA: 11:16 - loss: 1.0160 - accuracy: 0.625048 - val_loss: 1.1506 - val_accuracy: 0.5150
+Epoch 32/50
+  2/215 [..............................] - ETA: 11:05 - loss: 1.1291 - accuracy: 0.5312395 - val_loss: 1.1454 - val_accuracy: 0.5054
+Epoch 33/50
+  3/215 [..............................] - ETA: 11:51 - loss: 1.0704 - accuracy: 0.5833500 - val_loss: 1.1420 - val_accuracy: 0.5150
+Epoch 34/50
+  5/215 [..............................] - ETA: 7:49 - loss: 1.0825 - accuracy: 0.5500 27 - val_loss: 1.1509 - val_accuracy: 0.5177
+Epoch 35/50
+  2/215 [..............................] - ETA: 8:36 - loss: 1.2977 - accuracy: 0.4688648 - val_loss: 1.1450 - val_accuracy: 0.5136
+Epoch 36/50
+  2/215 [..............................] - ETA: 9:18 - loss: 1.2032 - accuracy: 0.4688104 - val_loss: 1.1408 - val_accuracy: 0.5041
+Epoch 37/50
+  3/215 [..............................] - ETA: 8:25 - loss: 1.1252 - accuracy: 0.5833681 - val_loss: 1.1384 - val_accuracy: 0.5204
+Epoch 38/50
+  2/215 [..............................] - ETA: 11:27 - loss: 1.0281 - accuracy: 0.5000439 - val_loss: 1.1378 - val_accuracy: 0.5204
+Epoch 39/50
+  3/215 [..............................] - ETA: 12:07 - loss: 0.9410 - accuracy: 0.5625477 - val_loss: 1.1435 - val_accuracy: 0.5054
+Epoch 40/50
+  1/215 [..............................] - ETA: 13:06 - loss: 1.2652 - accuracy: 0.4375389 - val_loss: 1.1399 - val_accuracy: 0.5177
+Epoch 41/50
+  4/215 [..............................] - ETA: 9:59 - loss: 1.1451 - accuracy: 0.5312 00 - val_loss: 1.1390 - val_accuracy: 0.5136
+Epoch 42/50
+  3/215 [..............................] - ETA: 10:01 - loss: 1.1778 - accuracy: 0.5625453 - val_loss: 1.1347 - val_accuracy: 0.5259
+Epoch 43/50
+  1/215 [..............................] - ETA: 12:45 - loss: 1.3335 - accuracy: 0.562539 - val_loss: 1.1359 - val_accuracy: 0.5286
+Epoch 44/50
+  4/215 [..............................] - ETA: 7:28 - loss: 1.0584 - accuracy: 0.6250 80 - val_loss: 1.1415 - val_accuracy: 0.5068
+Epoch 45/50
+  1/215 [..............................] - ETA: 8:48 - loss: 0.9912 - accuracy: 0.5625045 - val_loss: 1.1407 - val_accuracy: 0.5123
+Epoch 46/50
+  5/215 [..............................] - ETA: 8:30 - loss: 0.8593 - accuracy: 0.6125 51 - val_loss: 1.1360 - val_accuracy: 0.5177
+Epoch 47/50
+  2/215 [..............................] - ETA: 12:03 - loss: 1.0904 - accuracy: 0.5625404 - val_loss: 1.1341 - val_accuracy: 0.5123
+Epoch 48/50
+  1/215 [..............................] - ETA: 12:05 - loss: 0.8434 - accuracy: 0.5625366 - val_loss: 1.1405 - val_accuracy: 0.5095
+Epoch 49/50
+  1/215 [..............................] - ETA: 11:48 - loss: 1.8573 - accuracy: 0.3125474 - val_loss: 1.1329 - val_accuracy: 0.5163
+Epoch 50/50
+  3/215 [..............................] - ETA: 10:22 - loss: 1.0411 - accuracy: 0.5208515 - val_loss: 1.1297 - val_accuracy: 0.5136
