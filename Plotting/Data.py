@@ -1,6 +1,8 @@
 import json
 from os import listdir
 from os.path import isfile, isdir, join
+import copy
+import collections
 
 def get_filenames(path):
     """Utility: Get the filenames in a path"""
@@ -12,21 +14,45 @@ def get_directories(path):
 
 def get_config(experiment_path):
     """Utility: Get the config for an experiment"""
-    config_path = experiment_path + "/config.json"
-    with open(config_path) as json_file:
-        config = json.load(json_file)
-    return config
+    try: 
+        config_path = experiment_path + "/config.json"
+        with open(config_path) as json_file:
+            config = json.load(json_file)
+        
+        config_copy = copy.deepcopy(config)
+        for key, val in config_copy.items(): 
+            if val is None: 
+                config[key] = 'None'
+            if key == 'seed': 
+                del config[key]
+        return config
+    except: 
+        # For now, when we have an issue reading from a file, return None
+        error_str = "Error reading from config file " + experiment_path + ". Ignoring file..."
+        print(error_str)
+        return None
 
 def get_metrics(experiment_path):
     """Utility: Get the values for all metrics tracked in an experiment"""
-    metrics_path = experiment_path + "/metrics.json"
-    with open(metrics_path) as json_file:
-        metrics = json.load(json_file)
+    try: 
+        metrics_path = experiment_path + "/metrics.json"
+        with open(metrics_path) as json_file:
+            metrics = json.load(json_file)
 
-    simplified_metrics = {}
-    for key in metrics:
-        simplified_metrics[key] = metrics[key]["values"]
-    return simplified_metrics
+        simplified_metrics = {}
+        for key in metrics:
+            # For now, omit the traces - figure out those plots later
+            if type(metrics[key]["values"][0]) is dict and '_storage' in metrics[key]["values"][0].keys():
+                pass
+            else: 
+                simplified_metrics[key] = metrics[key]["values"]
+        return simplified_metrics
+    except: 
+        # For now, when we have an issue reading from a file, return None
+        error_str = "Error reading from metrics file " + experiment_path + ". Ignoring file..."
+        print(error_str)
+        return None
+
 
 class ResultsBlobber(): 
     def __init__(self):
@@ -43,35 +69,68 @@ class ResultsBlobber():
         """Create a blob of data for the results directory"""
         experiment_names = [x for x in get_directories(experiment_folder) if x.isdigit()]
         data = {}
-        metrics = {}
         for experiment in experiment_names:
             experiment_path = experiment_folder + '/' + experiment
             data[int(experiment)] = {}
             data[int(experiment)]['config'] = get_config(experiment_path)
             data[int(experiment)]['metrics'] = get_metrics(experiment_path)
-        self.check_parameter_consistency(data, 'config')
-        self.check_parameter_consistency(data, 'metrics')
-        self.check_trial_consistency(data)
+
+            # If we had an issue reading metrics, ignore the experiment
+            # This could be changed later
+            if data[int(experiment)]['metrics'] is None or data[int(experiment)]['config'] is None: 
+                del data[int(experiment)]
         self.data = data
+
+    def verify_parameter_consistency(self): 
+        self.check_parameter_consistency(self.data, 'config')
+        self.check_parameter_consistency(self.data, 'metrics')
+    
+    def verify_trial_consistency(self):
+        self.check_trial_consistency(self.data)
+        print("There are a total of " + str(len(self.data)) + " valid experiments to use for plotting.")
 
     def check_parameter_consistency(self, data, type):
         """Check that the parameter keys in each experiment match"""
         reference = min(list(data.keys()))
         for exp in data:
             if data[exp][type].keys() != data[reference][type].keys():
-                error_str = "Inconsistent config parameters found in experiment folder between reference and file" + str(exp)
-                raise Exception(error_str)
+                # For now, if we have an inconsistent config, delete the experiment. This assumes a correct reference at file 1
+                error_str = "Inconsistent config parameters found in experiment folder between reference and file" + str(exp) + ". Ignoring experiment..."
+                print(error_str)
+                # raise Exception(error_str)
+                del data[exp]
 
-    def check_trial_consistency(self, data):
+    def get_num_epochs(self): 
+        num_epochs = []
+        for exp in self.data:
+            for key in self.data[exp]['metrics'].keys():
+                num_epochs.append(len(self.data[exp]['metrics'][key]))
+                break 
+        counter = collections.Counter(num_epochs)
+        return counter 
+
+    def limit_epochs(self, limit_epochs): 
+        if limit_epochs is not None: 
+            for exp in self.data: 
+                for key in self.data[exp]['metrics'].keys(): 
+                    self.data[exp]['metrics'][key] = self.data[exp]['metrics'][key][:limit_epochs]
+        return 
+
+    def check_trial_consistency(self):
         """Check that every experiment has the same number of epochs"""
-        reference = min(list(data.keys()))
-        for exp in data:
-            for key in data[reference]['metrics'].keys():
-                if len(data[exp]['metrics'][key]) != len(data[reference]['metrics'][key]):
+        reference = min(list(self.data.keys()))
+        data_copy = copy.deepcopy(self.data) # Create a copy, so we can delete entries without modifying during iteration
+        for exp in data_copy:
+            for key in data_copy[reference]['metrics'].keys():
+                if len(data_copy[exp]['metrics'][key]) != len(data_copy[reference]['metrics'][key]):
+                    # For now, if we have an inconsistent trial, delete the experiment. This assumes a correct reference at file 1
                     error_str = "Inconsistent epoch numbers found in experiment folder between reference with " + \
-                                str(len(data[reference]['metrics'][key])) + " epochs and file " + str(exp) + " with " + \
-                                str(len(data[exp]['metrics'][key])) + " epochs"
-                    raise Exception(error_str)
+                                str(len(self.data[reference]['metrics'][key])) + " epochs and file " + str(exp) + " with " + \
+                                str(len(self.data[exp]['metrics'][key])) + " epochs"  + ". Ignoring experiment..."
+                    print(error_str)
+                    # raise Exception(error_str)
+                    del self.data[exp]
+                    break
 
     def get_data(self): 
         """Get the blob"""

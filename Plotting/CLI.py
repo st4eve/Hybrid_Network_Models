@@ -83,7 +83,17 @@ class CLI():
 
     def run(self, input_path = None): 
         self.path = self.get_experiment_path(input_path)
-        self.query_engine = self.initialize_data(self.path)
+
+        # Create the blob. Limit number of epochs in case of inconsistency:
+        data_blob = ResultsBlobber()
+        data_blob.initialize_from_folder(self.path)
+        data_blob.verify_parameter_consistency()
+        self.num_epochs = self.get_num_epochs(data_blob.get_num_epochs())
+        data_blob.limit_epochs(self.num_epochs)
+        data_blob.check_trial_consistency()
+
+        self.query_engine = ResultsQueryEngine(data_blob.get_data())
+
 
         while True: 
             next_functions, plotting_factory = self.select_plotting_mode()
@@ -92,19 +102,29 @@ class CLI():
                 function()
 
             self.prepare_plotting_data()
-            self.plotter = plotting_factory.get_plotter(self.plotting_data, self.selected_metric, self.selected_hyperparameter)
 
-            self.plot(self.plotter)
+            if len(self.plotting_data) > 0: 
+                self.plotter = plotting_factory.get_plotter(self.plotting_data, self.selected_metric, self.selected_hyperparameter)
+                self.plot(self.plotter)
+            else: 
+                print("No valid data found for target configurations due to dropped experiments.")
 
     def get_experiment_path(self, path = None):
         cmd_type = 'input'
         message = "Please enter the path to the experiment"
         return command(cmd_type, message, predefined_output = path)
 
-    def initialize_data(self, path): 
-        data_blob = ResultsBlobber()
-        data_blob.initialize_from_folder(path)
-        return ResultsQueryEngine(data_blob.get_data())
+    def get_num_epochs(self, epoch_distribution):
+        if len(epoch_distribution) > 1: 
+            cmd_type = 'input'
+            message = "In the case of multiple unfinished experiments, limit the plots to a specific number of epochs. Otherwise, leave blank. The distribution of finished epochs is: {}".format(epoch_distribution)
+            num_epochs = command(cmd_type, message)
+            if num_epochs == "":
+                return None 
+            else: 
+                return int(num_epochs)
+        else: 
+            return None
 
     def select_plotting_mode(self):
         cmd_type = 'list'
@@ -127,7 +147,9 @@ class CLI():
             data_dict = {}
             data_dict['config'] = target_config
             data_dict['metric'] = self.query_engine.get_metric_from_config(target_config, self.selected_metric)
-            self.plotting_data.append(data_dict)
+            # In case of errors, ignore the data poitn
+            if data_dict['metric'] is not None: 
+                self.plotting_data.append(data_dict)
 
     def select_metric(self): 
         type = 'list'
@@ -149,9 +171,12 @@ class CLI():
             if hyperparam != self.selected_hyperparameter and len(hyperparam_elements) > 1:
                 cmd_type = 'list'
                 message = "Please select a single value for " + hyperparam + ":"
-                if type(hyperparam_elements[0]) == int or float:
+                if type(hyperparam_elements[0]) == float:
                     val = command(cmd_type, message, [str(x) for x in sorted(hyperparam_elements)])
                     self.config_filter [hyperparam] = [float(val)]
+                elif type(hyperparam_elements[0]) == int:
+                    val = command(cmd_type, message, [str(x) for x in sorted(hyperparam_elements)])
+                    self.config_filter [hyperparam] = [int(val)]
                 else:
                     val = command(cmd_type, message, hyperparam_elements)
                     self.config_filter [hyperparam] = [val]
