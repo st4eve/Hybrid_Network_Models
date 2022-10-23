@@ -8,3 +8,4 @@ strawberryfields
 sacred==0.8.2
 scikit_learn==1.0.2
 tensorflow==2.8.0
+PyInquirer
