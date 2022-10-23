@@ -1,7 +1,7 @@
 #%% Sweep Hyperparameters Sequentially
 from Iris_Experiment import ex
 from sklearn.model_selection import ParameterGrid
-from SLURM_Script_Factory import save_script
+from common_packages.SLURM_Script_Factory import save_script
 import sys
 
 if __name__ == "__main__":

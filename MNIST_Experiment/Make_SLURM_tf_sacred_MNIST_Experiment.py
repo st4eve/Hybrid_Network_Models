@@ -1,5 +1,5 @@
 # Build SLURM Script to run
-from SLURM_Script_Factory import save_script
+from common_packages.SLURM_Script_Factory import save_script
 
 fields = {
     'memory': 16,

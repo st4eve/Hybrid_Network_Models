@@ -2,7 +2,7 @@
 from WINE_NoisyTest_Experiment import ex
 import numpy as np
 from sklearn.model_selection import ParameterGrid
-from SLURM_Script_Factory import save_script
+from common_packages.SLURM_Script_Factory import save_script
 from findMaxAccuracy import findMaxAcc, getConfig
 import sys
 

@@ -1,5 +1,5 @@
 #!/bin/env bash
-#SBATCH --array=0-139
+#SBATCH --array=0-49
 #SBATCH --job-name=CIFAR_Experiment_Sweep
 #SBATCH --output=output%A%a.txt
 #SBATCH --error=error%A%a.txt
@@ -10,16 +10,16 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=17tna@queensu.ca
 #SBATCH --account=def-bshastri
-./Diabetes input$SLURM_ARRAY_TASK_ID.dat
+input$SLURM_ARRAY_TASK_ID.dat
 
 encoding_method_values=( Amplitude_Phase )
 cutoff_dimension_values=( 5 )
 num_layers_values=( 1 2 3 4 5 )
 n_qumodes_values=( 2 4 )
 n_circuits_values=( 1 )
-regularizer_string_values=( L1=0.01 L1=0.1 L2=0.01 L2=0.1 None L1=0.001 L2=0.001 )
+regularizer_string_values=( L1=0.01 L1=0.1 L2=0.01 L2=0.1 None )
 max_initial_weight_values=( None )
-activation_values=( ReLU TanH )
+activation_values=( Sigmoid )
 norm_threshold_values=( 0.99 )
 trial=${SLURM_ARRAY_TASK_ID}
 encoding_method=${encoding_method_values[$(( trial % ${#encoding_method_values[@]} ))]}

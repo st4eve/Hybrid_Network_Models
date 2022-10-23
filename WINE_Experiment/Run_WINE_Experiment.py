@@ -1,7 +1,7 @@
 #%% Sweep Hyperparameters Sequentially
 from WINE_Experiment import ex
 from sklearn.model_selection import ParameterGrid
-from SLURM_Script_Factory import save_script
+from common_packages.SLURM_Script_Factory import save_script
 import sys
 
 # Note that the regularizers follow the format "Mode=param" to avoid duplicate experiments with no regularizer (None)

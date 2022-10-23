@@ -18,8 +18,8 @@ DEFAULT_SLURM_FIELDS = {
     'time_d': 0, 'time_h': 0, 'time_m': 0, 'time_s': 0,
     'reserve': 'nqit',
     'job_name': 'myjob',
-    'output': 'outputWINE/output%A%a.txt',
-    'error' : 'outputWINE/error%A%a.txt'
+    'output': 'output%A%a.txt',
+    'error' : 'error%A%a.txt'
 }
 
 # a template for the entire submit script
