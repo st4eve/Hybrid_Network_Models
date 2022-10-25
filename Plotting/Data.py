@@ -3,6 +3,7 @@ from os import listdir
 from os.path import isfile, isdir, join
 import copy
 import collections
+from statistics import mean
 
 def get_filenames(path):
     """Utility: Get the filenames in a path"""
@@ -91,9 +92,10 @@ class ResultsBlobber():
 
     def check_parameter_consistency(self, data, type):
         """Check that the parameter keys in each experiment match"""
-        reference = min(list(data.keys()))
-        for exp in data:
-            if data[exp][type].keys() != data[reference][type].keys():
+        data_copy = copy.deepcopy(self.data)
+        reference = min(list(data_copy.keys()))
+        for exp in data_copy:
+            if data_copy[exp][type].keys() != data_copy[reference][type].keys():
                 # For now, if we have an inconsistent config, delete the experiment. This assumes a correct reference at file 1
                 error_str = "Inconsistent config parameters found in experiment folder between reference and file" + str(exp) + ". Ignoring experiment..."
                 print(error_str)
@@ -194,6 +196,18 @@ class ResultsQueryEngine():
             hyperparam_dict[key] = list(value)
 
         return hyperparam_dict
+
+    def get_average(self, target_hyperparameter, target_hyperparameter_value, target_metric): 
+        data_to_average = []
+        for exp in self.data: 
+            if self.data[exp]['config'][target_hyperparameter] == target_hyperparameter_value: 
+                data_to_average.append(self.data[exp]['metrics'][target_metric])
+
+        averaged_data = len(data_to_average[0])*[0]
+        for i in range(len(data_to_average[0])): 
+            averaged_data[i] = mean([row[i] for row in data_to_average])
+        
+        return averaged_data
 
     def get_hyperparameter_strings(self, mode = "str_list"): 
         hyperparam_dict = self.get_unique_hyperparameter_dict()

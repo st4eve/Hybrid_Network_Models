@@ -94,14 +94,11 @@ class CLI():
 
         self.query_engine = ResultsQueryEngine(data_blob.get_data())
 
-
         while True: 
             next_functions, plotting_factory = self.select_plotting_mode()
 
             for function in next_functions: 
                 function()
-
-            self.prepare_plotting_data()
 
             if len(self.plotting_data) > 0: 
                 self.plotter = plotting_factory.get_plotter(self.plotting_data, self.selected_metric, self.selected_hyperparameter)
@@ -129,9 +126,10 @@ class CLI():
     def select_plotting_mode(self):
         cmd_type = 'list'
         message = "Select plotting mode"
-        choices = { 'Final Metric vs Hyperparameter': {'functions': [self.select_metric, self.select_hyperparameter, self.select_hyperparameter_constants], 'plotting_factory': HyperparameterFinalMetric},
-                    'Metric vs Epochs for each Hyperparameter': {'functions': [self.select_metric, self.select_hyperparameter, self.select_hyperparameter_constants], 'plotting_factory': MetricOverEpochByHyperparameter},
-                    'Metric vs Epochs for single Hyperparameter': {'functions': [self.select_metric, self.select_hyperparameter_constants], 'plotting_factory': MetricOverEpochBySingleHyperparameter}
+        choices = { 'Final Metric vs Hyperparameter': {'functions': [self.select_metric, self.select_hyperparameter, self.select_hyperparameter_constants, self.prepare_plotting_data], 'plotting_factory': HyperparameterFinalMetric},
+                    'Metric vs Epochs for each Hyperparameter': {'functions': [self.select_metric, self.select_hyperparameter, self.select_hyperparameter_constants, self.prepare_plotting_data], 'plotting_factory': MetricOverEpochByHyperparameter},
+                    'Metric vs Epochs for single Hyperparameter': {'functions': [self.select_metric, self.select_hyperparameter_constants, self.prepare_plotting_data], 'plotting_factory': MetricOverEpochBySingleHyperparameter},
+                    'Averaged Metric vs Epochs for each Hyperparameter': {'functions': [self.select_metric, self.select_hyperparameter, self.prepare_average_plotting_data], 'plotting_factory': MetricOverEpochByHyperparameter}
                     }
         plotting_mode = command(cmd_type, message, list(choices.keys()))
         return choices[plotting_mode]['functions'], choices[plotting_mode]['plotting_factory']
@@ -150,6 +148,15 @@ class CLI():
             # In case of errors, ignore the data poitn
             if data_dict['metric'] is not None: 
                 self.plotting_data.append(data_dict)
+
+    def prepare_average_plotting_data(self): 
+        hyperparameter_values = self.query_engine.get_unique_hyperparameter_dict()[self.selected_hyperparameter]
+        self.plotting_data = []
+        for hyperparameter_value in hyperparameter_values: 
+            data_dict = {}
+            data_dict['config'] = {self.selected_hyperparameter: hyperparameter_value}
+            data_dict['metric'] = self.query_engine.get_average(self.selected_hyperparameter, hyperparameter_value, self.selected_metric)        
+            self.plotting_data.append(data_dict)
 
     def select_metric(self): 
         type = 'list'
