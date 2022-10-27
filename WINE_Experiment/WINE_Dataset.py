@@ -42,13 +42,8 @@ def save_dataset():
     test_ratio = 0.15
 
     x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=1 - train_ratio)
-    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=test_ratio/(test_ratio + validation_ratio))
+    x_test, x_val, y_test, y_val = train_test_split(x_test, y_test, test_size=test_ratio/(test_ratio + validation_ratio))
     
-    """(x_train, y_train), (x_test, y_test), (x_val, y_val)
-    # Preprocessing stuff
-    x_train = np.array(list(x_train.values())).T
-    x_test = np.array(list(x_test.values())).T
-    x_val = np.array(list(x_val.values())).T"""
 
     # Mean of 0 and STD of 1
     scaler = preprocessing.StandardScaler().fit(x_train)
@@ -115,9 +110,9 @@ def load_noisy_data(sigma, n_samples=None):
 
 # Run script once to save datasets and verify the function works properly.
 if __name__ == '__main__':
-    #save_dataset()
+    save_dataset()
     x_train, x_test, y_train, y_test = prepare_dataset()
-    print(x_train.shape, y_train.shape)
+    print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     x_test, y_test = load_validation()
     print(x_test.shape, y_test.shape)
 
