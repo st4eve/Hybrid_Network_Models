@@ -1,9 +1,0 @@
-{
-  "cutoff_dimension": 10,
-  "dataset": {
-    "filename": "diabetes.csv"
-  },
-  "encoding_strategy": null,
-  "num_layers": 1,
-  "seed": 422485436
-}

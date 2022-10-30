@@ -1,8 +1,0 @@
-{
-  "cutoff_dimension": 15,
-  "dataset": {
-    "filename": "diabetes.csv"
-  },
-  "encoding_strategy": "Sigmoid_BatchNorm",
-  "seed": 735576738
-}

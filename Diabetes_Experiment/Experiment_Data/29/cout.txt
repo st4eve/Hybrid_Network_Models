@@ -1,4 +1,0 @@
-Tensorflow Dense Engaged
-Untrained Network
-Loss: 0.670 	 Accuracy: 0.656 	 Norm:1.000
-Pretained Network
