@@ -89,7 +89,7 @@ class ResultsDatabaseGenerator:
             data = json.load(json_file)
         self.data = data
 
-    def initialize_from_folder(self, experiment_folder):
+    def initialize_from_folder(self, experiment_folder, verify=True):
         """Create a blob of data for the results directory"""
         experiment_names = [
             x for x in get_directories(experiment_folder) if x.isdigit()
@@ -107,6 +107,9 @@ class ResultsDatabaseGenerator:
                 data[experiment_number]["metrics"] = metrics
 
         self.data = data
+
+        if verify:
+            self.verify_parameter_consistency()
 
     def verify_parameter_consistency(self):
         """Check consistency of metrics and config"""

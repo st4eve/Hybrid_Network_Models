@@ -1,7 +1,7 @@
 import numpy as np
-from keras.utils import to_categorical
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import to_categorical
 
 
 def split_data(x_data, y_data, train_ratio, test_ratio, validate_ratio, seed=10):
@@ -44,7 +44,7 @@ def generate_synthetic_dataset():
         tuple: Tuple of numpy arrays of x,y data
     """
     x_data, y_data = make_classification(
-        n_samples=1000,
+        n_samples=2000,
         n_features=10,
         n_informative=10,
         n_redundant=0,
