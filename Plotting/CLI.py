@@ -1,11 +1,10 @@
 import json
 from abc import abstractmethod
 
-from PyInquirer import prompt
-from sklearn.model_selection import ParameterGrid
-
 from Data import *
 from Plot import *
+from PyInquirer import prompt
+from sklearn.model_selection import ParameterGrid
 
 
 class PlotterInterface:
@@ -32,20 +31,18 @@ class MetricOverEpochByHyperparameter(PlotterInterface):
     def get_plotter(data_list, selected_metric, selected_hyperparameter):
         x = []
         y = []
-        labels = []
+        legend_values = []
         for data in data_list:
             config = data["config"]
             metric = data["metric"]
             y.append(metric)
             x.append([i for i in range(len(y[len(y) - 1]))])
-            labels.append(
-                str(selected_hyperparameter)
-                + "="
-                + str(config[selected_hyperparameter])
-            )
+            legend_values.append(config[selected_hyperparameter])
         x_label = "Epochs"
         y_label = selected_metric
-        return MultiPlot(x, y, x_label, y_label, labels)
+        return MultiPlot(
+            x, y, x_label, y_label, f"{selected_hyperparameter}", legend_values
+        )
 
 
 class MetricOverEpochBySingleHyperparameter(PlotterInterface):
@@ -253,6 +250,8 @@ class CLI:
             ):
                 cmd_type = "list"
                 message = "Please select a single value for " + hyperparam + ":"
+                print("MESSAGE: ", message)
+                print("HYPERPARAM ELEMENTS: ", hyperparam_elements)
                 if type(hyperparam_elements[0]) == float:
                     val = command(
                         cmd_type, message, [str(x) for x in sorted(hyperparam_elements)]
@@ -263,6 +262,11 @@ class CLI:
                         cmd_type, message, [str(x) for x in sorted(hyperparam_elements)]
                     )
                     self.config_filter[hyperparam] = [int(val)]
+                elif type(hyperparam_elements[0]) == bool:
+                    val = command(
+                        cmd_type, message, [str(x) for x in sorted(hyperparam_elements)]
+                    )
+                    self.config_filter[hyperparam] = [bool(val)]
                 else:
                     val = command(cmd_type, message, hyperparam_elements)
                     self.config_filter[hyperparam] = [val]

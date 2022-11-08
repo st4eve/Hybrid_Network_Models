@@ -31,6 +31,10 @@ def get_config(experiment_path):
                 config[key] = "None"
             if key == "seed":
                 del config[key]
+            if key == "regularizer_string" and val is not None:
+                regularizer_type = val.split("=")[0]
+                regularizer_val = float(val.split("=")[1])
+                config[key] = f"{regularizer_type} ({regularizer_val})"
         return config
     except Exception as exception:
         # For now, when we have an issue reading from a file, return None
