@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 mpl.rcParams.update(mpl.rcParamsDefault)
 mpl.rcParams["font.family"] = "STIXGeneral"
-plt.rcParams["font.size"] = 10
+plt.rcParams["font.size"] = 14
 plt.rcParams["axes.linewidth"] = 0.5
 
 
@@ -72,7 +72,8 @@ class AbstractPlotter:
 
     def save(self, savename):
         self.setup_plot()
-        os.mkdir(savename)
+        if not os.path.isdir(savename):
+            os.mkdir(savename)
         filename = savename + "/" + savename
         plt.savefig(filename + ".pdf", format="pdf", dpi=1200, bbox_inches="tight")
         with open(filename + ".json", "w") as f:
@@ -146,6 +147,9 @@ class MultiPlot(AbstractPlotter):
                 linewidth=float(self.options["linewidth"]),
             )
         legend = [f"{self.options['legend_name']}={val}" for val in self.legend_values]
+        if "trace" in self.options["y_label"] or "Trace" in self.options["y_label"]:
+            plt.axhline(y=0.99, color="r", linestyle="-")
+            legend.append("Trace Threshold")
         plt.legend(
             labels=legend,
             ncol=2,
@@ -156,4 +160,5 @@ class MultiPlot(AbstractPlotter):
             ),
             borderaxespad=0.0,
         )
+
         plt.tight_layout()
