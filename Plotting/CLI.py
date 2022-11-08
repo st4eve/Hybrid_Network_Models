@@ -266,7 +266,7 @@ class CLI:
                     val = command(
                         cmd_type, message, [str(x) for x in sorted(hyperparam_elements)]
                     )
-                    self.config_filter[hyperparam] = [bool(val)]
+                    self.config_filter[hyperparam] = [True if val == "True" else False]
                 else:
                     val = command(cmd_type, message, hyperparam_elements)
                     self.config_filter[hyperparam] = [val]
