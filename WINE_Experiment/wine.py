@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
-from keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 from scipy import stats
 
 
@@ -163,7 +163,7 @@ def prepare_xy_data(wine_dataset):
     x_data = x_data.to_numpy()
     scaler = StandardScaler().fit(x_data)
     x_data = scaler.transform(x_data)
-    scaler = MinMaxScaler(feature_range=(-1, 1)).fit(x_data)
+    scaler = MinMaxScaler(feature_range=(0, 1)).fit(x_data)
     x_data = scaler.transform(x_data)
 
     y_data = wine_dataset["quality"]

@@ -56,8 +56,8 @@ class PWBLinearLayer(keras.layers.Layer):
     # Simulate PWB
     def PWB(self, inputs):
         res = tf.convert_to_tensor([n.step(inputs) for n in self.neurons])
-        b_inputs = tf.constant(1.0, shape=(res.shape[-1]), dtype=tf.float32)
-        bias = tf.convert_to_tensor(self.bias_neuron.step(b_inputs))
+        b_inputs = tf.eye(res.shape[-1], dtype=tf.float32)
+        bias = tf.convert_to_tensor([self.bias_neuron.step(b) for b in b_inputs])
         return res + bias
     # Update precision
     def setPrecision(self, precision):
@@ -66,6 +66,7 @@ class PWBLinearLayer(keras.layers.Layer):
         
     # Layer call function
     def call(self, inputs):
+    
         # First we have to update weights in our photonic neurons
         for n,w in zip(self.neurons, tf.transpose(self.weight)):
             self.PWBMapper.updateWeights(n, w)
@@ -78,5 +79,6 @@ class PWBLinearLayer(keras.layers.Layer):
                 res.append(r)
         else:
             res = self.PWB(inputs)
-        res = tf.stack(res) 
+        res = tf.stack(res)
+
         return self.activation(res)

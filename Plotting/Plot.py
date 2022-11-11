@@ -9,6 +9,7 @@ mpl.interactive(True)
 import matplotlib.pyplot as plt
 
 mpl.rcParams.update(mpl.rcParamsDefault)
+mpl.rcParams['mathtext.fontset'] = 'stix'
 mpl.rcParams["font.family"] = "STIXGeneral"
 plt.rcParams["font.size"] = 14
 plt.rcParams["axes.linewidth"] = 0.5
@@ -116,7 +117,7 @@ class MultiPlot(AbstractPlotter):
         x_label,
         y_label,
         legend_name,
-        legend_values,
+        legend_values=None,
         legend_position_x=0.2,
         legend_position_y=1.0,
     ):
@@ -127,13 +128,14 @@ class MultiPlot(AbstractPlotter):
         self.set_option("legend_position_y", legend_position_y)
 
     def setup_plot(self):
-        plt.figure(
+        fig = plt.figure(
             figsize=(
                 float(self.options["figure_size_x"]),
                 float(self.options["figure_size_y"]),
             )
         )
-        plt.subplot(111)
+        ax = plt.subplot(111)
+        self.ax = ax
         plt.grid(True, linestyle=":")
         plt.xlabel(self.options["x_label"])
         plt.ylabel(self.options["y_label"])
@@ -146,7 +148,10 @@ class MultiPlot(AbstractPlotter):
                 markersize=float(self.options["markersize"]),
                 linewidth=float(self.options["linewidth"]),
             )
-        legend = [f"{self.options['legend_name']}={val}" for val in self.legend_values]
+        if (self.legend_values==None):
+            legend = self.options['legend_name']
+        else:
+            legend = [f"{self.options['legend_name']}={val}" for val in self.legend_values]
         if "trace" in self.options["y_label"] or "Trace" in self.options["y_label"]:
             plt.axhline(y=0.99, color="r", linestyle="-")
             legend.append("Trace Threshold")
