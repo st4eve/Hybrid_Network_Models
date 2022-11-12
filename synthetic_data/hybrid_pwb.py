@@ -4,12 +4,12 @@ from data import generate_synthetic_dataset
 from hybrid_base import EXPERIMENT_NAME as BASE_EXPERIMENT_NAME
 from hybrid_base import LOSS_FUNCTION, NUM_EPOCHS, OPTIMIZER, RANDOM_SEED
 from keras import Model, models, regularizers
+from PWBLayer_TF import PWBLinearLayer
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
-from common_packages.PWBLayer_TF import PWBLinearLayer
 
 EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment"
 ex = Experiment(EXPERIMENT_NAME)
