@@ -75,16 +75,17 @@ def define_and_train(network_type):
                 ]
             )
 
-            self.quantum_substitue = models.Sequential(
-                [
-                    layers.Dense(
-                        33,
-                        activation="softmax",
-                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                    ),
-                ]
-            )
+            if network_type == "classical":
+                self.quantum_substitue = models.Sequential(
+                    [
+                        layers.Dense(
+                            33,
+                            activation="softmax",
+                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        ),
+                    ]
+                )
 
             self.quantum_layer = QuantumLayer_MultiQunode(
                 n_qumodes=3,
