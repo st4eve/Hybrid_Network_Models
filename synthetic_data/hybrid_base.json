@@ -1,5 +1,5 @@
 {
-    "experiment_file": "hybrid_base_parameters.json",
+    "experiment_file": "hybrid_base.py",
     "parameters": {
         "network_type": [
             "classical",
