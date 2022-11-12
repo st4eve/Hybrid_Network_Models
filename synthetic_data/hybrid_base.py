@@ -8,6 +8,7 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
+from common_packages.utilities import get_num_parameters_per_layer
 
 RANDOM_SEED = 30
 BATCH_SIZE = 36
@@ -43,10 +44,11 @@ class LogPerformance(Callback):
 def confnet_config():
     """Default config"""
     network_type = "quantum"  # pylint: disable=W0612
+    num_qumodes = 3  # pylint: disable=W0612
 
 
 @ex.automain
-def define_and_train(network_type):
+def define_and_train(network_type, num_qumodes):
     """Build and run the network"""
 
     tf.random.set_seed(RANDOM_SEED)
@@ -67,7 +69,7 @@ def define_and_train(network_type):
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     ),
                     layers.Dense(
-                        6,
+                        2 * num_qumodes,
                         activation=None,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -79,7 +81,7 @@ def define_and_train(network_type):
                 self.quantum_substitue = models.Sequential(
                     [
                         layers.Dense(
-                            33,
+                            get_num_parameters_per_layer(num_qumodes),
                             activation="softmax",
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -88,10 +90,10 @@ def define_and_train(network_type):
                 )
 
             self.quantum_layer = QuantumLayer_MultiQunode(
-                n_qumodes=3,
+                n_qumodes=num_qumodes,
                 n_circuits=1,
                 n_layers=1,
-                cutoff_dim=5,
+                cutoff_dim=3,
                 encoding_method="Amplitude_Phase",
                 regularizer=regularizers.L1(l1=0.1),
                 max_initial_weight=None,
@@ -125,7 +127,7 @@ def define_and_train(network_type):
             output = self.final_layer(output)
             return output
 
-    train_data, test_data, _ = generate_synthetic_dataset()
+    train_data, test_data = generate_synthetic_dataset()
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
     model.fit(
