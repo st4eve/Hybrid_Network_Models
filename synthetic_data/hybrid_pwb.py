@@ -3,7 +3,7 @@ import tensorflow as tf
 from data import generate_synthetic_dataset
 from hybrid_base import EXPERIMENT_NAME as BASE_EXPERIMENT_NAME
 from hybrid_base import LOSS_FUNCTION, NUM_EPOCHS, OPTIMIZER, RANDOM_SEED
-from keras import Model, models, regularizers
+from keras import Model, layers, models, regularizers
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
@@ -28,12 +28,13 @@ def log_performance(_run, val_accuracy, val_loss, epoch):
 @ex.config
 def confnet_config():
     """Default config"""
-    precision = 128  # pylint: disable=W0612
+    precision = 8  # pylint: disable=W0612
     exp_num = 1  # pylint: disable=W0612
+    network_type = "classical"  # pylint: disable=W0612
 
 
 @ex.automain
-def define_and_train(precision, exp_num):
+def define_and_train(precision, exp_num, network_type):
     """Build and run the network"""
 
     tf.random.set_seed(RANDOM_SEED)
@@ -48,6 +49,17 @@ def define_and_train(precision, exp_num):
                 [
                     PWBLinearLayer(10, activation="relu", precision=precision),
                     PWBLinearLayer(6, activation=None, precision=precision),
+                ]
+            )
+
+            self.quantum_substitue = models.Sequential(
+                [
+                    layers.Dense(
+                        33,
+                        activation="softmax",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
                 ]
             )
 
@@ -70,8 +82,13 @@ def define_and_train(precision, exp_num):
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
             output = self.base_model(inputs)
-            output = self.quantum_preparation_layer(output)
-            output = self.quantum_layer(output)
+            if network_type == "quantum":
+                output = self.quantum_preparation_layer(output)
+                output = self.quantum_layer(output)
+            elif network_type == "classical":
+                output = self.quantum_substitue(output)
+            else:
+                raise ValueError("Invalid network type specified.")
             output = self.final_layer(output)
             return output
 

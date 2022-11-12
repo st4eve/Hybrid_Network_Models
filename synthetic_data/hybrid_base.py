@@ -42,10 +42,11 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
+    network_type = "quantum"  # pylint: disable=W0612
 
 
 @ex.automain
-def define_and_train():
+def define_and_train(network_type):
     """Build and run the network"""
 
     tf.random.set_seed(RANDOM_SEED)
@@ -68,6 +69,17 @@ def define_and_train():
                     layers.Dense(
                         6,
                         activation=None,
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
+                ]
+            )
+
+            self.quantum_substitue = models.Sequential(
+                [
+                    layers.Dense(
+                        33,
+                        activation="softmax",
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     ),
@@ -102,8 +114,13 @@ def define_and_train():
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
             output = self.base_model(inputs)
-            output = self.quantum_preparation_layer(output)
-            output = self.quantum_layer(output)
+            if network_type == "quantum":
+                output = self.quantum_preparation_layer(output)
+                output = self.quantum_layer(output)
+            elif network_type == "classical":
+                output = self.quantum_substitue(output)
+            else:
+                raise ValueError("Invalid network type specified.")
             output = self.final_layer(output)
             return output
 
