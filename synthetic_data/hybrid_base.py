@@ -43,7 +43,7 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
-    network_type = "quantum"  # pylint: disable=W0612
+    network_type = "classical"  # pylint: disable=W0612
     num_qumodes = 3  # pylint: disable=W0612
 
 
@@ -62,8 +62,22 @@ def define_and_train(network_type, num_qumodes):
             self.base_model = models.Sequential(
                 [
                     layers.Dense(
-                        10,
-                        input_dim=10,
+                        40,
+                        input_dim=40,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
+                    layers.Dense(
+                        40,
+                        input_dim=40,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
+                    layers.Dense(
+                        20,
+                        input_dim=40,
                         activation="relu",
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),

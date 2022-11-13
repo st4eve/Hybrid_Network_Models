@@ -68,7 +68,9 @@ def define_and_train(precision, num_qumodes, network_type):
 
             self.base_model = models.Sequential(
                 [
-                    PWBLinearLayer(10, activation="relu", precision=precision),
+                    PWBLinearLayer(40, activation="relu", precision=precision),
+                    PWBLinearLayer(40, activation="relu", precision=precision),
+                    PWBLinearLayer(20, activation="relu", precision=precision),
                     PWBLinearLayer(2 * num_qumodes, activation=None, precision=precision),
                 ]
             )
@@ -92,7 +94,7 @@ def define_and_train(precision, num_qumodes, network_type):
                 cutoff_dim=3,
                 encoding_method="Amplitude_Phase",
                 regularizer=regularizers.L1(l1=0.1),
-                max_initial_weight=None,
+                max_initial_weight=0.15,
                 measurement_object=CV_Measurement("X_quadrature"),
                 shots=None,
             )

@@ -32,7 +32,7 @@ def generate_synthetic_dataset(num_datapoints=1000):
     """
     x_data, y_data = make_classification(
         n_samples=num_datapoints,
-        n_features=10,
+        n_features=40,
         n_informative=10,
         n_redundant=0,
         n_repeated=0,
