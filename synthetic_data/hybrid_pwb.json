@@ -12,7 +12,7 @@
             128
         ],
         "network_type": [
-            "classical"
+            "quantum"
         ],
         "num_qumodes": [
             3,
