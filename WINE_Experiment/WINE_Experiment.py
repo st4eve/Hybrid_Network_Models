@@ -89,7 +89,7 @@ def define_and_train(encoding_method, cutoff_dimension, num_layers, num_classica
 
             # Base model for transfer learning
             self.base_model = keras.models.Sequential([
-                    layers.Dense(classical_size, input_dim=11, activation=ff_activation,
+                    layers.Dense(classical_size, input_dim=9, activation=ff_activation,
                                          bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                                          kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0))
                                          for i in range(num_classical)])

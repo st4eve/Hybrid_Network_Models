@@ -20,7 +20,7 @@ This class implements a photonic weight bank simulated linear dense layer for Te
 Weights and biases should be limited to [-1,1] to maintain physical accuracy.
 """
 class PWBLinearLayer(keras.layers.Layer):
-    def __init__(self, num_outputs, precision=127, name='LinearLayer', activation=None, constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)):
+    def __init__(self, num_outputs, precision=127, name='LinearLayer', input_dim=None, activation=None, constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)):
         super(PWBLinearLayer, self).__init__()
         self.num_outputs = num_outputs
         # Local PWB mapper class
@@ -29,10 +29,12 @@ class PWBLinearLayer(keras.layers.Layer):
         self.precision = precision
         self.activation = keras.activations.get(activation)
         self.constraint = constraint
+        self.num_inputs = None
         
     def build(self, input_shape):
         w_init = tf.random_normal_initializer()
-        self.num_inputs = input_shape[-1]
+        if (self.num_inputs == None):
+            self.num_inputs = input_shape[-1]
         self.weight = self.add_weight(
             'kernel',
             shape=[self.num_inputs,self.num_outputs],
@@ -63,13 +65,14 @@ class PWBLinearLayer(keras.layers.Layer):
     def setPrecision(self, precision):
         self.precision = precision
         self.PWBMapper.setPrecision(precision)
-        
+       
     # Layer call function
     def call(self, inputs):
-    
         # First we have to update weights in our photonic neurons
-        for n,w in zip(self.neurons, tf.transpose(self.weight)):
-            self.PWBMapper.updateWeights(n, w)
+        weights = tf.transpose(self.weight)
+        for i,n in enumerate(self.neurons):
+            self.PWBMapper.updateWeights(n, weights[i])
+        
         self.PWBMapper.updateWeights(self.bias_neuron, self.bias)
         # Simulate the PWB over the batch inputs
         if len(inputs.get_shape()) > 1:
