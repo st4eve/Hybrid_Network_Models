@@ -8,6 +8,7 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
+from common_packages.utilities import get_num_parameters_per_layer
 
 RANDOM_SEED = 30
 BATCH_SIZE = 36
@@ -42,10 +43,12 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
+    network_type = "classical"  # pylint: disable=W0612
+    num_qumodes = 3  # pylint: disable=W0612
 
 
 @ex.automain
-def define_and_train():
+def define_and_train(network_type, num_qumodes):
     """Build and run the network"""
 
     tf.random.set_seed(RANDOM_SEED)
@@ -59,14 +62,28 @@ def define_and_train():
             self.base_model = models.Sequential(
                 [
                     layers.Dense(
-                        10,
-                        input_dim=10,
+                        40,
+                        input_dim=40,
                         activation="relu",
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     ),
                     layers.Dense(
-                        6,
+                        40,
+                        input_dim=40,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
+                    layers.Dense(
+                        20,
+                        input_dim=40,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
+                    layers.Dense(
+                        2 * num_qumodes,
                         activation=None,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -74,11 +91,23 @@ def define_and_train():
                 ]
             )
 
+            if network_type == "classical":
+                self.quantum_substitue = models.Sequential(
+                    [
+                        layers.Dense(
+                            get_num_parameters_per_layer(num_qumodes),
+                            activation="softmax",
+                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        ),
+                    ]
+                )
+
             self.quantum_layer = QuantumLayer_MultiQunode(
-                n_qumodes=3,
+                n_qumodes=num_qumodes,
                 n_circuits=1,
                 n_layers=1,
-                cutoff_dim=5,
+                cutoff_dim=3,
                 encoding_method="Amplitude_Phase",
                 regularizer=regularizers.L1(l1=0.1),
                 max_initial_weight=None,
@@ -102,12 +131,17 @@ def define_and_train():
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
             output = self.base_model(inputs)
-            output = self.quantum_preparation_layer(output)
-            output = self.quantum_layer(output)
+            if network_type == "quantum":
+                output = self.quantum_preparation_layer(output)
+                output = self.quantum_layer(output)
+            elif network_type == "classical":
+                output = self.quantum_substitue(output)
+            else:
+                raise ValueError("Invalid network type specified.")
             output = self.final_layer(output)
             return output
 
-    train_data, test_data, _ = generate_synthetic_dataset()
+    train_data, test_data = generate_synthetic_dataset()
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
     model.fit(
