@@ -15,7 +15,7 @@ from sacred.utils import apply_backspaces_and_linefeeds
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
 from common_packages.PWBLayer_TF import PWBLinearLayer
-from common_packages.utilities import get_num_parameters_per_layer
+from common_packages.utilities import get_equivalent_classical_layer_size
 
 EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment"
 ex = Experiment(EXPERIMENT_NAME)
@@ -79,7 +79,7 @@ def define_and_train(precision, num_qumodes, network_type):
                 self.quantum_substitue = models.Sequential(
                     [
                         layers.Dense(
-                            get_num_parameters_per_layer(num_qumodes),
+                            get_equivalent_classical_layer_size(num_qumodes, 2 * num_qumodes, 3),
                             activation="softmax",
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
