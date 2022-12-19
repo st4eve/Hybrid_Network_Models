@@ -14,7 +14,6 @@
             512
         ],
         "network_type": [
-            "quantum",
             "classical"
         ],
         "num_qumodes": [

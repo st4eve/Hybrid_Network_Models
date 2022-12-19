@@ -91,10 +91,9 @@ def define_and_train(precision, num_qumodes, network_type):
             if network_type == "classical":
                 self.quantum_substitue = models.Sequential(
                     [
-                        PWBLinearLayer(
+                        layers.Dense(
                             classical_size,
-                            activation="relu",
-                            precision=precision
+                            activation="relu"
                         ),
                     ]
                 )

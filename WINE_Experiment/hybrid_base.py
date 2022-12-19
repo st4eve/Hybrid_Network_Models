@@ -16,7 +16,7 @@ np_config.enable_numpy_behavior()
 
 RANDOM_SEED = 30
 BATCH_SIZE = 16
-NUM_EPOCHS = 100
+NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
 EXPERIMENT_NAME = "WINE_Hybrid_Base_Experiment"

@@ -1,0 +1,8 @@
+{
+  "PWB": 1,
+  "__doc__": "Default config",
+  "network_type": "classical",
+  "num_qumodes": 4,
+  "seed": 95976608,
+  "sigma": 0.12144827586206897
+}

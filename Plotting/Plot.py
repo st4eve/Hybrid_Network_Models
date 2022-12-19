@@ -7,6 +7,7 @@ import matplotlib as mpl
 mpl.use("TkAgg")
 mpl.interactive(True)
 import matplotlib.pyplot as plt
+import numpy as np
 
 mpl.rcParams.update(mpl.rcParamsDefault)
 mpl.rcParams['mathtext.fontset'] = 'stix'
@@ -116,10 +117,11 @@ class MultiPlot(AbstractPlotter):
         y,
         x_label,
         y_label,
-        legend_name,
+        legend_name=None,
         legend_values=None,
         legend_position_x=0.2,
         legend_position_y=1.0,
+        legend_formatter=None,
     ):
         super().__init__("Multi Plot", x, y, x_label, y_label)
         self.legend_values = legend_values
@@ -128,7 +130,7 @@ class MultiPlot(AbstractPlotter):
         self.set_option("legend_position_y", legend_position_y)
 
     def setup_plot(self):
-        fig = plt.figure(
+        self.fig = plt.figure(
             figsize=(
                 float(self.options["figure_size_x"]),
                 float(self.options["figure_size_y"]),
@@ -151,19 +153,26 @@ class MultiPlot(AbstractPlotter):
         if (self.legend_values==None):
             legend = self.options['legend_name']
         else:
-            legend = [f"{self.options['legend_name']}={val}" for val in self.legend_values]
+            if self.options['legend_name'] == 'sigma':
+                self.options['legend_name'] = 'Precision' 
+                self.legend_values = [np.log2(2/val) for val in self.legend_values]
+            if self.options['legend_name'] == 'Precision':
+                legend = [f"{self.options['legend_name']}={val:.3f}" for val in self.legend_values]
+            else:
+                legend = [f"{self.options['legend_name']}={val}" for val in self.legend_values]
         if "trace" in self.options["y_label"] or "Trace" in self.options["y_label"]:
             plt.axhline(y=0.99, color="r", linestyle="-")
             legend.append("Trace Threshold")
-        plt.legend(
-            labels=legend,
-            ncol=2,
-            loc="lower left",
-            bbox_to_anchor=(
-                float(self.options["legend_position_x"]),
-                float(self.options["legend_position_y"]),
-            ),
-            borderaxespad=0.0,
-        )
+        if (self.options['legend_name'] != None):
+            plt.legend(
+                labels=legend,
+                ncol=2,
+                loc="lower left",
+                bbox_to_anchor=(
+                    float(self.options["legend_position_x"]),
+                    float(self.options["legend_position_y"]),
+                ),
+                borderaxespad=0.0,
+            )
 
         plt.tight_layout()
