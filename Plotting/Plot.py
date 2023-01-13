@@ -17,14 +17,17 @@ plt.rcParams["axes.linewidth"] = 0.5
 
 
 class AbstractPlotter:
-    def __init__(self, name, x, y, x_label, y_label):
+    def __init__(self, name, x, y, x_label, y_label, xerr=0, yerr=0, title=None):
         self.name = name
         self.x = x
         self.y = y
+        self.xerr = xerr
+        self.yerr = yerr
         # Common settings
         self.options = {}
         self.set_option("x_label", x_label)
         self.set_option("y_label", y_label)
+        self.set_option("title", title)
         self.set_option("figure_size_x", 6)
         self.set_option("figure_size_y", 6)
         self.set_option("marker", "o")
@@ -107,6 +110,8 @@ class BasicPlot(AbstractPlotter):
             markersize=float(self.options["markersize"]),
             linewidth=float(self.options["linewidth"]),
         )
+        if (self.yerr != None):
+            plt.fill_between(self.x,self.y - self.yerr,self.y + self.yerr, alpha=0.5)
         plt.tight_layout()
 
 
@@ -122,8 +127,10 @@ class MultiPlot(AbstractPlotter):
         legend_position_x=0.2,
         legend_position_y=1.0,
         legend_formatter=None,
+        yerr=0,
+        title=None
     ):
-        super().__init__("Multi Plot", x, y, x_label, y_label)
+        super().__init__("Multi Plot", x, y, x_label, y_label, yerr=yerr, title=title)
         self.legend_values = legend_values
         self.set_option("legend_name", legend_name)
         self.set_option("legend_position_x", legend_position_x)
@@ -150,6 +157,8 @@ class MultiPlot(AbstractPlotter):
                 markersize=float(self.options["markersize"]),
                 linewidth=float(self.options["linewidth"]),
             )
+            if ((self.yerr[i] != 0).any()):
+                plt.fill_between(self.x[i],self.y[i] - self.yerr[i], self.y[i] + self.yerr[i], alpha=0.5, label='_nolegend_')
         if (self.legend_values==None):
             legend = self.options['legend_name']
         else:
@@ -173,6 +182,9 @@ class MultiPlot(AbstractPlotter):
                     float(self.options["legend_position_y"]),
                 ),
                 borderaxespad=0.0,
+                frameon=False
             )
+        if (self.options['title'] != None):
+            plt.title(self.options['title'])
 
         plt.tight_layout()

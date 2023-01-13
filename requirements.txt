@@ -1,11 +1,9 @@
-keras==2.8.0
-matplotlib==3.5.1
-numpy==1.22.1
-pandas==1.4.0
+keras
+matplotlib
+numpy
+pandas
 PennyLane
-pennylane-sf
 strawberryfields
-sacred==0.8.2
-scikit_learn==1.0.2
-tensorflow==2.8.0
+sacred
+tensorflow
 PyInquirer
