@@ -1,9 +1,0 @@
-keras
-matplotlib
-numpy
-pandas
-PennyLane
-strawberryfields
-sacred
-tensorflow
-PyInquirer

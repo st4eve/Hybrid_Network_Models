@@ -21,7 +21,7 @@ from common_packages.utilities import get_num_parameters_per_layer
 
 from WINE_Dataset import SIGMAS
 
-EXPERIMENT_NAME = "WINE_Noisy_Train1"
+EXPERIMENT_NAME = "WINE_Noisy_Train2"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds

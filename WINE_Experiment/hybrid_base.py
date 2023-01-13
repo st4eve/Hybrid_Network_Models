@@ -9,7 +9,7 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
-from common_packages.utilities import get_num_parameters_per_layer
+from common_packages.utilities import get_equivalent_classical_layer_size
 
 from tensorflow.python.ops.numpy_ops import np_config
 np_config.enable_numpy_behavior()
@@ -79,7 +79,7 @@ def define_and_train(network_type, num_qumodes):
                     )
             ])
             
-            classical_size = int(get_num_parameters_per_layer(num_qumodes) // (1 + 2*num_qumodes) + 1)
+            classical_size = get_equivalent_classical_layer_size(num_qumodes, 2*num_qumodes, 2)
             if network_type == "classical":
                 self.quantum_substitue = models.Sequential(
                     [
