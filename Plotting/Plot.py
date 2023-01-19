@@ -158,7 +158,7 @@ class MultiPlot(AbstractPlotter):
                 linewidth=float(self.options["linewidth"]),
             )
             if ((self.yerr[i] != 0).any()):
-                plt.fill_between(self.x[i],self.y[i] - self.yerr[i], self.y[i] + self.yerr[i], alpha=0.5, label='_nolegend_')
+                plt.fill_between(self.x[i],self.y[i] - self.yerr[i], self.y[i] + self.yerr[i], alpha=0.25, label='_nolegend_')
         if (self.legend_values==None):
             legend = self.options['legend_name']
         else:
@@ -188,3 +188,4 @@ class MultiPlot(AbstractPlotter):
             plt.title(self.options['title'])
 
         plt.tight_layout()
+
