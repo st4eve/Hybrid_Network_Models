@@ -69,13 +69,6 @@ def define_and_train(network_type, num_qumodes):
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     ),
                     layers.Dense(
-                        40,
-                        input_dim=40,
-                        activation="relu",
-                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                    ),
-                    layers.Dense(
                         20,
                         input_dim=40,
                         activation="relu",

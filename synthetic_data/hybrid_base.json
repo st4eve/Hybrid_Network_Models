@@ -2,13 +2,14 @@
     "experiment_file": "hybrid_base.py",
     "parameters": {
         "network_type": [
-            "classical"
+            "classical",
+	    "quantum"
         ],
         "num_qumodes": [
-            3,
+            2,
+	    3,
             4,
-            5,
-            6
+            5
         ]
     }
 }

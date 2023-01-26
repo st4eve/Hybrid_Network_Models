@@ -67,7 +67,10 @@ def define_and_train(network_type, num_qumodes):
                     layers.Dense(
                         40,
                         input_dim=9,
-                        activation="relu"),
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)
+                        ),
                 ]
             )
             
@@ -75,7 +78,9 @@ def define_and_train(network_type, num_qumodes):
                     layers.Flatten(),
                     layers.Dense(
                         2 * num_qumodes,
-                        activation=None
+                        activation=None,
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)
                     )
             ])
             
@@ -85,7 +90,9 @@ def define_and_train(network_type, num_qumodes):
                     [
                         layers.Dense(
                             classical_size,
-                            activation="relu"
+                            activation="relu",
+                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)
                         ),
                     ]
                 )
@@ -106,7 +113,9 @@ def define_and_train(network_type, num_qumodes):
 
             self.classical2 = layers.Dense(
                         2,
-                        activation="softmax"
+                        activation="softmax",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)
                     )
 
         def call(self, inputs):  # pylint: disable=W0221
@@ -134,6 +143,4 @@ def define_and_train(network_type, num_qumodes):
         validation_data=[x_test, y_test],
         callbacks=[LogPerformance()],
     )
-    model(x_train[0:2])
-    layer = model.quantum_substitue
     #print(get_num_parameters_per_layer(num_qumodes), np.sum([[l.size for l in layer.weights[0]] + [layer.weights[1].shape[0]]]))
