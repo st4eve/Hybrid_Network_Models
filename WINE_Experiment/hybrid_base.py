@@ -16,7 +16,7 @@ np_config.enable_numpy_behavior()
 
 RANDOM_SEED = 30
 BATCH_SIZE = 16
-NUM_EPOCHS = 200
+NUM_EPOCHS = 100
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
 EXPERIMENT_NAME = "WINE_Hybrid_Base_Experiment"
@@ -126,13 +126,14 @@ def define_and_train(network_type, num_qumodes):
     x_train, x_test, y_train, y_test = prepare_dataset()
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
+    model.load_weights(f"{EXPERIMENT_NAME}/{5}/weights/weight{25}.ckpt", by_name=False)
     model.fit(
         x_train, y_train,
-        epochs=NUM_EPOCHS,
+        epochs=NUM_EPOCHS-25,
         batch_size=BATCH_SIZE,
         validation_data=[x_test, y_test],
         callbacks=[LogPerformance()],
     )
     model(x_train[0:2])
     layer = model.quantum_substitue
-    print(get_num_parameters_per_layer(num_qumodes), np.sum([[l.size for l in layer.weights[0]] + [layer.weights[1].shape[0]]]))
+    #print(get_num_parameters_per_layer(num_qumodes), np.sum([[l.size for l in layer.weights[0]] + [layer.weights[1].shape[0]]]))
