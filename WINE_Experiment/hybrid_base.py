@@ -1,4 +1,6 @@
 """Hybrid Network Models 2022"""
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import tensorflow as tf
 import sys
 from WINE_Dataset import *
@@ -135,7 +137,7 @@ def define_and_train(network_type, num_qumodes):
     x_train, x_test, y_train, y_test = prepare_dataset()
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
-    model.load_weights(f"{EXPERIMENT_NAME}/{5}/weights/weight{25}.ckpt", by_name=False)
+#    model.load_weights(f"{EXPERIMENT_NAME}/{5}/weights/weight{25}.ckpt", by_name=False)
     model.fit(
         x_train, y_train,
         epochs=NUM_EPOCHS-25,
