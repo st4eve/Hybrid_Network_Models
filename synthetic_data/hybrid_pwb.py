@@ -14,10 +14,10 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
-from common_packages.PWBLayer_TF import PWBLinearLayer
+from PWBLayer_TF import PWBLinearLayer
 from common_packages.utilities import get_equivalent_classical_layer_size
 
-EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment"
+EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment1"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -49,13 +49,13 @@ def log_performance(_run, val_accuracy, val_loss, epoch):
 @ex.config
 def confnet_config():
     """Default config"""
-    precision = 8  # pylint: disable=W0612
+    sigma = 0.5  # pylint: disable=W0612
     num_qumodes = 5  # pylint: disable=W0612
     network_type = "quantum"  # pylint: disable=W0612
 
 
 @ex.automain
-def define_and_train(precision, num_qumodes, network_type):
+def define_and_train(sigma, num_qumodes, network_type):
     """Build and run the network"""
 
     tf.random.set_seed(RANDOM_SEED)
@@ -65,10 +65,10 @@ def define_and_train(precision, num_qumodes, network_type):
 
         def __init__(self):
             super().__init__()
-
+            self.gaussian = layers.GaussianNoise(sigma)
+            precision = int(2**15 - 1)
             self.base_model = models.Sequential(
                 [
-                    PWBLinearLayer(40, activation="relu", precision=precision),
                     PWBLinearLayer(40, activation="relu", precision=precision),
                     PWBLinearLayer(20, activation="relu", precision=precision),
                     PWBLinearLayer(2 * num_qumodes, activation=None, precision=precision),
@@ -105,7 +105,8 @@ def define_and_train(precision, num_qumodes, network_type):
 
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
-            output = self.base_model(inputs)
+            output = self.gaussian(inputs)
+            output = self.base_model(output)
             if network_type == "quantum":
                 output = self.quantum_preparation_layer(output)
                 output = self.quantum_layer(output)
@@ -119,7 +120,6 @@ def define_and_train(precision, num_qumodes, network_type):
     _, validate_data = generate_synthetic_dataset()
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
-
     sub_folders = [folder for folder in listdir(BASE_EXPERIMENT_NAME) if isdir(join(BASE_EXPERIMENT_NAME, folder))]
     experiment_numbers = [sub_folder for sub_folder in sub_folders if sub_folder.isdigit()]
     for experiment_num in experiment_numbers:
@@ -127,7 +127,7 @@ def define_and_train(precision, num_qumodes, network_type):
         if config["num_qumodes"] == num_qumodes and config["network_type"] == network_type:
             target_experiment_path = f"{BASE_EXPERIMENT_NAME}/{experiment_num}"
             break
-    for i in range(NUM_EPOCHS):
-        model.load_weights(f"{target_experiment_path}/weights/weight{i}.ckpt")
-        val_loss, val_acc = model.evaluate(*validate_data, verbose=3)
+    model.load_weights(f"{target_experiment_path}/weights/weight{NUM_EPOCHS-1}.ckpt")
+    for i in range(20):
+        val_loss, val_acc = model.evaluate(*validate_data, verbose=2)
         log_performance(val_accuracy=val_acc, val_loss=val_loss, epoch=i)  # pylint: disable=E1120
