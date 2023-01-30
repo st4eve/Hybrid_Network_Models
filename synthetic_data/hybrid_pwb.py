@@ -49,9 +49,9 @@ def log_performance(_run, val_accuracy, val_loss, epoch):
 @ex.config
 def confnet_config():
     """Default config"""
-    sigma = 0.5  # pylint: disable=W0612
-    num_qumodes = 5  # pylint: disable=W0612
-    network_type = "quantum"  # pylint: disable=W0612
+    sigma = 1  # pylint: disable=W0612
+    num_qumodes = 3  # pylint: disable=W0612
+    network_type = "classical"  # pylint: disable=W0612
 
 
 @ex.automain
@@ -69,7 +69,7 @@ def define_and_train(sigma, num_qumodes, network_type):
             precision = int(2**15 - 1)
             self.base_model = models.Sequential(
                 [
-                    PWBLinearLayer(40, activation="relu", precision=precision),
+                    PWBLinearLayer(20, activation="relu", precision=precision),
                     PWBLinearLayer(20, activation="relu", precision=precision),
                     PWBLinearLayer(2 * num_qumodes, activation=None, precision=precision),
                 ]
@@ -127,7 +127,7 @@ def define_and_train(sigma, num_qumodes, network_type):
         if config["num_qumodes"] == num_qumodes and config["network_type"] == network_type:
             target_experiment_path = f"{BASE_EXPERIMENT_NAME}/{experiment_num}"
             break
-    model.load_weights(f"{target_experiment_path}/weights/weight{NUM_EPOCHS-1}.ckpt")
+    model.load_weights(f"{target_experiment_path}/weights/weight{NUM_EPOCHS-1}.ckpt", by_name=False)
     for i in range(20):
         val_loss, val_acc = model.evaluate(*validate_data, verbose=2)
         log_performance(val_accuracy=val_acc, val_loss=val_loss, epoch=i)  # pylint: disable=E1120

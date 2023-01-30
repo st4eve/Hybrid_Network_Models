@@ -62,15 +62,15 @@ def define_and_train(network_type, num_qumodes):
             self.base_model = models.Sequential(
                 [
                     layers.Dense(
-                        40,
-                        input_dim=40,
+                        20,
+                        input_dim=15,
                         activation="relu",
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     ),
                     layers.Dense(
                         20,
-                        input_dim=40,
+                        input_dim=20,
                         activation="relu",
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -89,18 +89,17 @@ def define_and_train(network_type, num_qumodes):
                     [
                         layers.Dense(
                             get_equivalent_classical_layer_size(num_qumodes, 2 * num_qumodes, 3),
-                            activation="softmax",
+                            activation="relu",
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         ),
                     ]
                 )
-
             self.quantum_layer = QuantumLayer_MultiQunode(
                 n_qumodes=num_qumodes,
                 n_circuits=1,
                 n_layers=1,
-                cutoff_dim=3,
+                cutoff_dim=5,
                 encoding_method="Amplitude_Phase",
                 regularizer=regularizers.L1(l1=0.1),
                 max_initial_weight=None,

@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
-
+from sklearn.preprocessing import MinMaxScaler
 
 def split_data(x_data, y_data, train_ratio, seed=10):
     """Split up X, Y data into train, test and validate groups
@@ -32,18 +32,20 @@ def generate_synthetic_dataset(num_datapoints=1000):
     """
     x_data, y_data = make_classification(
         n_samples=num_datapoints,
-        n_features=40,
+        n_features=15,
         n_informative=10,
         n_redundant=0,
         n_repeated=0,
         n_classes=3,
         n_clusters_per_class=2,
-        class_sep=2.0,
+        class_sep=3.0,
         flip_y=0.05,
         random_state=17,
     )
+    scaler = MinMaxScaler().fit(x_data)
+    x_data = scaler.transform(x_data)
     y_data = to_categorical(y_data, num_classes=len(np.unique(y_data)))
-    train_data, test_data = split_data(x_data, y_data, 0.8)
+    train_data, test_data = split_data(x_data, y_data, 0.7)
     return train_data, test_data
 
 

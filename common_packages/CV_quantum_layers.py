@@ -209,6 +209,7 @@ class QuantumLayer_MultiQunode(keras.Model):
             self.max_initial_weight = self.get_max_non_phase_parameter(
                 trace_threshold=0.99
             )
+            print('Max Initial Amplitudes:', self.max_initial_weight)
             self.scale_max = scale_max
         else:
             self.max_initial_weight = max_initial_weight
@@ -407,7 +408,6 @@ class QuantumLayer_MultiQunode(keras.Model):
             trace = sum(traces) / self.n_qumodes_per_circuit
 
             if trace < trace_threshold:
-                print("Trace: ", trace, "Value: ", max_value, "Count: ", count)
                 max_value -= decrement
                 count = 0
             else:
@@ -419,7 +419,6 @@ class QuantumLayer_MultiQunode(keras.Model):
                 )
                 return
 
-        print("max input: ", max_value)
         return max_value
 
     def call(self, x):
