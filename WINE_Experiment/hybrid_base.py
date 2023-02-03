@@ -137,10 +137,9 @@ def define_and_train(network_type, num_qumodes):
     x_train, x_test, y_train, y_test = prepare_dataset()
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
-    model.load_weights(f"{EXPERIMENT_NAME}/{11}/weights/weight{26}.ckpt", by_name=False)
     model.fit(
         x_train, y_train,
-        epochs=NUM_EPOCHS-(21+25+26),
+        epochs=NUM_EPOCHS,
         batch_size=BATCH_SIZE,
         validation_data=[x_test, y_test],
         callbacks=[LogPerformance()],

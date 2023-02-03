@@ -128,6 +128,6 @@ def define_and_train(sigma, num_qumodes, network_type):
             target_experiment_path = f"{BASE_EXPERIMENT_NAME}/{experiment_num}"
             break
     model.load_weights(f"{target_experiment_path}/weights/weight{NUM_EPOCHS-1}.ckpt", by_name=False)
-    for i in range(20):
+    for i in range(10):
         val_loss, val_acc = model.evaluate(*validate_data, verbose=2)
         log_performance(val_accuracy=val_acc, val_loss=val_loss, epoch=i)  # pylint: disable=E1120
