@@ -50,15 +50,13 @@ def log_performance(_run, val_accuracy, val_loss, epoch):
 @ex.config
 def confnet_config():
     """Default config"""
-    precision = 2**14-1  # pylint: disable=W0612
     num_qumodes = 2  # pylint: disable=W0612
     network_type = "classical"  # pylint: disable=W0612
     sigma = 0.5
-    #network_type = "quantum"
 
 
 @ex.automain
-def define_and_train(precision, num_qumodes, network_type, sigma):
+def define_and_train(num_qumodes, network_type, sigma):
     """Build and run the network"""
 
     tf.random.set_seed(RANDOM_SEED)
@@ -68,7 +66,8 @@ def define_and_train(precision, num_qumodes, network_type, sigma):
 
         def __init__(self):
             super().__init__()
-            self.gaussian = layers.GaussianNoise(sigma)
+            precision = 2**15 - 1
+            self.gaussian = layers.GaussianNoise(sigma, training=True)
             self.base_model = models.Sequential(
                 [
                     PWBLinearLayer(
@@ -121,7 +120,7 @@ def define_and_train(precision, num_qumodes, network_type, sigma):
 
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
-            output = self.gaussian(inputs) 
+            output = self.gaussian(inputs, training=True)
             output = self.base_model(output)
             output = self.classical1(output)
             if network_type == "quantum":

@@ -17,7 +17,7 @@ from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, 
 from PWBLayer_TF import PWBLinearLayer
 from common_packages.utilities import get_equivalent_classical_layer_size
 
-EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment1"
+EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -49,10 +49,9 @@ def log_performance(_run, val_accuracy, val_loss, epoch):
 @ex.config
 def confnet_config():
     """Default config"""
-    sigma = 1  # pylint: disable=W0612
-    num_qumodes = 3  # pylint: disable=W0612
+    sigma = 1 # pylint: disable=W0612
+    num_qumodes = 2  # pylint: disable=W0612
     network_type = "classical"  # pylint: disable=W0612
-
 
 @ex.automain
 def define_and_train(sigma, num_qumodes, network_type):
@@ -80,7 +79,7 @@ def define_and_train(sigma, num_qumodes, network_type):
                     [
                         layers.Dense(
                             get_equivalent_classical_layer_size(num_qumodes, 2 * num_qumodes, 3),
-                            activation="softmax",
+                            activation="relu",
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         ),
@@ -105,7 +104,7 @@ def define_and_train(sigma, num_qumodes, network_type):
 
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
-            output = self.gaussian(inputs)
+            output = self.gaussian(inputs, training=True)
             output = self.base_model(output)
             if network_type == "quantum":
                 output = self.quantum_preparation_layer(output)
@@ -127,6 +126,7 @@ def define_and_train(sigma, num_qumodes, network_type):
         if config["num_qumodes"] == num_qumodes and config["network_type"] == network_type:
             target_experiment_path = f"{BASE_EXPERIMENT_NAME}/{experiment_num}"
             break
+    
     model.load_weights(f"{target_experiment_path}/weights/weight{NUM_EPOCHS-1}.ckpt", by_name=False)
     for i in range(10):
         val_loss, val_acc = model.evaluate(*validate_data, verbose=2)
