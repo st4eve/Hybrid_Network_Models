@@ -128,28 +128,35 @@ class MultiPlot(AbstractPlotter):
         legend_position_y=1.0,
         legend_formatter=None,
         yerr=0,
-        title=None
+        title=None,
+        fig = None,
+        ax=None
     ):
         super().__init__("Multi Plot", x, y, x_label, y_label, yerr=yerr, title=title)
         self.legend_values = legend_values
         self.set_option("legend_name", legend_name)
         self.set_option("legend_position_x", legend_position_x)
         self.set_option("legend_position_y", legend_position_y)
+        self.ax = ax
+        self.fig = fig
 
     def setup_plot(self):
-        self.fig = plt.figure(
-            figsize=(
-                float(self.options["figure_size_x"]),
-                float(self.options["figure_size_y"]),
+        if self.fig == None:
+            self.fig = plt.figure(
+                figsize=(
+                    float(self.options["figure_size_x"]),
+                    float(self.options["figure_size_y"]),
+                )
             )
-        )
-        ax = plt.subplot(111)
-        self.ax = ax
-        plt.grid(True, linestyle=":")
-        plt.xlabel(self.options["x_label"])
-        plt.ylabel(self.options["y_label"])
+        else:
+            self.fig.set_size_inches(float(self.options["figure_size_x"]),
+                                    float(self.options["figure_size_y"]))
+        if self.ax==None: self.ax = plt.subplot(111)
+        self.ax.grid(True, linestyle=":")
+        self.fig.supxlabel(self.options["x_label"])
+        self.fig.supylabel(self.options["y_label"])
         for i in range(len(self.x)):
-            plt.plot(
+            self.ax.plot(
                 self.x[i],
                 self.y[i],
                 marker=self.options["marker"],
@@ -158,7 +165,7 @@ class MultiPlot(AbstractPlotter):
                 linewidth=float(self.options["linewidth"]),
             )
             if ((self.yerr[i] != 0).any()):
-                plt.fill_between(self.x[i],self.y[i] - self.yerr[i], self.y[i] + self.yerr[i], alpha=0.25, label='_nolegend_')
+                self.ax.fill_between(self.x[i],self.y[i] - self.yerr[i], self.y[i] + self.yerr[i], alpha=0.25, label='_nolegend_', interpolate=True)
         if (self.legend_values==None):
             legend = self.options['legend_name']
         else:
@@ -185,7 +192,7 @@ class MultiPlot(AbstractPlotter):
                 frameon=False
             )
         if (self.options['title'] != None):
-            plt.title(self.options['title'])
+            self.fig.suptitle(self.options['title'])
 
         plt.tight_layout()
 

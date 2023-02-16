@@ -12,10 +12,10 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
 BATCH_SIZE = 36
-NUM_EPOCHS = 50
+NUM_EPOCHS = 100
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Hybrid_Base_Experiment"
+EXPERIMENT_NAME = "Synthetic_Hybrid_Base_Experiment_100Epochs"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds

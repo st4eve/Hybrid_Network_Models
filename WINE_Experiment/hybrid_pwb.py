@@ -67,7 +67,7 @@ def define_and_train(num_qumodes, network_type, sigma):
         def __init__(self):
             super().__init__()
             precision = 2**15 - 1
-            self.gaussian = layers.GaussianNoise(sigma, training=True)
+            self.gaussian = layers.GaussianNoise(sigma)
             self.base_model = models.Sequential(
                 [
                     PWBLinearLayer(
