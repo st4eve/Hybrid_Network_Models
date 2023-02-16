@@ -1,0 +1,14 @@
+{
+    "experiment_file": "tf_base.py",
+    "parameters": {
+        "network_type": [
+            "classical_tf"
+        ],
+        "num_qumodes": [
+            2,
+            3,
+            4,
+            5
+        ]
+    }
+}
