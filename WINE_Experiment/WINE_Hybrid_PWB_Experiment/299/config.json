@@ -1,0 +1,7 @@
+{
+  "__doc__": "Default config",
+  "network_type": "classical_tf",
+  "num_qumodes": 3,
+  "seed": 358273678,
+  "sigma": 0.17306896551724138
+}
