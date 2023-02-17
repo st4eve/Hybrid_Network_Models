@@ -1,0 +1,10 @@
+10/10 - 0s - loss: 1.3871 - accuracy: 0.6467 - 143ms/epoch - 14ms/step
+10/10 - 0s - loss: 1.3418 - accuracy: 0.6533 - 72ms/epoch - 7ms/step
+10/10 - 0s - loss: 1.4108 - accuracy: 0.6367 - 67ms/epoch - 7ms/step
+10/10 - 0s - loss: 1.3389 - accuracy: 0.6567 - 75ms/epoch - 8ms/step
+10/10 - 0s - loss: 1.1570 - accuracy: 0.6767 - 70ms/epoch - 7ms/step
+10/10 - 0s - loss: 1.2902 - accuracy: 0.6200 - 71ms/epoch - 7ms/step
+10/10 - 0s - loss: 1.1968 - accuracy: 0.6733 - 73ms/epoch - 7ms/step
+10/10 - 0s - loss: 1.4138 - accuracy: 0.6600 - 73ms/epoch - 7ms/step
+10/10 - 0s - loss: 1.5522 - accuracy: 0.6100 - 72ms/epoch - 7ms/step
+10/10 - 0s - loss: 1.3337 - accuracy: 0.6667 - 72ms/epoch - 7ms/step

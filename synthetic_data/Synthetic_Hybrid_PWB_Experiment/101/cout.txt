@@ -1,0 +1,10 @@
+10/10 - 32s - loss: 1.5862 - accuracy: 0.5600 - 32s/epoch - 3s/step
+10/10 - 32s - loss: 1.3810 - accuracy: 0.6333 - 32s/epoch - 3s/step
+10/10 - 32s - loss: 1.5934 - accuracy: 0.5433 - 32s/epoch - 3s/step
+10/10 - 32s - loss: 1.4080 - accuracy: 0.5733 - 32s/epoch - 3s/step
+10/10 - 32s - loss: 1.3156 - accuracy: 0.6300 - 32s/epoch - 3s/step
+10/10 - 32s - loss: 1.4422 - accuracy: 0.5833 - 32s/epoch - 3s/step
+10/10 - 31s - loss: 1.2867 - accuracy: 0.6400 - 31s/epoch - 3s/step
+10/10 - 31s - loss: 1.5239 - accuracy: 0.5800 - 31s/epoch - 3s/step
+10/10 - 31s - loss: 1.6610 - accuracy: 0.5533 - 31s/epoch - 3s/step
+10/10 - 31s - loss: 1.4113 - accuracy: 0.5933 - 31s/epoch - 3s/step

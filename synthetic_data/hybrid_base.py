@@ -45,10 +45,10 @@ def confnet_config():
     """Default config"""
     network_type = "classical"  # pylint: disable=W0612
     num_qumodes = 3  # pylint: disable=W0612
-
+    iteration = 99
 
 @ex.automain
-def define_and_train(network_type, num_qumodes):
+def define_and_train(network_type, num_qumodes, iteration):
     """Build and run the network"""
 
     tf.random.set_seed(RANDOM_SEED)

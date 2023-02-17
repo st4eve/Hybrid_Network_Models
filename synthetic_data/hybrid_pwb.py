@@ -17,7 +17,7 @@ from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, 
 from PWBLayer_TF import PWBLinearLayer
 from common_packages.utilities import get_equivalent_classical_layer_size
 
-EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment"
+EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment_Test"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -121,13 +121,14 @@ def define_and_train(sigma, num_qumodes, network_type):
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
     sub_folders = [folder for folder in listdir(BASE_EXPERIMENT_NAME) if isdir(join(BASE_EXPERIMENT_NAME, folder))]
     experiment_numbers = [sub_folder for sub_folder in sub_folders if sub_folder.isdigit()]
+    target_experiment_path_list = []
     for experiment_num in experiment_numbers:
         config = get_config(f"{BASE_EXPERIMENT_NAME}/{experiment_num}")
         if config["num_qumodes"] == num_qumodes and config["network_type"] == network_type:
-            target_experiment_path = f"{BASE_EXPERIMENT_NAME}/{experiment_num}"
-            break
+            target_experiment_path_list.append(f"{BASE_EXPERIMENT_NAME}/{experiment_num}")
     
-    model.load_weights(f"{target_experiment_path}/weights/weight{NUM_EPOCHS-1}.ckpt", by_name=False)
-    for i in range(10):
-        val_loss, val_acc = model.evaluate(*validate_data, verbose=2)
-        log_performance(val_accuracy=val_acc, val_loss=val_loss, epoch=i)  # pylint: disable=E1120
+    for target_experiment_path in target_experiment_path_list:
+        model.load_weights(f"{target_experiment_path}/weights/weight{NUM_EPOCHS-1}.ckpt", by_name=False)
+        for i in range(10):
+            val_loss, val_acc = model.evaluate(*validate_data, verbose=2)
+            log_performance(val_accuracy=val_acc, val_loss=val_loss, epoch=i)  # pylint: disable=E1120
