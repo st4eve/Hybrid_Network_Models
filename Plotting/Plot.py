@@ -4,7 +4,6 @@ from abc import abstractmethod
 
 import matplotlib as mpl
 
-mpl.use("TkAgg")
 mpl.interactive(True)
 import matplotlib.pyplot as plt
 import numpy as np

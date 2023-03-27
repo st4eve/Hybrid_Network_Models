@@ -1,5 +1,5 @@
 {
-    "experiment_file": "hybrid_pwb.py",
+    "experiment_file": "tf_pwb.py",
     "parameters": {
         "sigma": [
 	1,
@@ -35,12 +35,11 @@
 	0.001
         ],
         "network_type": [
-            "quantum",
-	    			"classical"
+	    			"classical_tf"
         ],
         "num_qumodes": [
             2,
-			3,
+				    3,
             4 
         ]
     }
