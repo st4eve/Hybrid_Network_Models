@@ -17,7 +17,7 @@ from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, 
 from PWBLayer_TF import PWBLinearLayer
 from common_packages.utilities import get_equivalent_classical_layer_size
 
-EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment_Test"
+EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment_Test2"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
