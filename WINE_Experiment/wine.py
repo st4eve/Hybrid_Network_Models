@@ -233,6 +233,16 @@ def prepare_wine_dataset(output_qualities, seed):
     )
     return train_data, test_data, validate_data
 
+def prepare_dataset_for_visualization(output_qualities, seed):
+    wine_dataset = load_wine_dataset()
+    drop_wine_correlated_features(wine_dataset=wine_dataset)
+    drop_wine_outliers(wine_dataset=wine_dataset)
+    balanced_wine_dataset = balance_wine_dataset(
+        wine_dataset=wine_dataset, output_qualities=output_qualities
+    )
+    eliminate_skews(balanced_wine_dataset)
+    return balanced_wine_dataset
+    
 def save_training_data(x_train, x_val, y_train, y_val): 
     data = np.array([x_train, x_val, y_train, y_val], dtype=object)
     np.save('./WINE_Dataset/WINE.npy', data, allow_pickle=True)
