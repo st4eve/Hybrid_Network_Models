@@ -24,7 +24,7 @@ def split_data(x_data, y_data, train_ratio, seed=10):
     return (x_train, y_train), (x_test, y_test)
 
 
-def generate_synthetic_dataset(num_datapoints=1000):
+def generate_synthetic_dataset(num_datapoints=1000, n_features=15, n_classes=3):
     """Generates synthetic dataset for cutoff dimension analysis
 
     Returns:
@@ -32,11 +32,11 @@ def generate_synthetic_dataset(num_datapoints=1000):
     """
     x_data, y_data = make_classification(
         n_samples=num_datapoints,
-        n_features=15,
-        n_informative=10,
+        n_features=n_features,
+        n_informative=n_features//3 * 2,
         n_redundant=0,
         n_repeated=0,
-        n_classes=3,
+        n_classes=n_classes,
         n_clusters_per_class=2,
         class_sep=3.0,
         flip_y=0.05,
@@ -47,6 +47,31 @@ def generate_synthetic_dataset(num_datapoints=1000):
     y_data = to_categorical(y_data, num_classes=len(np.unique(y_data)))
     train_data, test_data = split_data(x_data, y_data, 0.7)
     return train_data, test_data
+
+def generate_synthetic_dataset_easy(num_datapoints=5000, n_features=15, n_classes=3):
+    """Generates synthetic dataset for cutoff dimension analysis
+
+    Returns:
+        tuple: Tuple of numpy arrays of x,y data
+    """
+    x_data, y_data = make_classification(
+        n_samples=num_datapoints,
+        n_features=n_features,
+        n_informative=n_features,
+        n_redundant=0,
+        n_repeated=0,
+        n_classes=n_classes,
+        n_clusters_per_class=1,
+        class_sep=2.0,
+        flip_y=0,
+        random_state=17,
+    )
+    scaler = MinMaxScaler().fit(x_data)
+    x_data = scaler.transform(x_data)
+    y_data = to_categorical(y_data, num_classes=len(np.unique(y_data)))
+    train_data, test_data = split_data(x_data, y_data, 0.7)
+    return train_data, test_data
+
 
 
 def save_training_data(x_train, x_val, y_train, y_val):

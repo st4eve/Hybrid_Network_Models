@@ -40,3 +40,6 @@ def get_equivalent_classical_layer_size(num_qumodes, num_input_neurons, num_outp
     num_qumode_params = get_num_parameters_per_quantum_layer(num_qumodes) + num_qumodes * num_output_neurons
     num_params_per_classical_neuron = num_input_neurons + num_output_neurons + 1
     return math.ceil(num_qumode_params / num_params_per_classical_neuron)
+
+
+

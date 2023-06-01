@@ -11,15 +11,15 @@ date:   7 Jan 2018
 # can contain unused fields
 
 DEFAULT_SLURM_FIELDS = {
-    'memory': 64,
+    'memory': 16,
     'memory_unit': 'GB',
     'num_nodes': 1,
-    'num_cpus': 16,
-    'time_d': 0, 'time_h': 0, 'time_m': 0, 'time_s': 0,
+    'num_cpus': 4,
+    'time_d': 1, 'time_h': 0, 'time_m': 0, 'time_s': 0,
     'reserve': 'nqit',
     'job_name': 'myjob',
-    'output': 'output%A%a.txt',
-    'error' : 'error%A%a.txt'
+    'output': 'output/output%A%a.txt',
+    'error' : 'output/error%A%a.txt'
 }
 
 # a template for the entire submit script
