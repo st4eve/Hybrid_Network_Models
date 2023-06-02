@@ -12,10 +12,10 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
 BATCH_SIZE = 36
-NUM_EPOCHS = 100
+NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Hybrid_Base_Experiment_cutoff10"
+EXPERIMENT_NAME = "Synthetic_Hybrid_Base_Experiment_Hard"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -43,8 +43,8 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
-    network_type = "classical"  # pylint: disable=W0612
-    num_qumodes = 3  # pylint: disable=W0612
+    network_type = "quantum"  # pylint: disable=W0612
+    num_qumodes = 2  # pylint: disable=W0612
     cutoff=5
 
 @ex.automain
@@ -93,19 +93,20 @@ def define_and_train(network_type, num_qumodes, cutoff):
                         ),
                     ]
                 )
-            self.quantum_layer = QuantumLayer_MultiQunode(
-                n_qumodes=num_qumodes,
-                n_circuits=1,
-                n_layers=1,
-                cutoff_dim=cutoff,
-                encoding_method="Amplitude_Phase",
-                regularizer=regularizers.L1(l1=0.1),
-                max_initial_weight=None,
-                measurement_object=CV_Measurement("X_quadrature"),
-                shots=None,
-            )
+            if network_type=='quantum':
+                self.quantum_layer = QuantumLayer_MultiQunode(
+                    n_qumodes=num_qumodes,
+                    n_circuits=1,
+                    n_layers=1,
+                    cutoff_dim=cutoff,
+                    encoding_method="Amplitude_Phase",
+                    regularizer=regularizers.L1(l1=0.1),
+                    max_initial_weight=None,
+                    measurement_object=CV_Measurement("X_quadrature"),
+                    shots=None,
+                )
 
-            self.quantum_preparation_layer = Activation_Layer("Sigmoid", self.quantum_layer.encoding_object)
+                self.quantum_preparation_layer = Activation_Layer("Sigmoid", self.quantum_layer.encoding_object)
 
             self.final_layer = models.Sequential(
                 [

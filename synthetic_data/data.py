@@ -38,7 +38,7 @@ def generate_synthetic_dataset(num_datapoints=1000, n_features=15, n_classes=3):
         n_repeated=0,
         n_classes=n_classes,
         n_clusters_per_class=2,
-        class_sep=3.0,
+        class_sep=1.0,
         flip_y=0.05,
         random_state=17,
     )
