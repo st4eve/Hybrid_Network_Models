@@ -43,7 +43,7 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
-    network_type = "classical"  # pylint: disable=W0612
+    network_type = "quantum"  # pylint: disable=W0612
     num_qumodes = 2  # pylint: disable=W0612
     cutoff=5
     n_layers=1
@@ -76,11 +76,7 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         ) for i in range(n_layers - 1)
-                    ] + [layers.Dense(num_qumodes,
-                                      trainable=True,
-                                      bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                                      kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0)
-                                      )]
+                    ]
                 )
             if network_type=='quantum':
                 self.quantum_layer = QuantumLayer_MultiQunode(
@@ -96,7 +92,18 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
                 )
 
                 self.quantum_preparation_layer = Activation_Layer("Sigmoid", self.quantum_layer.encoding_object)
-
+            
+            self.final_layer = models.Sequential(
+                [
+                    layers.Dense(
+                        num_qumodes,
+                        activation="softmax",
+                        trainable=False,
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
+                ]
+            )
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
             if network_type == "quantum":
@@ -106,6 +113,7 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
                 output = self.quantum_substitue(inputs)
             else:
                 raise ValueError("Invalid network type specified.")
+            output = self.final_layer(output)
             return output
 
     train_data, test_data = generate_synthetic_dataset_easy(n_features=2*num_qumodes, n_classes=num_qumodes)

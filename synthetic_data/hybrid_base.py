@@ -44,8 +44,8 @@ class LogPerformance(Callback):
 def confnet_config():
     """Default config"""
     network_type = "quantum"  # pylint: disable=W0612
-    num_qumodes = 2  # pylint: disable=W0612
-    cutoff=5
+    num_qumodes = 4  # pylint: disable=W0612
+    cutoff=10
 
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff):
