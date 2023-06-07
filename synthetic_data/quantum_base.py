@@ -1,7 +1,7 @@
 """Hybrid Network Models 2022"""
 import tensorflow as tf
 from data import generate_synthetic_dataset_easy
-from keras import Model, layers, models, regularizers
+from keras import Model, layers, models, regularizers, activations
 from keras.callbacks import Callback
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
@@ -11,7 +11,7 @@ from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, 
 from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 NUM_EPOCHS = 100
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
@@ -46,7 +46,7 @@ def confnet_config():
     network_type = "classical"  # pylint: disable=W0612
     num_qumodes = 2  # pylint: disable=W0612
     cutoff=5
-    n_layers=3
+    n_layers=1
 
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
@@ -77,19 +77,19 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
                         )
                     ]
                 if n_layers > 2:
-                    layer_size = get_equivalent_classical_layer_size(num_qumodes, initial_layer_size, num_qumodes)
+                    layer_size1 = get_equivalent_classical_layer_size(num_qumodes, initial_layer_size, num_qumodes)
                     self.quantum_substitue += [
                         layers.Dense(
-                            layer_size,
+                            layer_size1,
                             activation="relu",
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         )
                     ]
-                    layer_size = get_equivalent_classical_layer_size(num_qumodes, layer_size, layer_size)
+                    layer_size2 = get_equivalent_classical_layer_size(num_qumodes, layer_size, layer_size)
                     self.quantum_substitue += [
                         layers.Dense(
-                            layer_size,
+                            layer_size2,
                             activation="relu",
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -97,7 +97,7 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
                     ]
                     self.quantum_substitue += [
                         layers.Dense(
-                            get_equivalent_classical_layer_size(num_qumodes, layer_size, num_qumodes),
+                            get_equivalent_classical_layer_size(num_qumodes, layer_size2, num_qumodes),
                             activation="relu",
                             bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                             kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -141,6 +141,7 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
             else:
                 raise ValueError("Invalid network type specified.")
             output = self.final_layer(output)
+            output = self.activation(output)
             return output
 
     train_data, test_data = generate_synthetic_dataset_easy(n_features=2*num_qumodes, n_classes=num_qumodes)
