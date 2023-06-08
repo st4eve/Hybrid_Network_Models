@@ -3,6 +3,7 @@ import tensorflow as tf
 from data import generate_synthetic_dataset_easy
 from keras import Model, layers, models, regularizers
 from keras.callbacks import Callback
+from keras.utils.layer_utils import count_params
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
@@ -12,10 +13,10 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
 BATCH_SIZE = 64
-NUM_EPOCHS = 100
+NUM_EPOCHS = 150
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment"
+EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment2"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -32,13 +33,20 @@ def log_performance(_run, logs, epoch, model):
     model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 
+@ex.capture
+def save_num_params(_run, logs, model, epoch):
+    _run.log_scalar('num_params', int(count_params(model.trainable_weights)), NUM_EPOCHS)
+
+
 class LogPerformance(Callback):
     """Logs performance"""
 
     def on_epoch_end(self, epoch, logs=None):
         """Log key metrics on epoch end"""
         log_performance(logs=logs, epoch=epoch, model=self.model)  # pylint: disable=E1120
-
+    
+    def on_train_end(self, epoch, logs=None):
+        save_num_params(logs=logs, model=self.model, epoch=epoch)
 
 @ex.config
 def confnet_config():
@@ -46,7 +54,7 @@ def confnet_config():
     network_type = "classical"  # pylint: disable=W0612
     num_qumodes = 2  # pylint: disable=W0612
     cutoff=5
-    n_layers=3
+    n_layers=1
 
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
@@ -123,7 +131,7 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
             self.final_layer = models.Sequential(
                 [
                     layers.Dense(
-                        num_qumodes,
+                        4,
                         activation="softmax",
                         trainable=False,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -143,7 +151,7 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
             output = self.final_layer(output)
             return output
 
-    train_data, test_data = generate_synthetic_dataset_easy(n_features=2*num_qumodes, n_classes=num_qumodes)
+    train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=2*num_qumodes, n_classes=4)
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
     model.fit(
@@ -153,3 +161,5 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
         validation_data=test_data,
         callbacks=[LogPerformance()],
     )
+        
+

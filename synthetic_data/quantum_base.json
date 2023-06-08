@@ -1,15 +1,26 @@
 {
-    "experiment_file": "hybrid_base.py",
+    "experiment_file": "quantum_base.py",
     "parameters": {
         "network_type": [
+            "classical",
             "quantum"
         ],
         "num_qumodes": [
+            2,
+            3,
             4
         ]
         ,
         "cutoff": [
-            10
+            5
+        ]
+        ,
+        "n_layers": [
+            1,
+            2,
+            3,
+            4,
+            5
         ]
    }
 }

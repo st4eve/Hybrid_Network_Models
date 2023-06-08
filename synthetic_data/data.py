@@ -62,7 +62,7 @@ def generate_synthetic_dataset_easy(num_datapoints=5000, n_features=15, n_classe
         n_repeated=0,
         n_classes=n_classes,
         n_clusters_per_class=1,
-        class_sep=1.0,
+        class_sep=2.0,
         flip_y=0,
         random_state=17,
     )
