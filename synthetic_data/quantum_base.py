@@ -13,7 +13,7 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
 BATCH_SIZE = 64
-NUM_EPOCHS = 150
+NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
 EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment2"
@@ -51,8 +51,8 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
-    network_type = "classical"  # pylint: disable=W0612
-    num_qumodes = 2  # pylint: disable=W0612
+    network_type = "quantum"  # pylint: disable=W0612
+    num_qumodes = 4  # pylint: disable=W0612
     cutoff=5
     n_layers=1
 

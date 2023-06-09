@@ -375,7 +375,7 @@ class QuantumLayer_MultiQunode(keras.Model):
         # but that gets slow as the values get smaller.
         decrement = max_value / 200
 
-        count = 0
+        count = 0 
         while count < 100:
 
             # Get inputs using our
@@ -391,15 +391,15 @@ class QuantumLayer_MultiQunode(keras.Model):
                 inputs = tf.concat([t1, t2], 0)
 
             keras_network = QuantumLayer_MultiQunode(
-                n_qumodes=self.n_qumodes,
-                n_circuits=1,
-                n_layers=self.n_layers,
-                cutoff_dim=self.cutoff_dim,
-                encoding_method=self.encoding_method,
-                regularizer=None,
-                max_initial_weight=max_value,
-                measurement_object=CV_Measurement("Fock"),
-            )
+                    n_qumodes=self.n_qumodes,
+                    n_circuits=1,
+                    n_layers=self.n_layers,
+                    cutoff_dim=self.cutoff_dim,
+                    encoding_method=self.encoding_method,
+                    regularizer=None,
+                    max_initial_weight=max_value,
+                    measurement_object=CV_Measurement("Fock"),
+                    )
 
             network = keras_network.circuit_layer[0]
 

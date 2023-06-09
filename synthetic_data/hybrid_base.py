@@ -15,7 +15,7 @@ BATCH_SIZE = 36
 NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Hybrid_Base_Experiment_NotAsHard"
+EXPERIMENT_NAME = "Synthetic_Hybrid_Base_Experiment_Cutoff10"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
