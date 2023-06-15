@@ -5,6 +5,7 @@ import pennylane as qml
 import numpy as np
 from numpy import random
 
+#%%
 def quantum_layer(initial_weight, cutoff_dim, n_layers, n_qumodes):
     dev = qml.device("strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim)
 
@@ -69,7 +70,7 @@ def quantum_layer(initial_weight, cutoff_dim, n_layers, n_qumodes):
 
     return circuit
 
-
+#%%
 def get_max_input(initial_weight, cutoff_dim, n_layers, n_qumodes, norm_threshold):
     def find_max_displacement(cutoff_dim, norm_threshold):
         cutoff_dim = int(cutoff_dim)
@@ -114,5 +115,5 @@ def get_max_input(initial_weight, cutoff_dim, n_layers, n_qumodes, norm_threshol
     print("Norm: ", norm, "Inputs: ", inputs, "Count: ", count)
 
 
-
+#%%
 get_max_input(initial_weight=0.1, cutoff_dim=5, n_layers=1, n_qumodes=4, norm_threshold=0.99)

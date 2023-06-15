@@ -1,3 +1,4 @@
+#%%
 import strawberryfields as sf
 from strawberryfields.ops import *
 import pennylane as qml
@@ -45,13 +46,13 @@ def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=
         plt.gca().add_patch(a)
 
     if (save_name is not None):
-        plt.savefig(save_name + '.jpg',
-                    format='jpg',
+        plt.savefig(save_name + '.svg',
+                    format='svg',
                     dpi=300,
                     bbox_inches='tight')
     fig.tight_layout(pad=0.5)
     plt.show()
-
+#%%
 def plot_pdf_overlay(X, P, Z1, Z2, source_pt=None, dest_pt=None, line_curve=False, save_name=None):
     """CV_Plots the probability density function over all time steps."""
     fig, axes = plt.subplots(1, figsize=(2.8, 2.8))
@@ -77,8 +78,8 @@ def plot_pdf_overlay(X, P, Z1, Z2, source_pt=None, dest_pt=None, line_curve=Fals
             plt.gca().add_patch(a)
 
     if (save_name is not None):
-        plt.savefig(save_name + '.jpg',
-                    format='jpg',
+        plt.savefig(save_name + '.svg',
+                    format='svg',
                     dpi=300,
                     bbox_inches='tight')
     fig.tight_layout(pad=0.5)
@@ -95,7 +96,7 @@ eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
-plot_pdf(X, P, Z, save_name="CV_Plots/VacuumState")
+plot_pdf(X, P, Z, save_name="VacuumState")
 
 #%% Rotation Gate
 prog = sf.Program(1)
@@ -117,7 +118,7 @@ dest_pt = (2*4*np.cos(np.pi/4+(2/3)*np.pi), 2*4*np.sin(np.pi/4+(2/3)*np.pi))
 
 Z = Z1+Z2
 
-plot_pdf(X, P, Z, source_pt, dest_pt, line_curve=True, save_name="CV_Plots/RotationGate")
+plot_pdf(X, P, Z, source_pt, dest_pt, line_curve=True, save_name="RotationGate")
 
 #%% Displacement Gate
 prog = sf.Program(1)
@@ -130,15 +131,15 @@ source_pt = (0,0)
 
 prog = sf.Program(1)
 with prog.context as q:
-    Dgate(4, 5*np.pi/4) | q[0]
+    Dgate(4, np.pi/4) | q[0]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z2 = state.wigner(0, X, P)
-dest_pt = (2*4*np.cos((1/4)*np.pi), 2*4*np.sin((1/4)*np.pi))
+dest_pt = (6*np.cos((1/4)*np.pi), 6*np.sin((1/4)*np.pi))
 
 Z = Z1+Z2
 
-plot_pdf(X, P, Z, source_pt, dest_pt, line_curve=False, save_name="CV_Plots/DisplacementGate")
+plot_pdf(X, P, Z, source_pt, dest_pt, line_curve=False, save_name="DisplacementGate")
 
 #%% Squeezed State
 prog = sf.Program(1)
@@ -148,7 +149,7 @@ eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
-plot_pdf(X, P, Z, save_name="CV_Plots/SqueezedVacuumState")
+plot_pdf(X, P, Z, save_name="SqueezedVacuumState")
 
 #%% Squeezed State
 prog = sf.Program(1)
@@ -159,7 +160,7 @@ eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
-plot_pdf(X, P, Z, save_name="CV_Plots/SqueezedState")
+plot_pdf(X, P, Z, save_name="SqueezedState")
 
 #%% Squeezed State
 prog = sf.Program(1)
@@ -170,34 +171,37 @@ with prog.context as q:
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
-plot_pdf(X, P, Z, save_name="CV_Plots/SqueezedRotatedState")
+plot_pdf(X, P, Z, save_name="SqueezedRotatedState")
 
 #%% Two-Mode Squeezed State
 prog = sf.Program(2)
 with prog.context as q:
-    S2gate(-1,0) | (q[0], q[1])
+    BSgate(np.pi/4, 0) | (q[0], q[1])
+    Sgate(2,0) | (q[0])
+    Sgate(-2,0) | (q[1])
+    BSgate(np.pi/4, 0) | (q[0], q[1])
+    eng = sf.Engine('gaussian')
+state = eng.run(prog).state
+Z_1 = state.wigner(0, X, P)
+Z_2 = state.wigner(1, X, P)
+
+plot_pdf(X, P, Z_1, save_name="TwoModeSqueezedState1.1")
+plot_pdf(X, P, Z_2, save_name="TwoModeSqueezedState1.2")
+
+#%% Two-Mode Squeezed State
+prog = sf.Program(2)
+with prog.context as q:
+    S2gate(1,0) | (q[0], q[1])
+    BSgate() | (q[0], q[1])
+    Rgate(np.pi/2) | q[0] 
     BSgate() | (q[0], q[1])
     eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z_1 = state.wigner(0, X, P)
 Z_2 = state.wigner(1, X, P)
 
-plot_pdf(X, P, Z_1, save_name="CV_Plots/TwoModeSqueezedState1.1")
-plot_pdf(X, P, Z_2, save_name="CV_Plots/TwoModeSqueezedState1.2")
-
-#%% Two-Mode Squeezed State
-prog = sf.Program(2)
-with prog.context as q:
-    S2gate(-1,0) | (q[0], q[1])
-    Rgate(np.pi/2) | q[0]
-    BSgate() | (q[0], q[1])
-    eng = sf.Engine('gaussian')
-state = eng.run(prog).state
-Z_1 = state.wigner(0, X, P)
-Z_2 = state.wigner(1, X, P)
-
-plot_pdf(X, P, Z_1, save_name="CV_Plots/TwoModeSqueezedState2.1")
-plot_pdf(X, P, Z_2, save_name="CV_Plots/TwoModeSqueezedState2.2")
+plot_pdf(X, P, Z_1, save_name="TwoModeSqueezedState2.1")
+plot_pdf(X, P, Z_2, save_name="TwoModeSqueezedState2.2")
 
 #
 
@@ -209,7 +213,7 @@ eng = sf.Engine('fock', backend_options={"cutoff_dim": 10})
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
-plot_pdf(X, P, Z, save_name="CV_Plots/CubicPhaseGate")
+plot_pdf(X, P, Z, save_name="CubicPhaseGate")
 
 #%% Kerr Gate
 prog = sf.Program(1)
@@ -220,7 +224,7 @@ eng = sf.Engine('fock', backend_options={"cutoff_dim": 10})
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
-plot_pdf(X, P, Z, save_name="CV_Plots/KerrGate")
+plot_pdf(X, P, Z, save_name="KerrGate")
 
 #%% Fock Cutoff effect
 cutoff_dim=30
@@ -240,7 +244,56 @@ print(integral1)
 
 integral2 = np.sum(outputs2)
 print(integral2)
+#%% Original Coherent state
+alpha = 1+0.5j
+r = np.abs(alpha)
+phi = np.angle(alpha)
 
+prog = sf.Program(1)
+with prog.context as q:
+    Coherent(r, phi) | q[0]
+    eng = sf.Engine('gaussian')
+    
+state = eng.run(prog).state
+Z = state.wigner(0, X, P)
+
+plot_pdf(X, P, Z, save_name="Coherent_Before")
+#%% Teleportation
+alpha = 1+0.5j
+r = np.abs(alpha)
+phi = np.angle(alpha)
+
+prog = sf.Program(3)
+with prog.context as q:
+    # prepare initial states
+    Coherent(r, phi) | q[0]
+    Squeezed(-2) | q[1]
+    Squeezed(2) | q[2]
+
+    # apply gates
+    BS = BSgate(np.pi/4, np.pi)
+    BS | (q[1], q[2])
+    BS | (q[0], q[1])
+
+    # Perform homodyne measurements
+    MeasureX | q[0]
+    MeasureP | q[1]
+
+    # Displacement gates conditioned on
+    # the measurements
+    Xgate(np.sqrt(2) * q[0].par) | q[2]
+    Zgate(-np.sqrt(2) * q[1].par) | q[2]
+
+    eng = sf.Engine('gaussian')
+state = eng.run(prog).state
+Z_1 = state.wigner(0, X, P)
+Z_2 = state.wigner(1, X, P)
+Z_3 = state.wigner(2, X, P)
+plot_pdf(X, P, Z_1, save_name="Tele_1")
+plot_pdf(X, P, Z_2, save_name="Tele_2")
+plot_pdf(X, P, Z_3, save_name="Tele_3")
+
+#%%
 # Create plot
 fig, axes = plt.subplots(figsize=(3.2,2.4))
 
@@ -292,7 +345,7 @@ Z2 = Z1_0+Z1_1
 source_pt2 = (4*np.cos(np.pi), 4*np.sin(np.pi))
 dest_pt2 = (0,-3.5)
 
-plot_pdf_overlay(X, P, Z1, Z2,save_name="CV_Plots/BeamSplitterGate")
+plot_pdf_overlay(X, P, Z1, Z2,save_name="BeamSplitterGate")
 
 #plot_pdf_overlay(X, P, Z1, Z2, source_pt=[source_pt1, source_pt2], dest_pt=[dest_pt1, dest_pt2], line_curve=False, save_name="CV_Plots/BeamSplitterGate")
 #%% Cutoff Displacement Plot
@@ -340,9 +393,11 @@ axes.grid(True, linestyle=':')
 fig.legend(["0.99", "0.95", "0.90"], loc="upper left", bbox_to_anchor=(0.2,0.95))
 fig.tight_layout(pad=0.5)
 
-plt.savefig("CV_Plots/Max_Displacement_Cutoff" + '.pdf',
+plt.savefig("Max_Displacement_Cutoff" + '.pdf',
             format='pdf',
             dpi=100,
             bbox_inches='tight')
 
 plt.show()
+
+# %%
