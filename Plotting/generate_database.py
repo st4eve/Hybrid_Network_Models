@@ -107,7 +107,6 @@ class ResultsDatabaseGenerator:
                 data[experiment_number]["metrics"] = metrics
 
         self.data = data
-
         if verify:
             self.verify_parameter_consistency()
 
@@ -122,12 +121,14 @@ class ResultsDatabaseGenerator:
         reference = min(list(data_copy.keys()))
         reference_data = data_copy[reference]
         for exp, data in data_copy.items():
-            if data[param_type].keys() != reference_data[param_type].keys():
-                print(
-                    f"Inconsistent config parameters found in experiment folder between reference and file {str}. Ignoring experiment..."
-                )
-                del data[exp]
-
+            for key1, key2 in zip(data[param_type].keys(), reference_data[param_type].keys()):
+                if key1 != key2:
+                    print(
+                        f"Inconsistent config parameter {key1}!={key2} found in experiment folder between file and reference {exp}. Ignoring experiment..."
+                    )
+                    del self.data[exp]
+                    break
+            
     def get_num_epochs(self):
         """Get the distribution of the number of epochs"""
         num_epochs = []

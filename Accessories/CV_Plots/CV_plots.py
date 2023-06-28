@@ -10,19 +10,17 @@ import matplotlib as mpl
 import matplotlib.patches as patches
 
 mpl.rcParams.update(mpl.rcParamsDefault)
-mpl.rcParams['font.family'] = 'STIXGeneral'
-plt.rcParams['font.size'] = 10
+mpl.rcParams['font.family'] = 'Arial'
+plt.rcParams['font.size'] = 8
 plt.rcParams['axes.linewidth'] = 0.5
 
 #%% PDF plot
 def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=None):
     """CV_Plots the probability density function over all time steps."""
-    fig, axes = plt.subplots(1, figsize=(2.8, 2.8))
+    fig, axes = plt.subplots(1, figsize=(0.85, 0.85))
     cs = axes.contourf(X, P, Z, cmap='Blues')
-    axes.set_xlabel("x (a.u.)")
-    axes.set_ylabel("p (a.u.)",labelpad=-8)
-    axes.set_xlim(-10,10)
-    axes.set_ylim(-10,10)
+    axes.set_xlim(-6,6)
+    axes.set_ylim(-6,6)
 
 
     axes.hlines(y=0, xmin=-10, xmax=10, color='black', lw=0.8)
@@ -32,9 +30,12 @@ def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cs.cmap)
     sm.set_array([])
 
-    cbar = fig.colorbar(sm, ticks=cs.levels)
-    cbar.ax.set_ylabel("$|\Psi(x,t)|^2$ (a.u.)")
-    cbar.ax.tick_params(size=0)
+    axes.set_xticks([])
+    axes.set_yticks([])
+
+    #cbar = fig.colorbar(sm, ticks=cs.levels)
+    #cbar.ax.set_ylabel("$|\Psi(x,t)|^2$ (a.u.)")
+    #cbar.ax.tick_params(size=0)
 
     if(source_pt is not None and dest_pt is not None):
         style = "Simple, tail_width=0.5, head_width=4, head_length=8"
@@ -49,8 +50,9 @@ def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=
         plt.savefig(save_name + '.svg',
                     format='svg',
                     dpi=300,
-                    bbox_inches='tight')
-    fig.tight_layout(pad=0.5)
+                    bbox_inches='tight',
+                    transparent=True)
+    #fig.tight_layout(pad=0.5)
     plt.show()
 #%%
 def plot_pdf_overlay(X, P, Z1, Z2, source_pt=None, dest_pt=None, line_curve=False, save_name=None):
@@ -131,7 +133,7 @@ source_pt = (0,0)
 
 prog = sf.Program(1)
 with prog.context as q:
-    Dgate(4, np.pi/4) | q[0]
+    Dgate(3, np.pi/4) | q[0]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z2 = state.wigner(0, X, P)
@@ -155,7 +157,7 @@ plot_pdf(X, P, Z, save_name="SqueezedVacuumState")
 prog = sf.Program(1)
 with prog.context as q:
     Dgate(1, 0) | q[0]
-    Sgate(-1, 0) | q[0]
+    Sgate(-1, np.pi/2) | q[0]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
@@ -218,9 +220,9 @@ plot_pdf(X, P, Z, save_name="CubicPhaseGate")
 #%% Kerr Gate
 prog = sf.Program(1)
 with prog.context as q:
-    Dgate(3) | q[0]
+    Dgate(2) | q[0]
     Kgate(np.pi) | q[0]
-eng = sf.Engine('fock', backend_options={"cutoff_dim": 10})
+eng = sf.Engine('fock', backend_options={"cutoff_dim": 20})
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
