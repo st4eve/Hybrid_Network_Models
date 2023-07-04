@@ -17,7 +17,7 @@ plt.rcParams['axes.linewidth'] = 0.5
 #%% PDF plot
 def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=None):
     """CV_Plots the probability density function over all time steps."""
-    fig, axes = plt.subplots(1, figsize=(0.85, 0.85))
+    fig, axes = plt.subplots(1, figsize=(2.5, 2))
     cs = axes.contourf(X, P, Z, cmap='Blues')
     axes.set_xlim(-6,6)
     axes.set_ylim(-6,6)
@@ -228,24 +228,7 @@ Z = state.wigner(0, X, P)
 
 plot_pdf(X, P, Z, save_name="KerrGate")
 
-#%% Fock Cutoff effect
-cutoff_dim=30
-dev = qml.device('strawberryfields.tf', wires=1, cutoff_dim=cutoff_dim, hbar=1)
-@qml.qnode(dev, interface="tf")
-def circuit(x, theta):
-    qml.Displacement(x, theta, wires=0)
-    qml.Squeezing(1, np.pi/8, wires=0)
-    return qml.probs(wires=0)
 
-x = np.arange(0,cutoff_dim,1)
-outputs1 = circuit(3, np.pi)
-outputs2 = circuit(5, 0)
-
-integral1 = np.sum(outputs1)
-print(integral1)
-
-integral2 = np.sum(outputs2)
-print(integral2)
 #%% Original Coherent state
 alpha = 1+0.5j
 r = np.abs(alpha)
@@ -295,7 +278,24 @@ plot_pdf(X, P, Z_1, save_name="Tele_1")
 plot_pdf(X, P, Z_2, save_name="Tele_2")
 plot_pdf(X, P, Z_3, save_name="Tele_3")
 
-#%%
+#%%Fock Cutoff effect
+cutoff_dim=30
+dev = qml.device('strawberryfields.tf', wires=1, cutoff_dim=cutoff_dim, hbar=1)
+@qml.qnode(dev, interface="tf")
+def circuit(x, theta):
+    qml.Displacement(x, theta, wires=0)
+    qml.Squeezing(1, 0, wires=0)
+    return qml.probs(wires=0)
+
+x = np.arange(0,cutoff_dim,1)
+outputs1 = circuit(3, np.pi)
+outputs2 = circuit(5, 0)
+
+integral1 = np.sum(outputs1)
+print(integral1)
+
+integral2 = np.sum(outputs2)
+print(integral2)
 # Create plot
 fig, axes = plt.subplots(figsize=(3.2,2.4))
 
@@ -307,22 +307,22 @@ axes.xaxis.set_tick_params(which='major', size=3, width=0.5, direction='in', rig
 axes.yaxis.set_tick_params(which='major', size=3, width=0.5, direction='in', right='on')
 axes.set_xlabel("Fock State (n)")
 axes.set_xlim(-3, 33)
-axes.set_ylim(-0.01, 0.15)
+axes.set_ylim(0.0, 0.15)
 axes.set_ylabel("Probability (a.u.)")
 axes.grid(True, linestyle=':')
 fig.tight_layout(pad=0.5)
 
-plt.savefig("CV_Plots/Fock_Cutoff" + '.pdf',
-            format='pdf',
-            dpi=100,
-            bbox_inches='tight')
+# plt.savefig("Fock_Cutoff" + '.pdf',
+#             format='pdf',
+#             dpi=100,
+#             bbox_inches='tight')
 
 plt.show()
 
 #%% Beam Splitter
 prog = sf.Program(2)
 with prog.context as q:
-    Dgate(4, np.pi/4) | q[0]
+    Dgate(2, np.pi/2) | q[0]
     Dgate(2, np.pi) | q[1]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
@@ -331,9 +331,9 @@ Z1_0 = state.wigner(0, X, P)
 
 prog = sf.Program(2)
 with prog.context as q:
-    Dgate(4, np.pi/4) | q[0]
+    Dgate(2, np.pi/2) | q[0]
     Dgate(2, np.pi) | q[1]
-    BSgate(9*np.pi/5, 0) | (q[0],q[1])
+    BSgate() | (q[0],q[1])
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 
