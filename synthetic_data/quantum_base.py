@@ -13,10 +13,10 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
 BATCH_SIZE = 64
-NUM_EPOCHS = 150
+NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment2"
+EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment_cutoff_sweep"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -52,9 +52,10 @@ class LogPerformance(Callback):
 def confnet_config():
     """Default config"""
     network_type = "classical"  # pylint: disable=W0612
-    num_qumodes = 2  # pylint: disable=W0612
+    num_qumodes = 4  # pylint: disable=W0612
     cutoff=5
-    n_layers=1
+    n_layers=5
+    iteration=-1
 
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
@@ -65,8 +66,20 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
 
         def __init__(self):
             super().__init__()
+            self.input_layer = models.Sequential(
+                [
+                    layers.Dense(
+                        2*num_qumodes,
+                        activation=None,
+                        trainable=True,
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ),
+                ]
+            )
+
             if network_type == "classical":
-                initial_layer_size = get_equivalent_classical_layer_size(num_qumodes, 2 * num_qumodes, num_qumodes)
+                initial_layer_size = get_equivalent_classical_layer_size(num_qumodes, 2*num_qumodes, num_qumodes)
                 self.quantum_substitue = [
                         layers.Dense(
                             initial_layer_size,
@@ -141,17 +154,18 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
             )
         def call(self, inputs):  # pylint: disable=W0221
             """Call the network"""
+            output = self.input_layer(inputs)
             if network_type == "quantum":
-                output = self.quantum_preparation_layer(inputs)
+                output = self.quantum_preparation_layer(output)
                 output = self.quantum_layer(output)
             elif network_type == "classical":
-                output = self.quantum_substitue(inputs)
+                output = self.quantum_substitue(output)
             else:
                 raise ValueError("Invalid network type specified.")
             output = self.final_layer(output)
             return output
 
-    train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=2*num_qumodes, n_classes=4)
+    train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
     model = Net()
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
     model.fit(

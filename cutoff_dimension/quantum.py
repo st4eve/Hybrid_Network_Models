@@ -52,7 +52,7 @@ def confnet_config():
 def define_and_train(quantum_preparation_layer, regularizer_string, scale_max):
     """Build and run the network"""
 
-    set_seed(30)
+    set_seed(17)
 
     class Net(Model):
         """Neural network model to train on"""
@@ -63,14 +63,10 @@ def define_and_train(quantum_preparation_layer, regularizer_string, scale_max):
             self.base_model = models.Sequential(
                 [
                     layers.Dense(
-                        10,
-                        input_dim=10,
-                        activation="relu",
-                    ),
-                    layers.Dense(
                         6,
+                        input_dim=10,
                         activation=None,
-                    ),
+                    ) 
                 ]
             )
 
