@@ -26,13 +26,22 @@ def find_max_time(exp_path):
             max_time = time
             max_exp = exp
     return max_exp, max_time
-    
+
+def print_max_time(exp_path):
+    exp, time = find_max_time(exp_path)
+    print('In %s the maximum experiment time was:'%exp_path)
+    print("Experiment %s took %s"%(exp, time))
+    with open(exp_path + '/' + exp + '/config.json', 'r') as file:
+        config = json.load(file)
+    config.pop('__doc__')
+    print('Config:')
+    for key, val in config.items():
+        print("\t%s: %s"%(key.capitalize(), val)) 
 def main():
     metrics_path = "../synthetic_data/Synthetic_Quantum_Base_Experiment3/6/metrics.json"
     calc_time(metrics_path)
     
-    print(find_max_time("../synthetic_data/Synthetic_Quantum_Base_Experiment3"))
-    
+    print_max_time("../synthetic_data/Synthetic_Quantum_Base_Experiment3") 
 if __name__ == "__main__":
     main()
     

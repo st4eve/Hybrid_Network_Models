@@ -99,13 +99,12 @@ class ResultsDatabaseGenerator:
             experiment_path = experiment_folder + "/" + experiment
             config = get_config(experiment_path)
             metrics = get_metrics(experiment_path)
-
-            if config is not None and metrics is not None:
+            if config is not None and metrics is not None and metrics != '{}' and metrics != {}:
                 experiment_number = int(experiment)
                 data[experiment_number] = {}
                 data[experiment_number]["config"] = config
                 data[experiment_number]["metrics"] = metrics
-
+        
         self.data = data
         if verify:
             self.verify_parameter_consistency()
