@@ -6,7 +6,7 @@ import json
 import os
 import copy
 from Plotting.generate_database import get_directories, get_config, get_metrics
-ex_path = "/home/st4eve/Mounts/graham/Hybrid_Network_Models/synthetic_data/Synthetic_Quantum_Base_Experiment_cutoff_sweep"
+ex_path = "Synthetic_Quantum_Base_Experiment_cutoff_sweep"
 #%%
 with open('quantum_base.json', 'r') as json_file:
     parameters = json.load(json_file)

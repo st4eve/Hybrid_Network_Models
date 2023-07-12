@@ -6,6 +6,7 @@ from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 from tensorflow.random import set_seed
+import numpy as np
 
 from common_packages.CV_quantum_layers import (
     Activation_Layer,
@@ -28,6 +29,7 @@ def log_performance(_run, logs, epoch, traces):
     _run.log_scalar("val_loss", float(logs.get("val_loss")), epoch)
     _run.log_scalar("val_accuracy", float(logs.get("val_accuracy")), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
+    trace_sum = np.sum(traces)
     _run.log_scalar("traces", traces, epoch)
 
 
