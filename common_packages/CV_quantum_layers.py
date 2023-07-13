@@ -18,9 +18,11 @@ class CV_Encoding:
             self.conversion = 1
         elif mode == "Amplitude_Phase":
             self.conversion = 2
+        elif mode == "Kerr":
+            self.conversion = 5
         else:
             raise ValueError(
-                "Please specify a valid encoding type. Valid type are Amplitude, Phase, and Amplitude_Phase."
+                "Please specify a valid encoding type. Valid type are Amplitude, Phase, Amplitude_Phase, and Kerr."
             )
         self.mode = mode
         self.phase_amplitude = phase_amplitude
@@ -37,7 +39,21 @@ class CV_Encoding:
                 qml.Displacement(
                     features[i], features[i + int(len(features) / 2)], wires=wires[i]
                 )
+        if self.mode == "Kerr":
+            for i in range(0, len(features), self.conversion):
+                wire = i//self.conversion
+                qml.Squeezing(
+                    features[i], features[i+1], wires=wires[wire]
+                )
+                qml.Displacement(
+                    features[i+2], features[i + 3], wires=wires[wire]
+                )
+                qml.Kerr(
+                    features[i+4], wires=wires[i//5]
+                ) 
+        #if self.mode == "Fock":
 
+#%%
 
 # %% CV Measurement
 """This class wraps around the measurement methods to make them simpler to access"""
@@ -92,7 +108,16 @@ class Activation_Layer:
             x_split[0] *= self.encoding_object.phase_amplitude
             x_split[1] *= 2 * np.pi
             x = tf.concat([x_split[i] for i in range(2)], axis=1)
-
+        if self.encoding_object.mode == "Kerr":
+            # Displace [0, max_value] with phase of [0, 2pi]
+            # Split up input to set correct ranges, then join back together
+            x_split = list(tf.split(x, 5, axis=1))
+            x_split[0] *= self.encoding_object.phase_amplitude
+            x_split[1] *= 2 * np.pi
+            x_split[2] *= self.encoding_object.phase_amplitude
+            x_split[3] *= 2 * np.pi
+            x_split[4] *= 2 * np.pi
+            x = tf.concat([x_split[i] for i in range(5)], axis=1)
         return x
 
 

@@ -220,7 +220,8 @@ plot_pdf(X, P, Z, save_name="CubicPhaseGate")
 #%% Kerr Gate
 prog = sf.Program(1)
 with prog.context as q:
-    Dgate(2) | q[0]
+    #Dgate(2, np.pi) | q[0]
+    Sgate(-0.5, 0) | q[0]
     Kgate(np.pi) | q[0]
 eng = sf.Engine('fock', backend_options={"cutoff_dim": 20})
 state = eng.run(prog).state
