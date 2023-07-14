@@ -49,7 +49,7 @@ class CV_Encoding:
                     features[i+2], features[i + 3], wires=wires[wire]
                 )
                 qml.Kerr(
-                    features[i+4], wires=wires[i//5]
+                    features[i+4], wires=wires[wire]
                 ) 
         #if self.mode == "Fock":
 
@@ -414,6 +414,16 @@ class QuantumLayer_MultiQunode(keras.Model):
                     [int(self.n_qumodes)], minval=0, maxval=2 * np.pi
                 )
                 inputs = tf.concat([t1, t2], 0)
+            if self.encoding_method == "Kerr":
+                t = []
+                for i in range(5*self.n_qumodes, 5):
+                    t.append(max_value)
+                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
+                    t.append(max_value)
+                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
+                    t.append(tf.random.uniform(1, minval=0, maxval=np.pi))
+                inputs = tf.convert_to_tensor(t)
+                
 
             keras_network = QuantumLayer_MultiQunode(
                 n_qumodes=self.n_qumodes,
