@@ -6,6 +6,7 @@ import json
 import os
 import copy
 from Plotting.generate_database import get_directories, get_config, get_metrics
+import shutil
 ex_path = "Synthetic_Quantum_Base_Experiment_cutoff_sweep"
 #%%
 with open('quantum_base.json', 'r') as json_file:
@@ -15,7 +16,7 @@ for key, val in parameters['parameters'].items():
 print(parameters)
 
 #%%
-failed_exps = []
+failed_exps = {}
 def initialize_from_folder(experiment_folder):
     """Create a blob of data for the results directory"""
     experiment_names = [
@@ -26,10 +27,17 @@ def initialize_from_folder(experiment_folder):
         config = get_config(experiment_path)
         metrics = get_metrics(experiment_path)
 
-        if metrics is None and config is not None:
+        if (metrics is None or metrics=={} or metrics=='{}') and config is not None:
             print("No metrics found for experiment: " + experiment)
             config.pop('__doc__', None)
-            failed_exps.append(copy.deepcopy(config))
+            failed_exps[experiment] = copy.deepcopy(config)
+            shutil.rmtree(experiment_path)
+        elif len(metrics['accuracy']) <= 199:
+            print("Incomplete metrics for experiment: " + experiment)
+            config.pop('__doc__', None)
+            failed_exps[experiment] = copy.deepcopy(config)
+    with open('failed_exps.json', 'w') as json_file:
+        json.dump(failed_exps, json_file)
 
 fields = {
             'memory': 48,
@@ -62,9 +70,9 @@ trial=${{SLURM_ARRAY_TASK_ID}}
 initialize_from_folder(ex_path)
 
 call_function = ""
-for exp in failed_exps:
+for exp, config in failed_exps.items():
     call_function += f"srun python quantum_base.py with "
-    for key, val in exp.items():
+    for key, val in config.items():
         call_function += f"{key}={val} "
     call_function += '\n'
 

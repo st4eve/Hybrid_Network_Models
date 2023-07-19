@@ -30,13 +30,12 @@ def log_performance(_run, logs, epoch, model):
     _run.log_scalar("val_loss", float(logs.get("val_loss")), epoch)
     _run.log_scalar("val_accuracy", float(logs.get("val_accuracy")), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
-    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 
 @ex.capture
-def save_num_params(_run, logs, model, epoch):
+def save_num_params_weights(_run, logs, model, epoch):
     _run.log_scalar('num_params', int(count_params(model.trainable_weights)), NUM_EPOCHS)
-
+    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 class LogPerformance(Callback):
     """Logs performance"""
@@ -163,7 +162,6 @@ def define_and_train(network_type, num_qumodes, cutoff, n_layers):
             else:
                 raise ValueError("Invalid network type specified.")
             output = self.final_layer(output)
-            output = self.activation(output)
             return output
 
     train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)

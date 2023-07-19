@@ -16,7 +16,7 @@ BATCH_SIZE = 64
 NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment_cutoff_sweep"
+EXPERIMENT_NAME = "Synthetic_Quantum_Base_Kerr"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -30,13 +30,12 @@ def log_performance(_run, logs, epoch, model):
     _run.log_scalar("val_loss", float(logs.get("val_loss")), epoch)
     _run.log_scalar("val_accuracy", float(logs.get("val_accuracy")), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
-    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 
 @ex.capture
 def save_num_params(_run, logs, model, epoch):
     _run.log_scalar('num_params', int(count_params(model.trainable_weights)), NUM_EPOCHS)
-
+    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 class LogPerformance(Callback):
     """Logs performance"""
@@ -53,9 +52,9 @@ def confnet_config():
     """Default config"""
     network_type = "classical"  # pylint: disable=W0612
     num_qumodes = 2  # pylint: disable=W0612
-    cutoff=5
+    cutoff='classical'
     n_layers=1
-    iteration=-1
+    iteration=1
 
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
