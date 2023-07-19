@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from Plotting.generate_database import get_config, get_directories
 import os
 
 def calc_time(metrics_path):
@@ -26,6 +27,23 @@ def find_max_time(exp_path):
             max_time = time
             max_exp = exp
     return max_exp, max_time
+
+def generate_time_databse(exp_path):
+    experiment_names = [
+            x for x in get_directories(exp_path) if x.isdigit()
+        ]
+    data = {}
+    for experiment in experiment_names:
+        experiment_path = exp_path + "/" + experiment
+        config = get_config(experiment_path)
+        time = calc_time(experiment_path+'/metrics.json')
+        if config is not None and time is not None and time != 0:
+            experiment_number = int(experiment)
+            data[experiment_number] = {}
+            data[experiment_number]["config"] = config
+            data[experiment_number]["time"] = time
+    
+    return data
 
 def print_max_time(exp_path):
     exp, time = find_max_time(exp_path)
