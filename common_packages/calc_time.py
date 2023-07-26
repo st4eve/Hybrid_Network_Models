@@ -1,18 +1,36 @@
 import json
 from datetime import datetime, timedelta
 from Plotting.generate_database import get_config, get_directories
+import numpy as np
 import os
 
 def calc_time(metrics_path):
-    with open(metrics_path, "r") as file:
-        metrics = json.load(file)
-        
+    try:
+        with open(metrics_path, "r") as file:
+            metrics = json.load(file)
+    except FileNotFoundError:
+        print("File %s not found"%metrics_path)
+        return None 
+    except json.JSONDecodeError:
+        print("File %s is not a valid json file"%metrics_path)
+        return None
     num_epochs = metrics['epoch']['values'][-1]
-    
+    if num_epochs < 199:
+        return None
     time_arr = metrics['epoch']['timestamps']
     time1 = datetime.strptime(time_arr[0], '%Y-%m-%dT%H:%M:%S.%f')
     time2 = datetime.strptime(time_arr[-1], '%Y-%m-%dT%H:%M:%S.%f')
     return time2 - time1 
+
+def calc_time_per_epoch(metrics_path):
+    with open(metrics_path, 'r') as file:
+        metrics = json.load(file)
+    num_epochs = metrics['epoch']['values'][-1]
+    
+    time_arr = np.array(metrics['epoch']['timestamps'])
+    time_arr = time_arr.astype('datetime64[ns]')
+    time_diff = time_arr[1:] - time_arr[:-1]
+    return time_diff 
 
 def find_max_time(exp_path):
     exps = os.listdir(exp_path)
@@ -28,7 +46,7 @@ def find_max_time(exp_path):
             max_exp = exp
     return max_exp, max_time
 
-def generate_time_databse(exp_path):
+def generate_time_database(exp_path):
     experiment_names = [
             x for x in get_directories(exp_path) if x.isdigit()
         ]
@@ -55,11 +73,14 @@ def print_max_time(exp_path):
     print('Config:')
     for key, val in config.items():
         print("\t%s: %s"%(key.capitalize(), val)) 
+
 def main():
     metrics_path = "../synthetic_data/Synthetic_Quantum_Base_Experiment3/6/metrics.json"
     calc_time(metrics_path)
     
     print_max_time("../synthetic_data/Synthetic_Quantum_Base_Experiment3") 
+    
+    calc_time_per_epoch(metrics_path)
 if __name__ == "__main__":
     main()
     
