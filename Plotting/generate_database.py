@@ -34,8 +34,8 @@ def get_config(experiment_path):
         return config
     except Exception as exception:
         # For now, when we have an issue reading from a file, return None
-        print(f"Exception {exception}")
-        print(f"Error reading from config file {experiment_path} . Ignoring file...")
+        #print(f"Exception {exception}")
+        #print(f"Error reading from config file {experiment_path} . Ignoring file...")
         return None
 
 

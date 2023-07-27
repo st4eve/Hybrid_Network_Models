@@ -9,10 +9,10 @@ def calc_time(metrics_path):
         with open(metrics_path, "r") as file:
             metrics = json.load(file)
     except FileNotFoundError:
-        print("File %s not found"%metrics_path)
+        #print("File %s not found"%metrics_path)
         return None 
     except json.JSONDecodeError:
-        print("File %s is not a valid json file"%metrics_path)
+        #print("File %s is not a valid json file"%metrics_path)
         return None
     num_epochs = metrics['epoch']['values'][-1]
     if num_epochs < 199:
