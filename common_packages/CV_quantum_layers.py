@@ -219,6 +219,8 @@ class QuantumLayer_MultiQunode(keras.Model):
         self.traces = []
         self.shots = shots
         self.scale_max = 1
+        self.qnodes = [] 
+        self.test = 'here'
 
         # Calculate number of qumodes based on the down-scaling from encoding and number of circuits
         self.n_qumodes_per_circuit = self.n_qumodes / self.n_circuits
@@ -259,7 +261,7 @@ class QuantumLayer_MultiQunode(keras.Model):
                 self.measurement_object,
                 shots=self.shots,
             )
-
+            self.qnodes.append(cv_nn)
             # Define weight shapes
             weight_shapes = self.define_weight_shapes(
                 L=self.n_layers, M=self.n_qumodes_per_circuit
