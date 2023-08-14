@@ -1,17 +1,17 @@
 """Quantum Fisher Information Matrix
 """
 #%%
+%reload_ext autoreload
+%autoreload 2
+import sys
 import numpy as np
-from matplotlib import pyplot as plt
-import matplotlib as mpl
-mpl.use('pdf')
+import tensorflow as tf
 import sys
 sys.path.append("../")
 import copy
+from sacred import Experiment
 import pennylane as qml
-from Plotting.generate_database import ResultsDatabaseGenerator
 from common_packages.utilities import get_equivalent_classical_layer_size, get_num_parameters_per_quantum_layer
-from Plotting.Plot import BasicPlot, MultiPlot
 import pandas as pd
 colors =   ["#5dd448",
             "#bfa900",
@@ -19,23 +19,15 @@ colors =   ["#5dd448",
             "#e9496f",
             "#b04ca4",]
 
-colors = ["#332288", "#88CCEE", "#44AA99", "#117733", "#999933", "#DDCC77", "#CC6677", "#882255", "#AA4499"]
-mpl.rcParams['axes.prop_cycle'] = mpl.cycler(color=colors)
-mpl.rcParams['mathtext.fontset'] = 'stix'
-mpl.rcParams["font.family"] = "sans-serif"
-plt.rcParams["font.size"] = 12
-plt.rcParams["axes.linewidth"] = 0.5
 
-import numpy as np
+
 from quantum_base import Net as Net_orig
 from quantum_base import OPTIMIZER, LOSS_FUNCTION
 from quantum_base_kerr import Net as Net_kerr
 from data import generate_synthetic_dataset_easy
-import seaborn as sns
-from itertools import product
-test_data, validate_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
+train_data, validate_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
 
-test_data_kerr, validate_data_kerr = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=15, n_classes=4)
+train_data_kerr, validate_data_kerr = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=15, n_classes=4)
 
 orig_ex_folder = '/home/st4eve/Mounts/graham/synthetic_data/Synthetic_Quantum_Base_Experiment_cutoff_sweep/'
 kerr_ex_folder = '/home/st4eve/Mounts/graham/synthetic_data/Synthetic_Quantum_Base_Kerr/'
@@ -77,8 +69,18 @@ exp_quantum = exp_orig['quantum'].idxmax()
 model.load_weights(f'{orig_ex_folder}{exp_quantum}/weights/weight99.ckpt').expect_partial()
 model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
 
-#model(test_data[0])
-
-print(model.quantum_layer.qnodes)
-
-#qfim = qml.qinfo.tranforms.quantum_fisher(model.qnodes[0])
+model(validate_data[0][0:1])
+#%%
+inputs = model.quantum_preparation_layer(model.input_layer(validate_data[0][0:1]))
+density_matrix = model.quantum_layer.get_density_matrix(inputs)
+print(density_matrix)
+# qnode = model.quantum_layer.qnodes[0]
+# input_layer = model.input_layer
+# quantum_prep_layer = model.quantum_preparation_layer
+# weights = model.quantum_layer.weights
+# params = tf.constant(quantum_prep_layer(input_layer(validate_data[0][0:1])))
+# print(params[0][0])
+# print(qnode(*params, *weights))
+# cfim = qml.qinfo.classical_fisher(qnode)(*params, *weights)
+#print(cfim)
+# %%

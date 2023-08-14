@@ -61,7 +61,7 @@ class CV_Encoding:
 
 class CV_Measurement:
     def __init__(self, mode):
-        if not (mode == "X_quadrature" or mode == "Fock"):
+        if not (mode == "X_quadrature" or mode == "Fock" or mode == 'Density'):
             raise ValueError(
                 "Please specify a valid measurement type. Valid types are X_quadrature and Fock."
             )
@@ -72,7 +72,8 @@ class CV_Measurement:
             return [qml.expval(qml.X(wires=i)) for i in range(n_qumodes)]
         if self.mode == "Fock":
             return [qml.probs(wires=i) for i in range(n_qumodes)]
-
+        if self.mode == 'Density':
+            return [qml.var(qml.X(wires=i)) for i in range(n_qumodes)]
 
 # %% Quantum Activation Layer
 class Activation_Layer:
@@ -134,10 +135,10 @@ def build_cv_quantum_node(
     :return: CV qnode
     """
     dev = qml.device(
-        "strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim, shots=shots
+        "strawberryfields.tf", wires=n_qumodes, cutoff_dim=cutoff_dim
     )
 
-    @qml.qnode(dev, interface="tf", shots=shots)
+    @qml.qnode(dev, interface="tf")
     def cv_nn(
         inputs,
         theta_1,
@@ -383,6 +384,36 @@ class QuantumLayer_MultiQunode(keras.Model):
                     np.sum(tf.math.real(fock_dist)) / self.n_qumodes_per_circuit
                 )
                 self.traces.append(average_trace)
+    
+    def get_density_matrix(self, x):
+        density_measurer = QuantumLayer_MultiQunode(
+            n_qumodes=self.n_qumodes,
+            n_circuits=self.n_circuits,
+            n_layers=self.n_layers,
+            cutoff_dim=self.cutoff_dim,
+            encoding_method=self.encoding_method,
+            regularizer=None,
+            max_initial_weight=self.max_initial_weight,
+            measurement_object=CV_Measurement("Density"),
+        )
+        # Split the inputs across the number of circuits
+        x_split = list(tf.split(x, self.n_circuits, axis=1))
+
+        # Initialize the model, so the weights can be copied.
+        # Without sending one input through, the weights don't get set.
+        # Then, initialize the weights, and find the traces.
+        density_matrix = []
+        for i in range(self.n_circuits):
+            x_subsample = x_split[i]
+            density_measurer.circuit_layer[i](x_subsample[0])
+            density_measurer.circuit_layer[i].set_weights(
+                self.circuit_layer[i].get_weights()
+            )
+            density_matrix.append([])
+            for sample in x_subsample:
+                dm = density_measurer.circuit_layer[i](sample)
+                density_matrix[i].append(dm)
+        return density_matrix
 
     def get_max_non_phase_parameter(self, trace_threshold=0.99):
         """
