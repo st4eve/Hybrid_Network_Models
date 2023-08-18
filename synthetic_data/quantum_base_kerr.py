@@ -13,7 +13,7 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
 BATCH_SIZE = 64
-NUM_EPOCHS = 200
+NUM_EPOCHS = 700
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
 EXPERIMENT_NAME = "Synthetic_Quantum_Base_Kerr"
@@ -54,7 +54,7 @@ def confnet_config():
     num_qumodes = 2  # pylint: disable=W0612
     cutoff='classical'
     n_layers=1
-    iteration=1
+    iteration=-1
 
 class Net(Model):  # pylint: disable=W0223
     """Neural network model to train on"""
@@ -178,7 +178,7 @@ class Net(Model):  # pylint: disable=W0223
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
     """Build and run the network"""
 
-    train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=15, n_classes=4)
+    train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
     model = Net(
         network_type=network_type,
         num_qumodes=num_qumodes,
