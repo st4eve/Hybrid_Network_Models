@@ -45,7 +45,7 @@ class LogPerformance(Callback):
         log_performance(logs=logs, epoch=epoch, model=self.model)  # pylint: disable=E1120
     
     def on_train_end(self, epoch, logs=None):
-        save_num_params(logs=logs, model=self.model, epoch=epoch)
+        save_num_params_weights(logs=logs, model=self.model, epoch=epoch)
 
 @ex.config
 def confnet_config():
