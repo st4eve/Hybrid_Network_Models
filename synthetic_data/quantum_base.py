@@ -16,7 +16,7 @@ BATCH_SIZE = 64
 NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment_cutoff_sweep"
+EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment_loss_test"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -56,116 +56,131 @@ def confnet_config():
     n_layers=5
     iteration=-1
 
+class Net(Model):  # pylint: disable=W0223
+    """Neural network model to train on"""
+
+    def __init__(self,
+                    network_type,
+                    num_qumodes,
+                    cutoff,
+                    n_layers,
+                    max_initial_weight=None,
+                    ):
+        super().__init__()
+        self.network_type = network_type
+        self.num_qumodes = num_qumodes
+        self.cutoff = cutoff
+        self.n_layers = n_layers
+        self.max_initial_weight = max_initial_weight
+        self.input_layer = models.Sequential(
+            [
+                layers.Dense(
+                    2*num_qumodes,
+                    activation=None,
+                    trainable=True,
+                    bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                ),
+            ]
+        )
+
+        if network_type == "classical":
+            initial_layer_size = get_equivalent_classical_layer_size(num_qumodes, 2*num_qumodes, num_qumodes)
+            self.quantum_substitue = [
+                    layers.Dense(
+                        initial_layer_size,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    )]
+            if n_layers == 2:
+                layer_size = get_equivalent_classical_layer_size(num_qumodes, initial_layer_size, num_qumodes)
+                self.quantum_substitue += [
+                    layers.Dense(
+                        layer_size,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    )
+                ]
+            if n_layers > 2:
+                layer_size1 = get_equivalent_classical_layer_size(num_qumodes, initial_layer_size, num_qumodes)
+                self.quantum_substitue += [
+                    layers.Dense(
+                        layer_size1,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    )
+                ]
+                layer_size2 = get_equivalent_classical_layer_size(num_qumodes, layer_size1, layer_size1)
+                self.quantum_substitue += [
+                    layers.Dense(
+                        layer_size2,
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    ) for i in range(n_layers-3)
+                ]
+                self.quantum_substitue += [
+                    layers.Dense(
+                        get_equivalent_classical_layer_size(num_qumodes, layer_size2, num_qumodes),
+                        activation="relu",
+                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    )
+                ]
+            
+            self.quantum_substitue = models.Sequential(self.quantum_substitue)
+        if network_type=='quantum':
+            self.quantum_layer = QuantumLayer_MultiQunode(
+                n_qumodes=num_qumodes,
+                n_circuits=1,
+                n_layers=n_layers,
+                cutoff_dim=cutoff,
+                encoding_method="Amplitude_Phase",
+                regularizer=regularizers.L1(l1=0.1),
+                max_initial_weight=max_initial_weight,
+                measurement_object=CV_Measurement("X_quadrature"),
+                shots=None,
+            )
+
+            self.quantum_preparation_layer = Activation_Layer("Sigmoid", self.quantum_layer.encoding_object)
+        
+        self.final_layer = models.Sequential(
+            [
+                layers.Dense(
+                    4,
+                    activation="softmax",
+                    trainable=False,
+                    bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                    kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
+                ),
+            ]
+        )
+    def call(self, inputs):  # pylint: disable=W0221
+        """Call the network"""
+        output = self.input_layer(inputs)
+        if self.network_type == "quantum":
+            output = self.quantum_preparation_layer(output)
+            output = self.quantum_layer(output)
+        elif self.network_type == "classical":
+            output = self.quantum_substitue(output)
+        else:
+            raise ValueError("Invalid network type specified.")
+        output = self.final_layer(output)
+        return output
+
+
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
     """Build and run the network"""
 
-    class Net(Model):  # pylint: disable=W0223
-        """Neural network model to train on"""
-
-        def __init__(self):
-            super().__init__()
-            self.input_layer = models.Sequential(
-                [
-                    layers.Dense(
-                        2*num_qumodes,
-                        activation=None,
-                        trainable=True,
-                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                    ),
-                ]
-            )
-
-            if network_type == "classical":
-                initial_layer_size = get_equivalent_classical_layer_size(num_qumodes, 2*num_qumodes, num_qumodes)
-                self.quantum_substitue = [
-                        layers.Dense(
-                            initial_layer_size,
-                            activation="relu",
-                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        )]
-                if n_layers == 2:
-                    layer_size = get_equivalent_classical_layer_size(num_qumodes, initial_layer_size, num_qumodes)
-                    self.quantum_substitue += [
-                        layers.Dense(
-                            layer_size,
-                            activation="relu",
-                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        )
-                    ]
-                if n_layers > 2:
-                    layer_size1 = get_equivalent_classical_layer_size(num_qumodes, initial_layer_size, num_qumodes)
-                    self.quantum_substitue += [
-                        layers.Dense(
-                            layer_size1,
-                            activation="relu",
-                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        )
-                    ]
-                    layer_size2 = get_equivalent_classical_layer_size(num_qumodes, layer_size, layer_size)
-                    self.quantum_substitue += [
-                        layers.Dense(
-                            layer_size2,
-                            activation="relu",
-                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        ) for i in range(n_layers-3)
-                    ]
-                    self.quantum_substitue += [
-                        layers.Dense(
-                            get_equivalent_classical_layer_size(num_qumodes, layer_size2, num_qumodes),
-                            activation="relu",
-                            bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                            kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        )
-                    ]
-                
-                self.quantum_substitue = models.Sequential(self.quantum_substitue)
-            if network_type=='quantum':
-                self.quantum_layer = QuantumLayer_MultiQunode(
-                    n_qumodes=num_qumodes,
-                    n_circuits=1,
-                    n_layers=n_layers,
-                    cutoff_dim=cutoff,
-                    encoding_method="Amplitude_Phase",
-                    regularizer=regularizers.L1(l1=0.1),
-                    max_initial_weight=None,
-                    measurement_object=CV_Measurement("X_quadrature"),
-                    shots=None,
-                )
-
-                self.quantum_preparation_layer = Activation_Layer("Sigmoid", self.quantum_layer.encoding_object)
-            
-            self.final_layer = models.Sequential(
-                [
-                    layers.Dense(
-                        4,
-                        activation="softmax",
-                        trainable=False,
-                        bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                        kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
-                    ),
-                ]
-            )
-        def call(self, inputs):  # pylint: disable=W0221
-            """Call the network"""
-            output = self.input_layer(inputs)
-            if network_type == "quantum":
-                output = self.quantum_preparation_layer(output)
-                output = self.quantum_layer(output)
-            elif network_type == "classical":
-                output = self.quantum_substitue(output)
-            else:
-                raise ValueError("Invalid network type specified.")
-            output = self.final_layer(output)
-            return output
-
     train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
-    model = Net()
+    model = Net(network_type=network_type,
+                num_qumodes=num_qumodes,
+                cutoff=cutoff,
+                n_layers=n_layers)
     model.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
     model.fit(
         *train_data,
