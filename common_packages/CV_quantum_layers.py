@@ -219,6 +219,7 @@ class QuantumLayer_MultiQunode(keras.Model):
         self.traces = []
         self.shots = shots
         self.scale_max = 1
+        self.param_vol = 0
 
         # Calculate number of qumodes based on the down-scaling from encoding and number of circuits
         self.n_qumodes_per_circuit = self.n_qumodes / self.n_circuits
@@ -264,6 +265,7 @@ class QuantumLayer_MultiQunode(keras.Model):
             weight_shapes = self.define_weight_shapes(
                 L=self.n_layers, M=self.n_qumodes_per_circuit
             )
+            self.param_vol += self.calc_param_vol(weight_shapes)
 
             # Define weight specifications
             weight_specs = self.define_weight_specs()
@@ -348,6 +350,21 @@ class QuantumLayer_MultiQunode(keras.Model):
             "k": (L, M),
         }
         return weight_shapes
+
+    def calc_param_vol(self, weight_shapes):
+        """
+        Calculate the volume of the parameter space
+        :dict weight_shapes: Dictionary of weight shapes
+        :return: Volume of the parameter space
+        """
+        vol = 0
+        amp_params  = ['r', 'a']
+        for key, val in weight_shapes.items():
+            if key in amp_params:
+                vol += val[0] * val[1] * self.max_initial_weight
+            else:
+                vol += val[0] * val[1] * 2 * np.pi
+        return vol
 
     def get_traces(self, x):
         # Re-initialize the circuit with Fock measurement
@@ -464,6 +481,294 @@ class QuantumLayer_MultiQunode(keras.Model):
         if self.trace_tracking:
             self.get_traces(x)
         return output
+
+
+#%% CV_Quantum Layer Single Circuit
+class QuantumLayer(keras.Model):
+    def __init__(
+        self,
+        n_qumodes,
+        n_layers,
+        cutoff_dim,
+        encoding_method="Amplitude_Phase",
+        regularizer=None,
+        max_initial_weight=None,
+        measurement_object=CV_Measurement("X_quadrature"),
+        trace_tracking=False,
+        shots=None,
+        scale_max=1,
+    ):
+        """
+        Initialize Keras NN layer. Example:
+        8 inputs coming in from previous layer
+        4 qumodes -> n_qumodes = 4
+        1 circuit -> n_circuits = 1
+        Amplitude & Phase encoding -> encoding_object = CV_Encoding("Amplitude_Phase")
+        This results in a single circuit with 4 qumodes because the amplitude+phase encoding
+        divides the inputs from the previous layer by 2
+
+        :param n_qumodes: Total number of qumodes in the network
+        :param n_circuits: Number of circuits in the network
+        :param n_layers: Number of layers within the network
+        :param cutoff_dim: Cutoff dimension for the simulation
+        :param encoding_object: Encoding method
+        :param regularizer: Regularizer object
+        :param max_initial_weight: Maximum value allowed for non-phase parameters
+        :param measurement_method: Measurement method
+        :param trace_tracking: Whether you want traces tracked during training
+        """
+        super().__init__()
+        self.n_qumodes = n_qumodes
+        self.n_layers = n_layers
+        self.cutoff_dim = cutoff_dim
+        self.regularizer = regularizer
+        self.encoding_method = encoding_method
+        self.measurement_object = measurement_object
+        self.trace_tracking = trace_tracking
+        self.traces = []
+        self.shots = shots
+        self.scale_max = 1
+        self.param_vol = 0
+
+        # If we do not have an max weight, run our max initial weight finder algorithm
+        if max_initial_weight is None:
+            self.max_initial_weight = self.get_max_non_phase_parameter(
+                trace_threshold=0.99
+            )
+            print('Max Initial Amplitudes:', self.max_initial_weight)
+            self.scale_max = scale_max
+        else:
+            self.max_initial_weight = max_initial_weight
+
+        # Now that we have our max initial weight, we can define our encoding methods and initialize the circuit
+        self.encoding_object = CV_Encoding(
+            self.encoding_method, self.max_initial_weight
+        )
+        self.initialize_circuit()
+
+    def initialize_circuit(self):
+        # Make quantum node
+        cv_nn = build_cv_quantum_node(
+            self.n_qumodes,
+            self.cutoff_dim,
+            self.encoding_object,
+            self.measurement_object,
+            shots=self.shots,
+        )
+
+        # Define weight shapes
+        weight_shapes = self.define_weight_shapes(
+            L=self.n_layers, M=self.n_qumodes
+        )
+        self.param_vol += self.calc_param_vol(weight_shapes)
+
+        # Define weight specifications
+        weight_specs = self.define_weight_specs()
+
+        # Build circuit
+        self.circuit = qml.qnn.KerasLayer(
+            cv_nn,
+            weight_shapes,
+            output_dim=self.n_qumodes,
+            weight_specs=weight_specs,
+        )
+
+
+    def define_weight_specs(self):
+        """
+        Define the initial weights and regularizers on each parameter
+        :return: dictionary of parameters with their initializers and regularizers
+        """
+        weight_specs = {
+            "theta_1": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "phi_1": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "varphi_1": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "phi_r": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "theta_2": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "phi_2": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "varphi_2": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "phi_a": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "k": {
+                "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
+            },
+            "r": {
+                "initializer": tf.keras.initializers.Constant(
+                    self.scale_max * self.max_initial_weight
+                ),
+                "regularizer": self.regularizer,
+            },
+            "a": {
+                "initializer": tf.keras.initializers.Constant(
+                    self.scale_max * self.max_initial_weight
+                ),
+                "regularizer": self.regularizer,
+            },
+        }
+        return weight_specs
+
+    def define_weight_shapes(self, L, M):
+        """
+        Define the weight shapes for the circuit
+        :param L: Number of layers
+        :param M: Number of qumodes
+        :return: dictionary of parameters with sets of dimensions
+        """
+        K = int(M * (M - 1) / 2)
+        weight_shapes = {
+            "theta_1": (L, K),
+            "phi_1": (L, K),
+            "varphi_1": (L, M),
+            "r": (L, M),
+            "phi_r": (L, M),
+            "theta_2": (L, K),
+            "phi_2": (L, K),
+            "varphi_2": (L, M),
+            "a": (L, M),
+            "phi_a": (L, M),
+            "k": (L, M),
+        }
+        return weight_shapes
+
+    def calc_param_vol(self, weight_shapes):
+        """
+        Calculate the volume of the parameter space
+        :dict weight_shapes: Dictionary of weight shapes
+        :return: Volume of the parameter space
+        """
+        vol = 0
+        amp_params  = ['r', 'a']
+        for key, val in weight_shapes.items():
+            if key in amp_params:
+                vol += val[0] * val[1] * self.max_initial_weight
+            else:
+                vol += val[0] * val[1] * 2 * np.pi
+        return vol
+
+    def get_traces(self, x):
+        # Re-initialize the circuit with Fock measurement
+        fock_measurer = QuantumLayer_MultiQunode(
+            n_qumodes=self.n_qumodes,
+            n_layers=self.n_layers,
+            cutoff_dim=self.cutoff_dim,
+            encoding_method=self.encoding_method,
+            regularizer=None,
+            max_initial_weight=self.max_initial_weight,
+            measurement_object=CV_Measurement("Fock"),
+        )
+
+        # Initialize the model, so the weights can be copied.
+        # Without sending one input through, the weights don't get set.
+        # Then, initialize the weights, and find the traces.
+        fock_measurer.circuit(x)
+        fock_measurer.circuit_layer.set_weights(
+            self.circuit.get_weights()
+        )
+
+        for sample in x:
+            fock_dist = fock_measurer.circuit(sample)
+            average_trace = (
+                np.sum(tf.math.real(fock_dist)) / self.n_qumodes_per_circuit
+            )
+            self.traces.append(average_trace)
+
+        
+    def get_max_non_phase_parameter(self, trace_threshold=0.99):
+        """
+        Find the maximum value for the non-phase weights and encoding bounds.
+        First, we get an initial guess (upper bound) with a basic displacement gate.
+        Then, we create a random set of inputs bounded by our 'max_value' and
+        initialize a network using the 'max_value' as the upper bound on the non-phase parameters.
+        We run the inputs through this random and check if the resulting trace is within our threshold.
+        If not, we lower our 'max_value' and repeat until we get lots of iterations with a good trace.
+        You can adjust the count value as needed.
+        """
+        # Get initial guess by basic max displacement algorithm
+        max_value = find_max_displacement(self.cutoff_dim, trace_threshold)
+
+        # Define the value to decrement by. This is a heuristic based on values observed.
+        # We could alternatively decrement the value by something like 1% of the current value
+        # but that gets slow as the values get smaller.
+        decrement = max_value / 200
+
+        count = 0
+        while count < 100:
+
+            # Get inputs using our
+            if self.encoding_method == "Phase":
+                inputs = tf.random.uniform([self.n_qumodes], minval=0, maxval=2 * np.pi)
+            if self.encoding_method == "Amplitude":
+                inputs = max_value * tf.ones(self.n_qumodes)
+            if self.encoding_method == "Amplitude_Phase":
+                t1 = max_value * tf.ones(int(self.n_qumodes))
+                t2 = tf.random.uniform(
+                    [int(self.n_qumodes)], minval=0, maxval=2 * np.pi
+                )
+                inputs = tf.concat([t1, t2], 0)
+            if self.encoding_method == "Kerr":
+                t = []
+                for i in range(5*self.n_qumodes, 5):
+                    t.append(max_value)
+                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
+                    t.append(max_value)
+                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
+                    t.append(tf.random.uniform(1, minval=0, maxval=np.pi))
+                inputs = tf.convert_to_tensor(t)
+                
+
+            keras_network = QuantumLayer_MultiQunode(
+                n_qumodes=self.n_qumodes,
+                n_layers=self.n_layers,
+                cutoff_dim=self.cutoff_dim,
+                encoding_method=self.encoding_method,
+                regularizer=None,
+                max_initial_weight=max_value,
+                measurement_object=CV_Measurement("Fock"),
+            )
+
+            network = keras_network.circuit_layer[0]
+
+            fock_distribution = network(inputs)
+            traces = [np.sum(dist) for dist in fock_distribution]
+            trace = sum(traces) / self.n_qumodes
+
+            if trace < trace_threshold:
+                max_value -= decrement
+                count = 0
+            else:
+                count += 1
+
+            if max_value <= 0:
+                raise Exception(
+                    "Max value found to be less than or equal to zero, which is invalid."
+                )
+                return
+
+        return max_value
+    
+    
+    def call(self, x):
+        output = self.circuit(x)
+        if self.trace_tracking:
+            self.get_traces(x)
+        return output
+
+
 
 
 #%% Accessory Algorithms
