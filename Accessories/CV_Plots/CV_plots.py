@@ -10,19 +10,17 @@ import matplotlib as mpl
 import matplotlib.patches as patches
 
 mpl.rcParams.update(mpl.rcParamsDefault)
-mpl.rcParams['font.family'] = 'STIXGeneral'
-plt.rcParams['font.size'] = 10
+mpl.rcParams['font.family'] = 'Arial'
+plt.rcParams['font.size'] = 8
 plt.rcParams['axes.linewidth'] = 0.5
 
 #%% PDF plot
 def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=None):
     """CV_Plots the probability density function over all time steps."""
-    fig, axes = plt.subplots(1, figsize=(2.8, 2.8))
+    fig, axes = plt.subplots(1, figsize=(2.5, 2))
     cs = axes.contourf(X, P, Z, cmap='Blues')
-    axes.set_xlabel("x (a.u.)")
-    axes.set_ylabel("p (a.u.)",labelpad=-8)
-    axes.set_xlim(-10,10)
-    axes.set_ylim(-10,10)
+    axes.set_xlim(-6,6)
+    axes.set_ylim(-6,6)
 
 
     axes.hlines(y=0, xmin=-10, xmax=10, color='black', lw=0.8)
@@ -32,9 +30,12 @@ def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cs.cmap)
     sm.set_array([])
 
-    cbar = fig.colorbar(sm, ticks=cs.levels)
-    cbar.ax.set_ylabel("$|\Psi(x,t)|^2$ (a.u.)")
-    cbar.ax.tick_params(size=0)
+    axes.set_xticks([])
+    axes.set_yticks([])
+
+    #cbar = fig.colorbar(sm, ticks=cs.levels)
+    #cbar.ax.set_ylabel("$|\Psi(x,t)|^2$ (a.u.)")
+    #cbar.ax.tick_params(size=0)
 
     if(source_pt is not None and dest_pt is not None):
         style = "Simple, tail_width=0.5, head_width=4, head_length=8"
@@ -49,8 +50,9 @@ def plot_pdf(X, P, Z, source_pt=None, dest_pt=None, line_curve=False, save_name=
         plt.savefig(save_name + '.svg',
                     format='svg',
                     dpi=300,
-                    bbox_inches='tight')
-    fig.tight_layout(pad=0.5)
+                    bbox_inches='tight',
+                    transparent=True)
+    #fig.tight_layout(pad=0.5)
     plt.show()
 #%%
 def plot_pdf_overlay(X, P, Z1, Z2, source_pt=None, dest_pt=None, line_curve=False, save_name=None):
@@ -131,7 +133,7 @@ source_pt = (0,0)
 
 prog = sf.Program(1)
 with prog.context as q:
-    Dgate(4, np.pi/4) | q[0]
+    Dgate(3, np.pi/4) | q[0]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z2 = state.wigner(0, X, P)
@@ -155,7 +157,7 @@ plot_pdf(X, P, Z, save_name="SqueezedVacuumState")
 prog = sf.Program(1)
 with prog.context as q:
     Dgate(1, 0) | q[0]
-    Sgate(-1, 0) | q[0]
+    Sgate(-1, np.pi/2) | q[0]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
@@ -219,32 +221,16 @@ plot_pdf(X, P, Z, save_name="CubicPhaseGate")
 #%% Kerr Gate
 prog = sf.Program(1)
 with prog.context as q:
-    Dgate(3) | q[0]
+    #Dgate(2, np.pi) | q[0]
+    Sgate(-0.5, 0) | q[0]
     Kgate(np.pi) | q[0]
-eng = sf.Engine('fock', backend_options={"cutoff_dim": 10})
+eng = sf.Engine('fock', backend_options={"cutoff_dim": 20})
 state = eng.run(prog).state
 Z = state.wigner(0, X, P)
 
 plot_pdf(X, P, Z, save_name="KerrGate")
 
-#%% Fock Cutoff effect
-cutoff_dim=30
-dev = qml.device('strawberryfields.tf', wires=1, cutoff_dim=cutoff_dim, hbar=1)
-@qml.qnode(dev, interface="tf")
-def circuit(x, theta):
-    qml.Displacement(x, theta, wires=0)
-    qml.Squeezing(1, np.pi/8, wires=0)
-    return qml.probs(wires=0)
 
-x = np.arange(0,cutoff_dim,1)
-outputs1 = circuit(3, np.pi)
-outputs2 = circuit(5, 0)
-
-integral1 = np.sum(outputs1)
-print(integral1)
-
-integral2 = np.sum(outputs2)
-print(integral2)
 #%% Original Coherent state
 alpha = 1+0.5j
 r = np.abs(alpha)
@@ -294,7 +280,24 @@ plot_pdf(X, P, Z_1, save_name="Tele_1")
 plot_pdf(X, P, Z_2, save_name="Tele_2")
 plot_pdf(X, P, Z_3, save_name="Tele_3")
 
-#%%
+#%%Fock Cutoff effect
+cutoff_dim=30
+dev = qml.device('strawberryfields.tf', wires=1, cutoff_dim=cutoff_dim, hbar=1)
+@qml.qnode(dev, interface="tf")
+def circuit(x, theta):
+    qml.Displacement(x, theta, wires=0)
+    qml.Squeezing(1, 0, wires=0)
+    return qml.probs(wires=0)
+
+x = np.arange(0,cutoff_dim,1)
+outputs1 = circuit(3, np.pi)
+outputs2 = circuit(5, 0)
+
+integral1 = np.sum(outputs1)
+print(integral1)
+
+integral2 = np.sum(outputs2)
+print(integral2)
 # Create plot
 fig, axes = plt.subplots(figsize=(3.2,2.4))
 
@@ -306,22 +309,22 @@ axes.xaxis.set_tick_params(which='major', size=3, width=0.5, direction='in', rig
 axes.yaxis.set_tick_params(which='major', size=3, width=0.5, direction='in', right='on')
 axes.set_xlabel("Fock State (n)")
 axes.set_xlim(-3, 33)
-axes.set_ylim(-0.01, 0.15)
+axes.set_ylim(0.0, 0.15)
 axes.set_ylabel("Probability (a.u.)")
 axes.grid(True, linestyle=':')
 fig.tight_layout(pad=0.5)
 
-plt.savefig("CV_Plots/Fock_Cutoff" + '.pdf',
-            format='pdf',
-            dpi=100,
-            bbox_inches='tight')
+# plt.savefig("Fock_Cutoff" + '.pdf',
+#             format='pdf',
+#             dpi=100,
+#             bbox_inches='tight')
 
 plt.show()
 
 #%% Beam Splitter
 prog = sf.Program(2)
 with prog.context as q:
-    Dgate(4, np.pi/4) | q[0]
+    Dgate(2, np.pi/2) | q[0]
     Dgate(2, np.pi) | q[1]
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
@@ -330,9 +333,9 @@ Z1_0 = state.wigner(0, X, P)
 
 prog = sf.Program(2)
 with prog.context as q:
-    Dgate(4, np.pi/4) | q[0]
+    Dgate(2, np.pi/2) | q[0]
     Dgate(2, np.pi) | q[1]
-    BSgate(9*np.pi/5, 0) | (q[0],q[1])
+    BSgate() | (q[0],q[1])
 eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 

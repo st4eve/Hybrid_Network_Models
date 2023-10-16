@@ -37,8 +37,8 @@ def generate_synthetic_dataset(num_datapoints=1000, n_features=15, n_classes=3):
         n_redundant=0,
         n_repeated=0,
         n_classes=n_classes,
-        n_clusters_per_class=2,
-        class_sep=2.0,
+        n_clusters_per_class=3,
+        class_sep=2,
         flip_y=0.05,
         random_state=17,
     )
@@ -61,9 +61,9 @@ def generate_synthetic_dataset_easy(num_datapoints=5000, n_features=15, n_classe
         n_redundant=0,
         n_repeated=0,
         n_classes=n_classes,
-        n_clusters_per_class=1,
-        class_sep=1.0,
-        flip_y=0,
+        n_clusters_per_class=2,
+        class_sep=3.0,
+        flip_y=0.01,
         random_state=17,
     )
     scaler = MinMaxScaler().fit(x_data)
