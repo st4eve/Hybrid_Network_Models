@@ -178,8 +178,9 @@ prog = sf.Program(2)
 with prog.context as q:
     BSgate(np.pi/4, 0) | (q[0], q[1])
     Sgate(2,0) | (q[0])
-    Sgate(-2,0) | (q[1])
+    #Sgate(-2,0) | (q[1])
     BSgate(np.pi/4, 0) | (q[0], q[1])
+    Rgate(np.pi/2) | q[0]
     eng = sf.Engine('gaussian')
 state = eng.run(prog).state
 Z_1 = state.wigner(0, X, P)
