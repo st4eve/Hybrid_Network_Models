@@ -8,7 +8,7 @@ from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
-from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
+from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer
 from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
@@ -133,9 +133,8 @@ class Net(Model):  # pylint: disable=W0223
             
             self.quantum_substitue = models.Sequential(self.quantum_substitue)
         if network_type=='quantum':
-            self.quantum_layer = QuantumLayer_MultiQunode(
+            self.quantum_layer = QuantumLayer(
                 n_qumodes=num_qumodes,
-                n_circuits=1,
                 n_layers=n_layers,
                 cutoff_dim=cutoff,
                 encoding_method="Amplitude_Phase",

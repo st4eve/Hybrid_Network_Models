@@ -657,7 +657,7 @@ class QuantumLayer(keras.Model):
             if key in amp_params:
                 vol += val[0] * val[1] * self.max_initial_weight
             else:
-                vol += val[0] * val[1] * 2 * np.pi
+                vol +=  (2 * np.pi)
         return vol
 
     def get_traces(self, x):

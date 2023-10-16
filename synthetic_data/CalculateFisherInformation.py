@@ -86,7 +86,7 @@ class Calculate_Fisher_Information_Matrix():
                 param_vol *= self.calc_param_vol(l.layers)
             elif 'dense' in l.name:
                 if type(l.kernel_initializer) is keras.initializers.initializers_v2.GlorotUniform:
-                    param_vol *= np.sqrt(6 / (l.input_shape[-1] + l.output_shape[-1]))
+                    param_vol *= np.sqrt(6 / (l.input_shape[-1] + l.output_shape[-1]))**(l.input_shape[-1] * l.output_shape[-1])
                 else:
                     param_vol *= 1
         return param_vol
@@ -173,7 +173,7 @@ if __name__ == '__main__':
         network_type='quantum',
         num_qumodes=2,
         n_layers=1,
-        max_initial_weight=0.1,
+        max_initial_weight=0.2,
         cutoff=2,
     )
     # model_func = lambda : keras.models.Sequential([QuantumLayer(
@@ -183,13 +183,13 @@ if __name__ == '__main__':
     #     cutoff_dim=2,
     # )])
     model = model_func()
-    x_train = np.random.uniform(-1, 1, size=[10, 4]) 
+    x_train = np.random.uniform(0, 1, size=[20, 4]) 
     print(model(x_train[0:1]))
     print(model.summary())
     fisher_obj = Calculate_Fisher_Information_Matrix(
         model_func,
         x_train,
-        n_iter=1
+        n_iter=5
     )
     print(fisher_obj.get_fhat())
 
