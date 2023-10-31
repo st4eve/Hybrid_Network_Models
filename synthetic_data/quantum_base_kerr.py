@@ -13,10 +13,10 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
 BATCH_SIZE = 64
-NUM_EPOCHS = 700
+NUM_EPOCHS = 200
 OPTIMIZER = "adam"
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Quantum_Base_Kerr"
+EXPERIMENT_NAME = "Classical_Small_kerr"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -54,7 +54,7 @@ def confnet_config():
     num_qumodes = 2  # pylint: disable=W0612
     cutoff='classical'
     n_layers=1
-    iteration=-1
+    iteration=1
 
 class Net(Model):  # pylint: disable=W0223
     """Neural network model to train on"""
