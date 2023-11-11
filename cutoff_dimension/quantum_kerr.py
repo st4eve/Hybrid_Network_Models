@@ -112,7 +112,7 @@ def define_and_train(quantum_preparation_layer, regularizer_string, scale_max):
             output = self.final_layer(output)
             return output
 
-    train_data, validate_data, _ = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
+    train_data, validate_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
     model = Net()
     model.compile(
         optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
