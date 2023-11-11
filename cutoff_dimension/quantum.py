@@ -31,6 +31,7 @@ def log_performance(_run, logs, epoch, traces):
     _run.log_scalar("epoch", int(epoch), epoch)
     trace_sum = np.sum(traces)
     _run.log_scalar("traces", traces, epoch)
+    _run.log_scalar("trace_sum", trace_sum, epoch)
 
 
 class LogPerformance(Callback):
