@@ -433,7 +433,7 @@ class QuantumLayer_MultiQunode(keras.Model):
                 inputs = tf.concat([t1, t2], 0)
             if self.encoding_method == "Kerr":
                 t = []
-                for i in range(5*self.n_qumodes, 5):
+                for i in range(0, 5*self.n_qumodes, 5):
                     t.append(max_value)
                     t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
                     t.append(max_value)
@@ -722,7 +722,7 @@ class QuantumLayer(keras.Model):
                 inputs = tf.concat([t1, t2], 0)
             if self.encoding_method == "Kerr":
                 t = []
-                for i in range(5*self.n_qumodes, 5):
+                for i in range(0, 5*self.n_qumodes, 5):
                     t.append(max_value)
                     t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
                     t.append(max_value)

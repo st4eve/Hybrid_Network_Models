@@ -49,6 +49,7 @@ def get_metrics(experiment_path):
         simplified_metrics = {}
         for key in metrics:
             if key == "traces":
+                #simplified_metrics["traces"] = [[trace["value"] for trace in trace_data["_storage"]] for trace_data in metrics[key]["values"]]
                 avg_traces = []
                 std_traces = []
                 for trace_data in metrics[key]["values"]:
@@ -58,6 +59,7 @@ def get_metrics(experiment_path):
                     std_traces.append(
                         np.std([trace["value"] for trace in trace_data["_storage"]])
                     )
+                    
                 simplified_metrics["traces_average"] = avg_traces
                 simplified_metrics["traces_std"] = std_traces
             else:

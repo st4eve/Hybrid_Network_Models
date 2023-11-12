@@ -7,6 +7,7 @@ PARAMETERS = {
     "quantum_preparation_layer": [True, False],
     "regularizer_string": ["L1=0.1", "L2=0.1", "None"],
     "scale_max": [1, 3, 6, 9],
+    "iteration": [i+1 for i in range(9)]
 }
 
 

@@ -49,7 +49,8 @@ def confnet_config():
     """Default config"""
     quantum_preparation_layer = True
     regularizer_string = None
-    scale_max = 6
+    scale_max = 1
+    iteration = -1
 
 
 @ex.automain
