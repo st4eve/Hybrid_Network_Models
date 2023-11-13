@@ -116,8 +116,9 @@ class Activation_Layer:
             x_split[1] *= 2 * np.pi
             x_split[2] *= self.encoding_object.phase_amplitude
             x_split[3] *= 2 * np.pi
-            x_split[4] *= 2 * np.pi
-            x = tf.concat([x_split[i] for i in range(5)], axis=1)
+            x_split[4] *= np.pi
+            print(x_split)
+            x = tf.reshape(tf.stack([x_split[i] for i in range(5)], axis=-1), shape=(x.shape[0], -1))
         return x
 
 
@@ -411,12 +412,11 @@ class QuantumLayer_MultiQunode(keras.Model):
         """
         # Get initial guess by basic max displacement algorithm
         max_value = find_max_displacement(self.cutoff_dim, trace_threshold)
-
         # Define the value to decrement by. This is a heuristic based on values observed.
         # We could alternatively decrement the value by something like 1% of the current value
         # but that gets slow as the values get smaller.
         decrement = max_value / 200
-
+        print(max_value, decrement)
         count = 0
         while count < 100:
 
@@ -435,10 +435,10 @@ class QuantumLayer_MultiQunode(keras.Model):
                 t = []
                 for i in range(0, int(5*self.n_qumodes), 5):
                     t.append(max_value)
-                    t.append(0)
+                    t.append(tf.random.uniform([1,], minval=0, maxval=2 * np.pi)[0])
                     t.append(max_value)
-                    t.append(0)
-                    t.append(0)
+                    t.append(tf.random.uniform([1,], minval=0, maxval=2 * np.pi)[0])
+                    t.append(tf.random.uniform([1,], minval=0, maxval=np.pi)[0])
                 inputs = tf.convert_to_tensor(t)
                 
 
@@ -461,6 +461,7 @@ class QuantumLayer_MultiQunode(keras.Model):
 
             if trace < trace_threshold:
                 max_value -= decrement
+                #print(f'Max Amplitude: {max_value}')
                 count = 0
             else:
                 count += 1

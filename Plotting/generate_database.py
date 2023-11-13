@@ -49,7 +49,6 @@ def get_metrics(experiment_path):
         simplified_metrics = {}
         for key in metrics:
             if key == "traces":
-                #simplified_metrics["traces"] = [[trace["value"] for trace in trace_data["_storage"]] for trace_data in metrics[key]["values"]]
                 avg_traces = []
                 std_traces = []
                 for trace_data in metrics[key]["values"]:
