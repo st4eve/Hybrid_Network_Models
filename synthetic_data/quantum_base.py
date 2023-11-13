@@ -4,6 +4,7 @@ from data import generate_synthetic_dataset_easy
 from keras import Model, layers, models, regularizers, activations
 from keras.callbacks import Callback
 from keras.utils.layer_utils import count_params
+from tensorflow.keras.optimizers import Adam
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
@@ -12,11 +13,11 @@ from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, 
 from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 NUM_EPOCHS = 200
-OPTIMIZER = "adam"
+OPTIMIZER = Adam(learning_rate=0.005)
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment_loss_test"
+EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment4"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -138,7 +139,7 @@ class Net(Model):  # pylint: disable=W0223
                 n_layers=n_layers,
                 cutoff_dim=cutoff,
                 encoding_method="Amplitude_Phase",
-                regularizer=regularizers.L1(l1=0.1),
+                regularizer=regularizers.L2(l2=0.1),
                 max_initial_weight=max_initial_weight,
                 measurement_object=CV_Measurement("X_quadrature"),
                 shots=None,

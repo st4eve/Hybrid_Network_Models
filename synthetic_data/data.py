@@ -61,15 +61,15 @@ def generate_synthetic_dataset_easy(num_datapoints=5000, n_features=15, n_classe
         n_redundant=0,
         n_repeated=0,
         n_classes=n_classes,
-        n_clusters_per_class=2,
+        n_clusters_per_class=3,
         class_sep=3.0,
-        flip_y=0.01,
+        flip_y=0.02,
         random_state=17,
     )
     scaler = MinMaxScaler().fit(x_data)
     x_data = scaler.transform(x_data)
     y_data = to_categorical(y_data, num_classes=len(np.unique(y_data)))
-    train_data, test_data = split_data(x_data, y_data, 0.7)
+    train_data, test_data = split_data(x_data, y_data, 0.7, seed=17)
     return train_data, test_data
 
 

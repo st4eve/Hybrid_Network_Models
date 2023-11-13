@@ -1,6 +1,8 @@
 """Hybrid Network Models 2022"""
 from data import generate_synthetic_dataset_easy
 from keras import Model, layers, models, regularizers
+from tensorflow.keras.optimizers import Adam
+from keras.optimizers import adam_v2
 from keras.callbacks import Callback
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
@@ -46,7 +48,7 @@ class LogPerformance(Callback):
 def confnet_config():
     """Default config"""
     quantum_preparation_layer = True
-    regularizer_string = None
+    regularizer_string = "L2=0.1"
     scale_max = 1
     iteration = -1
 
@@ -72,7 +74,7 @@ class Net(Model):
         )
 
         self.quantum_layer = QuantumLayer_MultiQunode(
-            n_qumodes=3,
+            n_qumodes=2,
             n_circuits=1,
             n_layers=1,
             cutoff_dim=5,
@@ -122,7 +124,7 @@ def define_and_train(quantum_preparation_layer, regularizer_string, scale_max):
                 regularizer_string=regularizer_string,
                 scale_max=scale_max)
     model.compile(
-        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+        optimizer=Adam(0.005), loss="categorical_crossentropy", metrics=["accuracy"]
     )
     model.fit(
         *train_data,

@@ -1,11 +1,12 @@
 """Hybrid Network Models 2022"""
-from data import generate_synthetic_dataset
+from data import generate_synthetic_dataset_easy
 from keras import Model, layers, models, regularizers
 from keras.callbacks import Callback
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 from tensorflow.random import set_seed
+from tensorflow.keras.optimizers import Adam
 import numpy as np
 
 from common_packages.CV_quantum_layers import (
@@ -29,9 +30,7 @@ def log_performance(_run, logs, epoch, traces):
     _run.log_scalar("val_loss", float(logs.get("val_loss")), epoch)
     _run.log_scalar("val_accuracy", float(logs.get("val_accuracy")), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
-    trace_sum = np.sum(traces)
     _run.log_scalar("traces", traces, epoch)
-    _run.log_scalar("trace_sum", trace_sum, epoch)
 
 
 class LogPerformance(Callback):
@@ -47,8 +46,8 @@ class LogPerformance(Callback):
 def confnet_config():
     """Default config"""
     quantum_preparation_layer = True
-    regularizer_string = None
-    scale_max = 6
+    regularizer_string = "L2=0.1"
+    scale_max = 1
 
 
 @ex.automain
@@ -66,15 +65,15 @@ def define_and_train(quantum_preparation_layer, regularizer_string, scale_max):
             self.base_model = models.Sequential(
                 [
                     layers.Dense(
-                        6,
-                        input_dim=10,
+                        4,
+                        input_dim=8,
                         activation=None,
                     ) 
                 ]
             )
 
             self.quantum_layer = QuantumLayer_MultiQunode(
-                n_qumodes=3,
+                n_qumodes=2,
                 n_circuits=1,
                 n_layers=1,
                 cutoff_dim=5,
@@ -95,7 +94,7 @@ def define_and_train(quantum_preparation_layer, regularizer_string, scale_max):
             self.final_layer = models.Sequential(
                 [
                     layers.Dense(
-                        3,
+                        4,
                         activation="softmax",
                     ),
                 ]
@@ -110,10 +109,10 @@ def define_and_train(quantum_preparation_layer, regularizer_string, scale_max):
             output = self.final_layer(output)
             return output
 
-    train_data, validate_data, _ = generate_synthetic_dataset()
+    train_data, validate_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
     model = Net()
     model.compile(
-        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+        optimizer=Adam(0.01), loss="categorical_crossentropy", metrics=["accuracy"]
     )
     model.fit(
         *train_data,
