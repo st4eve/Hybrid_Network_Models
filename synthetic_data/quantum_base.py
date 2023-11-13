@@ -9,7 +9,7 @@ from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
-from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer
+from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
 from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
@@ -51,10 +51,10 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
-    network_type = "classical"  # pylint: disable=W0612
-    num_qumodes = 4  # pylint: disable=W0612
+    network_type = "quantum"  # pylint: disable=W0612
+    num_qumodes = 2  # pylint: disable=W0612
     cutoff=5
-    n_layers=5
+    n_layers=1
     iteration=-1
 
 class Net(Model):  # pylint: disable=W0223
@@ -134,8 +134,9 @@ class Net(Model):  # pylint: disable=W0223
             
             self.quantum_substitue = models.Sequential(self.quantum_substitue)
         if network_type=='quantum':
-            self.quantum_layer = QuantumLayer(
+            self.quantum_layer = QuantumLayer_MultiQunode(
                 n_qumodes=num_qumodes,
+                n_circuits=1,
                 n_layers=n_layers,
                 cutoff_dim=cutoff,
                 encoding_method="Amplitude_Phase",

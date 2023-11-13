@@ -4,9 +4,9 @@ from sklearn.model_selection import ParameterGrid
 NUM_PARALLEL_JOBS = 4
 
 PARAMETERS = {
-    "quantum_preparation_layer": [True, False],
-    "regularizer_string": ["L1=0.1", "L2=0.1", "L1=0.01", "L2=0.01", "None"],
-    "scale_max": [1, 3, 6, 9],
+    "quantum_preparation_layer": [False],
+    "regularizer_string": ["L1=0.1", "L2=0.1"],
+    "scale_max": [1,],
     "iteration": [0]
 }
 
