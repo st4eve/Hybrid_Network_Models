@@ -15,7 +15,7 @@ from common_packages.utilities import get_equivalent_classical_layer_size
 RANDOM_SEED = 30
 BATCH_SIZE = 32
 NUM_EPOCHS = 200
-OPTIMIZER = Adam(learning_rate=0.005)
+OPTIMIZER = Adam(learning_rate=0.01)
 LOSS_FUNCTION = "categorical_crossentropy"
 EXPERIMENT_NAME = "Synthetic_Quantum_Base_Experiment4"
 ex = Experiment(EXPERIMENT_NAME)

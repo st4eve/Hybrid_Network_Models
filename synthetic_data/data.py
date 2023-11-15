@@ -72,6 +72,28 @@ def generate_synthetic_dataset_easy(num_datapoints=5000, n_features=15, n_classe
     train_data, test_data = split_data(x_data, y_data, 0.7, seed=17)
     return train_data, test_data
 
+def generate_synthetic_dataset_easy_raw(num_datapoints=5000, n_features=15, n_classes=3):
+    """Generates synthetic dataset for cutoff dimension analysis
+
+    Returns:
+        tuple: Tuple of numpy arrays of x,y data
+    """
+    x_data, y_data = make_classification(
+        n_samples=num_datapoints,
+        n_features=n_features,
+        n_informative=n_features,
+        n_redundant=0,
+        n_repeated=0,
+        n_classes=n_classes,
+        n_clusters_per_class=3,
+        class_sep=3.0,
+        flip_y=0.02,
+        random_state=17,
+    )
+    train_data, test_data = split_data(x_data, y_data, 0.7, seed=17)
+    return train_data, test_data
+
+
 
 
 def save_training_data(x_train, x_val, y_train, y_val):

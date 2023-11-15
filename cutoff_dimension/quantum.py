@@ -46,7 +46,7 @@ class LogPerformance(Callback):
 def confnet_config():
     """Default config"""
     quantum_preparation_layer = True
-    regularizer_string = "L2=0.1"
+    regularizer_string = "L2=0.05"
     scale_max = 1
 
 
