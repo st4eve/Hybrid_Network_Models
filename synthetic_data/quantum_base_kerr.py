@@ -18,9 +18,9 @@ BATCH_SIZE = 32
 NUM_EPOCHS = 200
 
 
-OPTIMIZER = Adam(learning_rate=0.005)
+OPTIMIZER = Adam(learning_rate=0.001)
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Classical_Small_kerr"
+EXPERIMENT_NAME = "Classical_Small_kerr_all_weights"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -34,12 +34,12 @@ def log_performance(_run, logs, epoch, model):
     _run.log_scalar("val_loss", float(logs.get("val_loss")), epoch)
     _run.log_scalar("val_accuracy", float(logs.get("val_accuracy")), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
-
+    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 @ex.capture
 def save_num_params(_run, logs, model, epoch):
     _run.log_scalar('num_params', int(count_params(model.trainable_weights)), NUM_EPOCHS)
-    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
+#    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 class LogPerformance(Callback):
     """Logs performance"""
