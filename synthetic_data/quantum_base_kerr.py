@@ -177,12 +177,13 @@ class Net(Model):  # pylint: disable=W0223
         output = self.final_layer(output)
         return output
 
+train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
 
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
     """Build and run the network"""
 
-    train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
+
     model = Net(
         network_type=network_type,
         num_qumodes=num_qumodes,

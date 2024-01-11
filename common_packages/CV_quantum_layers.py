@@ -326,6 +326,7 @@ class QuantumLayer_MultiQunode(keras.Model):
                 "regularizer": self.regularizer,
             },
         }
+        self.weight_specs = weight_specs
         return weight_specs
 
     def define_weight_shapes(self, L, M):
@@ -349,6 +350,7 @@ class QuantumLayer_MultiQunode(keras.Model):
             "phi_a": (L, M),
             "k": (L, M),
         }
+        self.weight_shapes = weight_shapes
         return weight_shapes
 
     def calc_param_vol(self, weight_shapes):
