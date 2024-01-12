@@ -272,8 +272,8 @@ def generate_enob_dataframe(df,
                                    
     return plot_df
 
-df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
+df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==3) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
 noise_df = generate_enob_dataframe(df_kerr8, metric='acc')
 print(noise_df)
 
-pd.to_pickle(noise_df, './dataframes/enob_df.pkl', compression='xz')
+pd.to_pickle(noise_df, './dataframes/enob_df_3qumode.pkl', compression='xz')
