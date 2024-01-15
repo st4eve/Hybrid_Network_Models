@@ -270,9 +270,131 @@ def generate_enob_dataframe(df,
                                    
     return plot_df
 
-print(df_kerr8[df_kerr8['num_qumodes']==4])
-df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==4) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==5) | (df_kerr8['cutoff'] == -1))]                         
-noise_df = generate_enob_dataframe(df_kerr8, metric='acc')
-print(noise_df)
+def generate_enob_dataframe_amp_phase(df, 
+                            metric='acc', 
+                            enob_range=(0.0, 10), 
+                            npoints=20, 
+                            data=(train_data, validate_data), 
+                            epoch=199):  
+    df_final = copy.deepcopy(df)
+    df_final[metric] = df[metric].apply(lambda x: x[-1])
+    df_quantum = df_final[df_final['network_type']=='quantum']
+    train_data, validate_data = data
 
-pd.to_pickle(noise_df, './dataframes/enob_df.pkl', compression='xz')
+    plot_df = pd.DataFrame(columns=df_final.columns)
+    plot_df['noise'] = np.NaN
+    plot_df.drop(['acc', 'val_acc', 'loss', 'val_loss', 'model', 'iteration', 'num_params'], axis=1, inplace=True)
+    plot_df['acc'] = np.NaN
+    plot_df['loss'] = np.NaN
+    plot_df['val_acc'] = np.NaN
+    plot_df['val_loss'] = np.NaN
+    plot_df['sample'] = np.NaN
+    plot_df['enob'] = np.NaN
+    plot_df.reset_index(inplace=True)
+    plot_df.drop(['index'], inplace=True, axis=1)
+    
+    exp_folder = df_quantum['exp_folder'].unique()[0]
+    for n in df_quantum['num_qumodes'].unique():
+        for c in df_quantum[df_quantum['num_qumodes']==n]['cutoff'].unique():
+            for nl in df_quantum.loc[(df_quantum['num_qumodes']==n) & (df_quantum['cutoff']==c)]['n_layers'].unique():
+                exp_quantum = df_quantum.loc[(df_quantum['num_qumodes']==n) & (df_quantum['cutoff']==c) & (df_quantum['n_layers']==nl)]
+                if len(exp_quantum) == 0:
+                    continue
+                else:
+                    exp_quantum = exp_quantum[metric].idxmax()
+                    print('For Number of Qumodes: ', n, ' Cutoff: ', int(c), ' Layers: ', nl)
+                    print(f'Highest Accuracy Experiments\nQuantum: {exp_quantum}')
+                    print(f'Quantum Val Acc, Acc: {df_quantum.loc[exp_quantum, "val_acc"][-1]}, {df_quantum.loc[exp_quantum, "loss"][-1]}')
+                    model_quantum = df_quantum['model'][exp_quantum](
+                        network_type='quantum',
+                        num_qumodes=n,
+                        n_layers=nl,
+                        cutoff=int(c),
+                        max_initial_weight=None,
+                    )
+                    
+                    def get_noise(model, amplitude_enob, phase_enob):
+                        weights_noise = []
+                        for layer in model.layers:
+                            if 'quantum_layer__multi_qunode' in layer.name:
+                                quantum_weights = layer.get_weights() 
+                                for w,val in zip(layer.weights, quantum_weights):
+                                    if ('/r:' in w.name) or ('/a:' in w.name):
+                                        max_a = max(np.abs(val))
+                                for w, val in zip(layer.weights, quantum_weights):
+                                    if (('/r:' in w.name) or ('/a:' in w.name)):
+                                        weights_noise.append(tf.random.normal(tf.shape(w), stddev=max_a/(2**amplitude_enob-1)))
+                                    else:
+                                        weights_noise.append(tf.random.normal(tf.shape(w), stddev=2*np.pi/(2**phase_enob-1)))
+                            elif 'sequential' in layer.name:
+                                sequential_weights = get_noise(layer, amplitude_enob, phase_enob)
+                                for w in sequential_weights:
+                                    weights_noise.append(w)
+                            elif 'dense' in layer.name:
+                                dense_weights = layer.get_weights()
+                                for w in dense_weights:
+                                    weights_noise.append(tf.random.normal(tf.shape(w), stddev=2/(2**16-1)))
+                            else:
+                                continue
+                        return weights_noise                                   
+                        
+                    def evaluate(model, amplitude_enob, phase_enob, x, y):
+                        noise = get_noise(model, amplitude_enob, phase_enob)
+                        model.set_weights([w + n for w, n in zip(model.get_weights(), noise)])
+                        return model.evaluate(x, y, verbose=0)
+                    
+                    def load_weights(model, epoch, exp_folder, exp):
+                        try:
+                            model.load_weights(f'{exp_folder}{exp}/weights/weight.{epoch}.ckpt', by_name=False).expect_partial()
+                        except:
+                            try:
+                                model.load_weights(f'{exp_folder}{exp}/weights/weight{epoch}.ckpt', by_name=False).expect_partial()
+                            except:
+                                try:
+                                    model.load_weights(f'{exp_folder}{exp}/weights/weight.99.ckpt', by_name=False).expect_partial()
+                                except:
+                                    model.load_weights(f'{exp_folder}{exp}/weights/weight99.ckpt', by_name=False).expect_partial()
+                        return model
+                    
+                    def build_df(model, amplitude_enob, phase_enob, plot_df=plot_df):
+                        weights = model.get_weights()
+                        for i in range(10):
+                            df_temp = pd.DataFrame(columns=plot_df.columns)
+                            model.set_weights(weights)
+                            loss, acc = evaluate(model, amplitude_enob, phase_enob, train_data[0], train_data[1])
+                            val_loss, val_acc = evaluate(model, amplitude_enob, phase_enob, validate_data[0], validate_data[1])
+
+                            df_temp.loc[0, 'amplitude_enob'] = amplitude_enob
+                            df_temp.loc[0, 'phase_enob'] = phase_enob
+                            df_temp.loc[0, 'cutoff'] = c
+                            df_temp.loc[0, 'epoch'] = epoch
+                            df_temp.loc[0, 'n_layers'] = nl
+                            df_temp.loc[0, 'num_qumodes'] = n
+                            df_temp.loc[0, 'acc'] = acc
+                            df_temp.loc[0, 'loss'] = loss
+                            df_temp.loc[0, 'val_acc'] = val_acc
+                            df_temp.loc[0, 'val_loss'] = val_loss
+                            df_temp.loc[0, 'sample'] = i
+                            df_temp.loc[0, 'network_type'] = model.network_type
+                            df_temp.loc[0, 'exp_folder'] = exp_folder
+                            plot_df.loc[len(plot_df)] = df_temp.loc[0]
+
+                        return plot_df
+                    
+                    model_quantum.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"]) 
+
+                    for ae in tqdm(np.linspace(enob_range[0], enob_range[1], npoints)): 
+                        for pe in tqdm(np.linspace(enob_range[0], enob_range[1], npoints)): 
+                            model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
+                            
+                            model_quantum(validate_data[0][0:1])
+
+                            plot_df = build_df(model_quantum, ae, pe)
+                                   
+    return plot_df
+
+
+df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
+noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
+
+pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep.pkl', compression='xz')
