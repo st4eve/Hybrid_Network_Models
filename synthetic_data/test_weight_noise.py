@@ -142,9 +142,7 @@ def generate_enob_dataframe(df,
     df_final = copy.deepcopy(df)
     df_final[metric] = df[metric].apply(lambda x: x[-1])
     df_quantum = df_final[df_final['network_type']=='quantum']
-    df_quantum = df_quantum[df_quantum['num_qumodes']==2]
     df_classical = df_final[df_final['network_type']=='classical']
-    df_classical = df_classical[df_classical['num_qumodes']==2]
     train_data, validate_data = data
 
     plot_df = pd.DataFrame(columns=df_final.columns)
@@ -179,7 +177,7 @@ def generate_enob_dataframe(df,
                         num_qumodes=n,
                         n_layers=nl,
                         cutoff=int(c),
-                        max_initial_weight=0.44895,
+                        max_initial_weight=None,
                     )
 
                     model_classical = df_classical['model'][exp_classical](
@@ -271,8 +269,8 @@ def generate_enob_dataframe(df,
                         plot_df = build_df(model_classical, e)                        
                                    
     return plot_df
-
-df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==3) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
+print(df_kerr8[df_kerr8['num_qumodes']==4])
+df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==4) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==5) | (df_kerr8['cutoff'] == -1))]                         
 noise_df = generate_enob_dataframe(df_kerr8, metric='acc')
 print(noise_df)
 
