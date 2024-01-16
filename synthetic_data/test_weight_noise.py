@@ -272,8 +272,8 @@ def generate_enob_dataframe(df,
 
 def generate_enob_dataframe_amp_phase(df, 
                             metric='acc', 
-                            enob_range=(0.0, 10), 
-                            npoints=20, 
+                            enob_range=(0.1, 10), 
+                            npoints=10, 
                             data=(train_data, validate_data), 
                             epoch=199):  
     df_final = copy.deepcopy(df)
@@ -289,7 +289,8 @@ def generate_enob_dataframe_amp_phase(df,
     plot_df['val_acc'] = np.NaN
     plot_df['val_loss'] = np.NaN
     plot_df['sample'] = np.NaN
-    plot_df['enob'] = np.NaN
+    plot_df['amplitude_enob'] = np.NaN
+    plot_df['phase_enob'] = np.NaN
     plot_df.reset_index(inplace=True)
     plot_df.drop(['index'], inplace=True, axis=1)
     
@@ -358,7 +359,7 @@ def generate_enob_dataframe_amp_phase(df,
                     
                     def build_df(model, amplitude_enob, phase_enob, plot_df=plot_df):
                         weights = model.get_weights()
-                        for i in range(10):
+                        for i in range(5):
                             df_temp = pd.DataFrame(columns=plot_df.columns)
                             model.set_weights(weights)
                             loss, acc = evaluate(model, amplitude_enob, phase_enob, train_data[0], train_data[1])
@@ -397,4 +398,4 @@ def generate_enob_dataframe_amp_phase(df,
 df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
 noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
 
-pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep.pkl', compression='xz')
+pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep_coarse.pkl', compression='xz')
