@@ -316,12 +316,14 @@ def generate_enob_dataframe_amp_phase(df,
                     
                     def get_noise(model, amplitude_enob, phase_enob):
                         weights_noise = []
+                        max_a = 0
                         for layer in model.layers:
                             if 'quantum_layer__multi_qunode' in layer.name:
                                 quantum_weights = layer.get_weights() 
                                 for w,val in zip(layer.weights, quantum_weights):
                                     if ('/r:' in w.name) or ('/a:' in w.name):
-                                        max_a = max(np.abs(val))
+                                        if max_a < max(np.abs(val)):
+                                            max_a = max(np.abs(val))
                                 for w, val in zip(layer.weights, quantum_weights):
                                     if (('/r:' in w.name) or ('/a:' in w.name)):
                                         weights_noise.append(tf.random.normal(tf.shape(w), stddev=max_a/(2**amplitude_enob-1)))
