@@ -273,7 +273,7 @@ def generate_enob_dataframe(df,
 def generate_enob_dataframe_amp_phase(df, 
                             metric='acc', 
                             enob_range=(0.1, 10), 
-                            npoints=10, 
+                            step_size=0.5, 
                             data=(train_data, validate_data), 
                             epoch=199):  
     df_final = copy.deepcopy(df)
@@ -322,8 +322,8 @@ def generate_enob_dataframe_amp_phase(df,
                                 quantum_weights = layer.get_weights() 
                                 for w,val in zip(layer.weights, quantum_weights):
                                     if ('/r:' in w.name) or ('/a:' in w.name):
-                                        if max_a < max(np.abs(val)):
-                                            max_a = max(np.abs(val))
+                                        if max_a < max(np.abs(val))[0]:
+                                            max_a = max(np.abs(val))[0]
                                 for w, val in zip(layer.weights, quantum_weights):
                                     if (('/r:' in w.name) or ('/a:' in w.name)):
                                         weights_noise.append(tf.random.normal(tf.shape(w), stddev=max_a/(2**amplitude_enob-1)))
@@ -386,8 +386,8 @@ def generate_enob_dataframe_amp_phase(df,
                     
                     model_quantum.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"]) 
 
-                    for ae in tqdm(np.linspace(enob_range[0], enob_range[1], npoints)): 
-                        for pe in tqdm(np.linspace(enob_range[0], enob_range[1], npoints)): 
+                    for ae in tqdm(np.arange(enob_range[0], enob_range[1]+step_size, step_size)): 
+                        for pe in tqdm(np.arange(enob_range[0], enob_range[1]+step_size, step_size)): 
                             model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
                             
                             model_quantum(validate_data[0][0:1])
@@ -400,4 +400,4 @@ def generate_enob_dataframe_amp_phase(df,
 df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
 noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
 
-pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep_coarse.pkl', compression='xz')
+pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep_coarse2.pkl', compression='xz')
