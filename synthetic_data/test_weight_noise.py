@@ -272,7 +272,7 @@ def generate_enob_dataframe(df,
 
 def generate_enob_dataframe_amp_phase(df, 
                             metric='acc', 
-                            enob_range=(0.1, 10), 
+                            enob_range=(0.5, 10), 
                             step_size=0.5, 
                             data=(train_data, validate_data), 
                             epoch=199):  
