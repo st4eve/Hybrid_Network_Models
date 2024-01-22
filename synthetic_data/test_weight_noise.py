@@ -400,4 +400,4 @@ def generate_enob_dataframe_amp_phase(df,
 df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
 noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
 
-pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep_coarse2.pkl', compression='xz')
+pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep_coarse_whole_numbers.pkl', compression='xz')
