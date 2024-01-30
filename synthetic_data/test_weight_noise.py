@@ -136,7 +136,7 @@ def generate_noise_dataframe(df, metric='acc', noise_range=(0.4, -3), npoints=50
 def generate_enob_dataframe(df, 
                             metric='acc', 
                             enob_range=(0.5, 10), 
-                            npoints=50, 
+                            step_size=0.5, 
                             data=(train_data, validate_data), 
                             epoch=199):  
     df_final = copy.deepcopy(df)
@@ -190,12 +190,19 @@ def generate_enob_dataframe(df,
                     
                     def get_noise(model, enob, amplitude_noise=True, phase_noise=True):
                         weights_noise = []
+                        max_a = 0
                         for layer in model.layers:
                             if 'quantum_layer__multi_qunode' in layer.name:
-                                quantum_weights = layer.get_weights() 
+                                quantum_weights = layer.get_weights()
                                 for w,val in zip(layer.weights, quantum_weights):
                                     if ('/r:' in w.name) or ('/a:' in w.name):
-                                        max_a = max(np.abs(val))
+                                        try:
+                                            if max_a < max(np.abs(val))[0]:
+                                                max_a = max(np.abs(val))[0]
+                                        except ValueError:
+                                            for v in val:
+                                                if max_a < max(np.abs(v)):
+                                                    max_a = max(np.abs(v))
                                 for w, val in zip(layer.weights, quantum_weights):
                                     if (('/r:' in w.name) or ('/a:' in w.name)) and amplitude_noise:
                                         weights_noise.append(tf.random.normal(tf.shape(w), stddev=max_a/(2**enob-1)))
@@ -258,7 +265,7 @@ def generate_enob_dataframe(df,
                     model_quantum.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"]) 
                     model_classical.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
 
-                    for e in tqdm(np.linspace(enob_range[0], enob_range[1], npoints)): 
+                    for e in tqdm(np.arange(enob_range[0], enob_range[1]+step_size, step_size)): 
                         model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
                         model_classical = load_weights(model_classical, epoch, exp_folder, exp_classical)
                         
@@ -266,7 +273,7 @@ def generate_enob_dataframe(df,
                         model_classical(validate_data[0][0:1])
 
                         plot_df = build_df(model_quantum, e)
-                        plot_df = build_df(model_classical, e)                        
+                        plot_df = build_df(model_classical, e)
                                    
     return plot_df
 
@@ -397,7 +404,7 @@ def generate_enob_dataframe_amp_phase(df,
     return plot_df
 
 
-df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
-noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
-
-pd.to_pickle(noise_df, './dataframes/enob_df_amp_phase_sweep_coarse_whole_numbers.pkl', compression='xz')
+df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==5) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
+#noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
+noise_df = generate_enob_dataframe(df_kerr8)
+pd.to_pickle(noise_df, './dataframes/enob_df_5layer.pkl', compression='xz')
