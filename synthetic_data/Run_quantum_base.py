@@ -11,7 +11,7 @@ print(parameters)
 fields = {
             'memory': 32,
             'job_name': 'Synthetic_Cutoff_Sweep',
-            'time_h': 128,
+            'time_h': 72,
             'num_cpus': 4
         }
 

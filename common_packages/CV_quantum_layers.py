@@ -116,8 +116,8 @@ class Activation_Layer:
             x_split[1] *= 2 * np.pi
             x_split[2] *= self.encoding_object.phase_amplitude
             x_split[3] *= 2 * np.pi
-            x_split[4] *= 2 * np.pi
-            x = tf.concat([x_split[i] for i in range(5)], axis=1)
+            x_split[4] *= np.pi
+            x = tf.reshape(tf.stack([x_split[i] for i in range(5)], axis=-1), shape=(x.shape[0], -1))
         return x
 
 
@@ -314,18 +314,19 @@ class QuantumLayer_MultiQunode(keras.Model):
                 "initializer": tf.random_uniform_initializer(minval=0, maxval=2 * np.pi)
             },
             "r": {
-                "initializer": tf.keras.initializers.Constant(
-                    self.scale_max * self.max_initial_weight
+                "initializer": tf.random_uniform_initializer(
+                    minval=0, maxval=self.scale_max * self.max_initial_weight
                 ),
                 "regularizer": self.regularizer,
             },
             "a": {
-                "initializer": tf.keras.initializers.Constant(
-                    self.scale_max * self.max_initial_weight
+                "initializer": tf.random_uniform_initializer(
+                    minval=0, maxval=self.scale_max * self.max_initial_weight
                 ),
                 "regularizer": self.regularizer,
             },
         }
+        self.weight_specs = weight_specs
         return weight_specs
 
     def define_weight_shapes(self, L, M):
@@ -349,6 +350,7 @@ class QuantumLayer_MultiQunode(keras.Model):
             "phi_a": (L, M),
             "k": (L, M),
         }
+        self.weight_shapes = weight_shapes
         return weight_shapes
 
     def calc_param_vol(self, weight_shapes):
@@ -411,12 +413,10 @@ class QuantumLayer_MultiQunode(keras.Model):
         """
         # Get initial guess by basic max displacement algorithm
         max_value = find_max_displacement(self.cutoff_dim, trace_threshold)
-
         # Define the value to decrement by. This is a heuristic based on values observed.
         # We could alternatively decrement the value by something like 1% of the current value
         # but that gets slow as the values get smaller.
         decrement = max_value / 200
-
         count = 0
         while count < 100:
 
@@ -433,12 +433,14 @@ class QuantumLayer_MultiQunode(keras.Model):
                 inputs = tf.concat([t1, t2], 0)
             if self.encoding_method == "Kerr":
                 t = []
-                for i in range(5*self.n_qumodes, 5):
+                for i in range(0, int(5*self.n_qumodes), 5):
+                    #t.append(tf.random.uniform([1,], minval=0, maxval=max_value)[0])
                     t.append(max_value)
-                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
+                    t.append(tf.random.uniform([1,], minval=0, maxval=2 * np.pi)[0])
+                    #t.append(tf.random.uniform([1,], minval=0, maxval=max_value)[0])
                     t.append(max_value)
-                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
-                    t.append(tf.random.uniform(1, minval=0, maxval=np.pi))
+                    t.append(tf.random.uniform([1,], minval=0, maxval=2 * np.pi)[0])
+                    t.append(tf.random.uniform([1,], minval=0, maxval=np.pi)[0])
                 inputs = tf.convert_to_tensor(t)
                 
 
@@ -461,6 +463,7 @@ class QuantumLayer_MultiQunode(keras.Model):
 
             if trace < trace_threshold:
                 max_value -= decrement
+                #print(f'Max Amplitude: {max_value}')
                 count = 0
             else:
                 count += 1
@@ -722,12 +725,12 @@ class QuantumLayer(keras.Model):
                 inputs = tf.concat([t1, t2], 0)
             if self.encoding_method == "Kerr":
                 t = []
-                for i in range(5*self.n_qumodes, 5):
+                for i in range(0, 5*self.n_qumodes, 5):
                     t.append(max_value)
-                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
+                    t.append(0)
                     t.append(max_value)
-                    t.append(tf.random.uniform(1, minval=0, maxval=2 * np.pi))
-                    t.append(tf.random.uniform(1, minval=0, maxval=np.pi))
+                    t.append(0)
+                    t.append(0)
                 inputs = tf.convert_to_tensor(t)
                 
 

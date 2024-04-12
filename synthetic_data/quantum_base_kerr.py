@@ -2,6 +2,8 @@
 import tensorflow as tf
 from data import generate_synthetic_dataset_easy
 from keras import Model, layers, models, regularizers, activations
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.schedules import ExponentialDecay
 from keras.callbacks import Callback
 from keras.utils.layer_utils import count_params
 from sacred import Experiment
@@ -12,11 +14,13 @@ from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, 
 from common_packages.utilities import get_equivalent_classical_layer_size
 
 RANDOM_SEED = 30
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 NUM_EPOCHS = 200
-OPTIMIZER = "adam"
+
+
+OPTIMIZER = Adam(learning_rate=0.001)
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Classical_Small_kerr"
+EXPERIMENT_NAME = "Classical_Small_kerr_all_weights"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -30,12 +34,12 @@ def log_performance(_run, logs, epoch, model):
     _run.log_scalar("val_loss", float(logs.get("val_loss")), epoch)
     _run.log_scalar("val_accuracy", float(logs.get("val_accuracy")), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
-
+    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 @ex.capture
 def save_num_params(_run, logs, model, epoch):
     _run.log_scalar('num_params', int(count_params(model.trainable_weights)), NUM_EPOCHS)
-    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
+#    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 class LogPerformance(Callback):
     """Logs performance"""
@@ -50,11 +54,11 @@ class LogPerformance(Callback):
 @ex.config
 def confnet_config():
     """Default config"""
-    network_type = "classical"  # pylint: disable=W0612
+    network_type = "quantum"  # pylint: disable=W0612
     num_qumodes = 2  # pylint: disable=W0612
-    cutoff='classical'
+    cutoff=5
     n_layers=1
-    iteration=1
+    iteration=-1
 
 class Net(Model):  # pylint: disable=W0223
     """Neural network model to train on"""
@@ -141,7 +145,7 @@ class Net(Model):  # pylint: disable=W0223
                 n_layers=n_layers,
                 cutoff_dim=cutoff,
                 encoding_method="Kerr",
-                regularizer=regularizers.L1(l1=0.1),
+                regularizer=regularizers.L2(l2=0.1),
                 max_initial_weight=max_initial_weight,
                 measurement_object=CV_Measurement("X_quadrature"),
                 shots=None,
@@ -173,12 +177,13 @@ class Net(Model):  # pylint: disable=W0223
         output = self.final_layer(output)
         return output
 
+train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
 
 @ex.automain
 def define_and_train(network_type, num_qumodes, cutoff, n_layers):
     """Build and run the network"""
 
-    train_data, test_data = generate_synthetic_dataset_easy(num_datapoints=1000, n_features=8, n_classes=4)
+
     model = Net(
         network_type=network_type,
         num_qumodes=num_qumodes,
