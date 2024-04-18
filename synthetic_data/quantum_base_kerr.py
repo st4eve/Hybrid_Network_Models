@@ -20,7 +20,7 @@ NUM_EPOCHS = 200
 
 OPTIMIZER = Adam(learning_rate=0.001)
 LOSS_FUNCTION = "categorical_crossentropy"
-EXPERIMENT_NAME = "Classical_Small_kerr_all_weights"
+EXPERIMENT_NAME = "Classical_Small_kerr_2q_high_cutoff"
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(FileStorageObserver(EXPERIMENT_NAME))
 ex.captured_out_filter = apply_backspaces_and_linefeeds
@@ -34,7 +34,8 @@ def log_performance(_run, logs, epoch, model):
     _run.log_scalar("val_loss", float(logs.get("val_loss")), epoch)
     _run.log_scalar("val_accuracy", float(logs.get("val_accuracy")), epoch)
     _run.log_scalar("epoch", int(epoch), epoch)
-    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
+    if (epoch == 5) | (epoch == 195):
+        model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 @ex.capture
 def save_num_params(_run, logs, model, epoch):
@@ -77,12 +78,15 @@ class Net(Model):  # pylint: disable=W0223
         self.cutoff = cutoff
         self.n_layers = n_layers
         self.max_initial_weight = max_initial_weight
-        
+        if network_type=='classical':
+            input_activation = 'relu'
+        else:
+            input_activation = None
         self.input_layer = models.Sequential(
             [
                 layers.Dense(
                     5*num_qumodes,
-                    activation=None,
+                    activation=input_activation,
                     trainable=True,
                     bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
@@ -95,7 +99,7 @@ class Net(Model):  # pylint: disable=W0223
             self.quantum_substitue = [
                     layers.Dense(
                         initial_layer_size,
-                        activation="relu",
+                        activation=input_activation,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     )]
@@ -104,7 +108,7 @@ class Net(Model):  # pylint: disable=W0223
                 self.quantum_substitue += [
                     layers.Dense(
                         layer_size,
-                        activation="relu",
+                        activation=input_activation,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     )
@@ -114,7 +118,7 @@ class Net(Model):  # pylint: disable=W0223
                 self.quantum_substitue += [
                     layers.Dense(
                         layer_size1,
-                        activation="relu",
+                        activation=input_activation,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     )
@@ -123,7 +127,7 @@ class Net(Model):  # pylint: disable=W0223
                 self.quantum_substitue += [
                     layers.Dense(
                         layer_size2,
-                        activation="relu",
+                        activation=input_activation,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     ) for i in range(n_layers-3)
@@ -131,7 +135,7 @@ class Net(Model):  # pylint: disable=W0223
                 self.quantum_substitue += [
                     layers.Dense(
                         get_equivalent_classical_layer_size(num_qumodes, layer_size2, num_qumodes),
-                        activation="relu",
+                        activation=input_activation,
                         bias_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                         kernel_constraint=lambda t: tf.clip_by_value(t, -1.0, 1.0),
                     )
