@@ -1,6 +1,7 @@
 import math
 
-from keras import regularizers
+from tensorflow.keras import regularizers
+import numpy as np
 
 
 def get_regularizer(regularizer_string):
@@ -40,6 +41,20 @@ def get_equivalent_classical_layer_size(num_qumodes, num_input_neurons, num_outp
     num_qumode_params = get_num_parameters_per_quantum_layer(num_qumodes) + num_qumodes * num_output_neurons
     num_params_per_classical_neuron = num_input_neurons + num_output_neurons + 1
     return math.ceil(num_qumode_params / num_params_per_classical_neuron)
+
+def get_total_parameters(num_qumodes, n_layers, input_size=8, output_size=4, encoding='kerr'):
+    if encoding == 'kerr':
+        encoding_constant = 5 * num_qumodes
+    if encoding == 'amplitude_phase':
+        encoding_constant = 2 * num_qumodes
+    return get_num_parameters_per_quantum_layer(num_qumodes) * n_layers + (input_size+1)*encoding_constant + (num_qumodes+1)*output_size
+
+if __name__ == '__main__':
+    num_qumodes = np.arange(2, 5, 1)
+    n_layers = np.arange(1, 6, 1)
+    for nq in num_qumodes:
+        for nl in n_layers:
+            print(f"Number of qumodes: {nq}, Number of layers: {nl}, Total parameters: {get_total_parameters(nq, nl)}")
 
 
 
