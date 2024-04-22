@@ -7,6 +7,10 @@ import copy
 from quantum_base_kerr import train_data, test_data, OPTIMIZER, LOSS_FUNCTION
 validate_data = test_data
 
+
+
+OPTIMIZER = tf.keras.optimizers.legacy.Adam()
+
 df_kerr8 = pd.read_pickle('./dataframes/df_kerr8.pkl', compression='xz') 
 
 def generate_noise_dataframe(df, metric='acc', noise_range=(0.4, -3), npoints=50, data=(train_data, validate_data), epoch=199):  
@@ -138,7 +142,7 @@ def generate_enob_dataframe(df,
                             enob_range=(0.5, 10), 
                             step_size=0.5, 
                             data=(train_data, validate_data), 
-                            epoch=199):  
+                            epoch=195):  
     df_final = copy.deepcopy(df)
     df_final[metric] = df[metric].apply(lambda x: x[-1])
     df_quantum = df_final[df_final['network_type']=='quantum']
@@ -156,8 +160,10 @@ def generate_enob_dataframe(df,
     plot_df['enob'] = np.NaN
     plot_df.reset_index(inplace=True)
     plot_df.drop(['index'], inplace=True, axis=1)
+
+    exp_folder_quantum = df_quantum['exp_folder'].unique()[0]
+    exp_folder_classical = df_classical['exp_folder'].unique()[0]
     
-    exp_folder = df_quantum['exp_folder'].unique()[0]
     for n in df_quantum['num_qumodes'].unique():
         for c in df_quantum[df_quantum['num_qumodes']==n]['cutoff'].unique():
             for nl in df_quantum.loc[(df_quantum['num_qumodes']==n) & (df_quantum['cutoff']==c)]['n_layers'].unique():
@@ -166,8 +172,9 @@ def generate_enob_dataframe(df,
                 if (len(exp_quantum) == 0) or (len(exp_classical) == 0):
                     continue
                 else:
-                    exp_quantum = exp_quantum[metric].idxmax()
-                    exp_classical = exp_classical[metric].idxmax()
+                    exp_classical = df_classical.loc[df_classical[metric] > df_classical[metric].mean()]
+                    exp_quantum = exp_quantum[exp_quantum[metric] == exp_quantum[metric].median()].index[0]
+                    exp_classical = exp_classical[exp_classical[metric] == exp_classical[metric].median()].index[0]
                     print('For Number of Qumodes: ', n, ' Cutoff: ', int(c), ' Layers: ', nl)
                     print(f'Highest Accuracy Experiments\nQuantum: {exp_quantum}\nClassical: {exp_classical}')
                     print(f'Quantum Val Acc, Acc: {df_quantum.loc[exp_quantum, "val_acc"][-1]}, {df_quantum.loc[exp_quantum, "loss"][-1]}')
@@ -238,7 +245,7 @@ def generate_enob_dataframe(df,
                                     model.load_weights(f'{exp_folder}{exp}/weights/weight99.ckpt', by_name=False).expect_partial()
                         return model
                     
-                    def build_df(model, enob, plot_df=plot_df):
+                    def build_df(model, enob, exp_folder, plot_df=plot_df):
                         weights = model.get_weights()
                         for i in range(10):
                             df_temp = pd.DataFrame(columns=plot_df.columns)
@@ -266,14 +273,14 @@ def generate_enob_dataframe(df,
                     model_classical.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
 
                     for e in tqdm(np.arange(enob_range[0], enob_range[1]+step_size, step_size)): 
-                        model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
-                        model_classical = load_weights(model_classical, epoch, exp_folder, exp_classical)
+                        model_quantum = load_weights(model_quantum, epoch, exp_folder_quantum, exp_quantum)
+                        model_classical = load_weights(model_classical, epoch, exp_folder_classical, exp_classical)
                         
-                        model_quantum(validate_data[0][0:1])
+                        # model_quantum(validate_data[0][0:1])
                         model_classical(validate_data[0][0:1])
 
-                        plot_df = build_df(model_quantum, e)
-                        plot_df = build_df(model_classical, e)
+                        # plot_df = build_df(model_quantum, e, exp_folder_quantum)
+                        plot_df = build_df(model_classical, e, exp_folder_classical)
                                    
     return plot_df
 
@@ -407,4 +414,4 @@ def generate_enob_dataframe_amp_phase(df,
 df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
 #noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
 noise_df = generate_enob_dataframe(df_kerr8)
-pd.to_pickle(noise_df, './dataframes/enob_df_1layer.pkl', compression='xz')
+pd.to_pickle(noise_df, './dataframes/enob_df_1layer_classical.pkl', compression='xz')
