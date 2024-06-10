@@ -172,7 +172,6 @@ def generate_enob_dataframe(df,
                 if (len(exp_quantum) == 0) or (len(exp_classical) == 0):
                     continue
                 else:
-                    exp_classical = df_classical.loc[df_classical[metric] > df_classical[metric].mean()]
                     exp_quantum = exp_quantum[exp_quantum[metric] == exp_quantum[metric].median()].index[0]
                     exp_classical = exp_classical[exp_classical[metric] == exp_classical[metric].median()].index[0]
                     print('For Number of Qumodes: ', n, ' Cutoff: ', int(c), ' Layers: ', nl)
@@ -410,7 +409,8 @@ def generate_enob_dataframe_amp_phase(df,
                                    
     return plot_df
 
-
+df_kerr8 = df_kerr8.loc[[1, 358]]
+print(df_kerr8)
 df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
 #noise_df = generate_enob_dataframe_amp_phase(df_kerr8)
 noise_df = generate_enob_dataframe(df_kerr8)
