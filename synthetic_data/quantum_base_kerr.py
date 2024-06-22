@@ -5,10 +5,10 @@ from keras import Model, layers, models, regularizers, activations
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.schedules import ExponentialDecay
 from keras.callbacks import Callback
-from keras.utils.layer_utils import count_params
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
+import os
 import os
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
@@ -42,7 +42,7 @@ def log_performance(_run, logs, epoch, model):
 
 @ex.capture
 def save_num_params(_run, logs, model, epoch):
-    _run.log_scalar('num_params', int(count_params(model.trainable_weights)), NUM_EPOCHS)
+    _run.log_scalar('num_params', int(model.count_params()), NUM_EPOCHS)
 #    model.save_weights(f"{EXPERIMENT_NAME}/{_run._id}/weights/weight{epoch}.ckpt")  # pylint: disable=W0212
 
 class LogPerformance(Callback):
