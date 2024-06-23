@@ -1,5 +1,5 @@
 from sklearn import cluster
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
 from sklearn.decomposition import PCA
 from data import generate_synthetic_dataset_easy, generate_synthetic_dataset_easy_raw
 from quantum_base_kerr import train_data, test_data
@@ -69,7 +69,7 @@ plt.show()
 plt.savefig('./figures/pca.png')
 plt.close()
 
-svm = SVC(kernel='linear', C=1, random_state=17)
+svm = LinearSVC(C=1, random_state=17)
 
 svm.fit(train_data[0], train_data[1])
 
@@ -78,7 +78,7 @@ print(f'Training Accuracy {svm.score(train_data[0], train_data[1]):.2f}')
 print(f'Testing Accuracy {svm.score(test_data[0], test_data[1]):.2f}')
 
 
-svm_pca = SVC(kernel='linear', C=1, random_state=17)
+svm_pca = LinearSVC(C=1, random_state=17)
 
 svm_pca.fit(train_data_pca, train_data[1])
 
@@ -108,5 +108,5 @@ plt.imshow(Z.reshape(xx.shape),
                 aspect='auto', origin='lower',
                 alpha=0.5)
 
-plt.show()
 plt.savefig('./figures/pca_svm.png')
+plt.show()
