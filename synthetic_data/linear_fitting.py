@@ -2,12 +2,17 @@ from sklearn import cluster
 from sklearn.svm import SVC, LinearSVC
 from sklearn.decomposition import PCA
 from data import generate_synthetic_dataset_easy, generate_synthetic_dataset_easy_raw
-from quantum_base_kerr import train_data, test_data
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import seaborn as sns
 import pandas as pd
+
+
+df = pd.read_pickle('./dataframes/original_data.pkl')
+
+train_data = df['train_data']
+test_data = df['test_data']
 
 
 palette = sns.color_palette('pastel')[2:]
@@ -56,7 +61,7 @@ plt.imshow(Z.reshape(xx.shape),
               interpolation='nearest',
               extent=(xx.min(), xx.max(), yy.min(), yy.max()),
               cmap=cmap,
-              aspect='auto', origin='lower')
+              aspect='auto', origin='lower',alpha=0.3)
 
 plt.scatter(centroids[:,0], centroids[:,1], marker='x', s=100, c='white')
 
@@ -64,9 +69,8 @@ print('KMeans PCA')
 print('Training Accuracy', np.sum((kmeans_pca.predict(train_data_pca) == train_data[1])) / len(train_data[1]))
 print('Testing Accuracy', np.sum((kmeans_pca.predict(test_data_pca) == test_data[1]))/len(test_data[1]))
 
-plt.show()
 
-plt.savefig('./figures/pca.png')
+plt.savefig('./figures/pca_kmeans.pdf', bbox_inches='tight')
 plt.close()
 
 svm = LinearSVC(C=1, random_state=17)
@@ -106,7 +110,10 @@ plt.imshow(Z.reshape(xx.shape),
                 extent=(xx.min(), xx.max(), yy.min(), yy.max()),
                 cmap=cmap,
                 aspect='auto', origin='lower',
-                alpha=0.5)
+                alpha=0.3)
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
 
-plt.savefig('./figures/pca_svm.png')
+
+plt.savefig('./figures/pca_svm.pdf', bbox_inches='tight')
 plt.show()
