@@ -17,7 +17,7 @@ validate_data = test_data
 
 OPTIMIZER = tf.keras.optimizers.legacy.Adam()
 
-df_kerr8 = pd.read_pickle('./dataframes/df_kerr8_with_model.pkl', compression='xz') 
+df_kerr8 = pd.read_pickle('./dataframes/df_kerr8_all_weights.pkl', compression='xz') 
 
 def generate_noise_dataframe(df, metric='acc', noise_range=(0.4, -3), npoints=50, data=(train_data, validate_data), epoch=199):  
     df_final = copy.deepcopy(df)
@@ -496,7 +496,7 @@ def generate_enob_dataframe_gate_based(df,
                             elif 'dense' in layer.name:
                                 dense_weights = layer.get_weights()
                                 for w in dense_weights:
-                                    weights_noise.append(tf.random.normal(tf.shape(w), stddev=2/(2**16-1)))
+                                    weights_noise.append(tf.random.normal(tf.shape(w), stddev=2/(2**32-1)))
                             else:
                                 continue
                         return weights_noise                                   
@@ -554,7 +554,12 @@ def generate_enob_dataframe_gate_based(df,
 
                     enobs = np.arange(enob_range[0], enob_range[1]+step_size, step_size)
 
-                    print(f'Total experiment time', 4*len(enobs)*5*15/60, 'minutes')
+
+                    model_trained = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
+                    
+                    model_trained.evaluate(*validate_data)
+
+                    print(f'Total experiment time', 4*len(enobs)*10*15/60, 'minutes')
 
                     params_default = (32, 32, 32, 32)
                     for i in tqdm(range(len(params_default))):
@@ -576,5 +581,5 @@ def generate_enob_dataframe_gate_based(df,
 if __name__ == '__main__':
     df_kerr8 = df_kerr8.loc[[1, 358]]
     df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==1) & ((df_kerr8['cutoff']==11) | (df_kerr8['cutoff'] == -1))]                         
-    quantum_noise_df = generate_enob_dataframe_gate_based(df_kerr8, step_size=0.5)
+    quantum_noise_df = generate_enob_dataframe_gate_based(df_kerr8, step_size=0.5, enob_range=(0.5, 10))
     pd.to_pickle(quantum_noise_df, './dataframes/quantum_noise_df.pkl')
