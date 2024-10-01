@@ -469,18 +469,22 @@ def generate_enob_dataframe_gate_based(df,
                         displacement_parameter_names = ['/a:', '/phi_a:']
                         weights_noise = []
                         max_a = 0
+                        max_a_squeezing = 0
                         for layer in model.layers:
                             if 'quantum_layer__multi_qunode' in layer.name:
                                 quantum_weights = layer.get_weights() 
                                 for w,val in zip(layer.weights, quantum_weights):
-                                    if ('/r:' in w.name) or ('/a:' in w.name):
+                                    if ('/a:' in w.name):
                                         if max_a < max(np.abs(val))[0]:
                                             max_a = max(np.abs(val))[0]
+                                    if '/r:' in w.name:
+                                        if max_a_squeezing < max(np.abs(val))[0]:
+                                            max_a_squeezing = max(np.abs(val))[0]
                                 for w, val in zip(layer.weights, quantum_weights):
                                     if (squeezing_parameter_names[1] in w.name):
                                         weights_noise.append(tf.random.normal(tf.shape(w), stddev=2*np.pi/(2**squeezing_enob-1)))
                                     elif (squeezing_parameter_names[0] in w.name):
-                                        weights_noise.append(tf.random.normal(tf.shape(w), stddev=max_a/(2**squeezing_enob-1)))
+                                        weights_noise.append(tf.random.normal(tf.shape(w), stddev=max_a_squeezing/(2**squeezing_enob-1)))
                                     elif check_string(w.name, kerr_parameter_names):
                                         weights_noise.append(tf.random.normal(tf.shape(w), stddev=2*np.pi/(2**kerr_enob-1)))
                                     elif check_string(w.name, interferometer_parameter_names):

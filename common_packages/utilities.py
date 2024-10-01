@@ -23,7 +23,7 @@ def get_num_parameters_per_quantum_layer(num_qumodes):
     displacement_parameters = 2 * num_qumodes
     squeezing_parameters = 2 * num_qumodes
     kerr_parameters = num_qumodes
-    interferometer_parameters = 2 * (num_qumodes + 2 * num_qumodes * (num_qumodes - 1) / 2)
+    interferometer_parameters = 2 * (num_qumodes + num_qumodes * (num_qumodes - 1))
     return displacement_parameters + squeezing_parameters + kerr_parameters + interferometer_parameters
 
 
