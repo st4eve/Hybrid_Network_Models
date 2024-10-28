@@ -156,7 +156,8 @@ def df_loss_calculation(df):
     df_11 = df_loss[df_loss['cutoff'] == 11]
     idx = df_11.groupby(['num_qumodes', 'n_layers'])['val_acc'].idxmax()
     df_11 = df_11.loc[idx].reset_index()
-    df_others = df_loss[df_loss['cutoff'] != 11]
+    # df_others = df_loss[df_loss['cutoff'] != 11]
+    df_others = df_loss.copy()
     df_others = df_others[df_others['num_qumodes'].isin(df_11['num_qumodes'].unique())]
     
     
@@ -171,6 +172,7 @@ def df_loss_calculation(df):
     )
     merged_df['accuracy_difference'] = merged_df['val_acc_r2'] - merged_df['val_acc_r1']
     merged_df['photonic_loss'] = 10*np.log10(merged_df['eta'])
+    merged_df['eta_r2_dB'] = 10*np.log10(merged_df['eta_r2'])
     merged_df.drop(columns=['eta_r2'], inplace=True)
     return merged_df
     
@@ -189,10 +191,11 @@ if __name__ == '__main__':
     df_kerr8['val_acc'] = df_kerr8['val_acc'].apply(lambda x: x[-1])
     df_kerr8['val_loss'] = df_kerr8['val_loss'].apply(lambda x: x[-1])
     groups  = ['num_qumodes', 'cutoff', 'n_layers']
-    columns = ['val_acc', 'val_loss', 'max_amplitude', 'max_squeezing']
+    columns = ['val_acc', 'val_loss', 'max_amplitude', 'max_squeezing', 'max_squeezing_db']
     df_kerr8_mean = df_kerr8.groupby(groups, group_keys=True)[columns].mean()
     # df_kerr8_mean = df_kerr8[groups + columns]
     df_kerr8_mean.reset_index(inplace=True)
+    df_kerr8_mean = df_kerr8_mean[df_kerr8_mean['num_qumodes'] == 2]
 
     print(df_kerr8_mean)
 
@@ -206,15 +209,27 @@ if __name__ == '__main__':
     
     print(df_kerr8_loss[df_kerr8_loss['eta'] > 1.0])
 
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4.5))
-    # ax2 = ax.twiny()
-    sns.lineplot(data=df_kerr8_loss, x='photonic_loss', y='accuracy_difference', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax)
-    # sns.lineplot(data=df_kerr8_loss, x='max_squeezing_db_r2', y='accuracy_difference', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax2)
-    plt.xlabel('Photonic Loss (dB)')
-    plt.ylabel('Average Accuracy Difference')
-    plt.savefig('./figures/photonic_loss_vs_accuracy_difference.png', dpi=300)
-    plt.savefig('./figures/photonic_loss_vs_accuracy_difference.pdf', dpi=300)
+    fig, ax = plt.subplots(2, 1, figsize=(5.5, 4.5), sharey=True)
+    ax1 = ax[0]
+    ax2 = ax[1]
+    sns.lineplot(data=df_kerr8_loss, x='photonic_loss', y='val_acc_r2', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax1)
+
+    sns.lineplot(data=df_kerr8_mean, x='max_squeezing_db', y='val_acc', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax2, legend=None)
+    
+    ax1.set_xlabel('Photonic Loss (dB)')
+    ax1.set_ylabel('Validation Accuracy')
+
+    ax2.set_xlabel('Maximum Squeezing (dB)')
+    ax2.set_ylabel('Validation Accuracy')
     plt.show()
+
+    df_kerr8_124 = df_kerr8[df_kerr8['num_params'] == 124]
+
+    sns.violinplot(data=df_kerr8_124, x='num_params', y='val_acc', hue='n_layers', palette=palette[2:])
+    plt.show()
+    
+
+
 
 
 
