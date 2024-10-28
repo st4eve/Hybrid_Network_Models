@@ -176,8 +176,28 @@ def df_loss_calculation(df):
     merged_df.drop(columns=['eta_r2'], inplace=True)
     return merged_df
 
+def df_loss_calculation_v2(df):
+    """This version of the loss calculation function uses the maximum squeezing
+       as the zero loss point. The loss is then calculated using the ratio of maximum
+       squeezing seein the function calculate_loss_from_variance.    
 
-def plot_coloured_violin(df, ax):
+    Args:
+        df (pandas.Dataframe): Dataframe containing the maximum squeezing values.
+    """
+
+    df_loss = df.copy()
+
+    max_squeezing = df_loss['max_squeezing'].max()
+    max_squeezing_db = convert_r_to_db(max_squeezing)
+    df_loss['max_squeezing_db'] = -df_loss['max_squeezing'].apply(convert_r_to_db)
+
+    df_loss['eta'] = df_loss['max_squeezing'].apply(lambda x: x / max_squeezing)
+    df_loss['photonic_loss'] = 10*np.log10(df_loss['eta'])
+    return df_loss
+
+
+
+def plot_coloured_cutoff_violin(df, ax):
 
     def colour_cutoffs(ax, df):
         def get_linecollections(ax):
@@ -212,6 +232,41 @@ def plot_coloured_violin(df, ax):
     color_dict = colour_cutoffs(ax, df)
     
     return color_dict
+
+def plot_coloured_photonic_loss_violin(df, ax, cmap='Greys', colorbar_var='photonic_loss'):
+    def colour_cutoffs(ax, df, colour_map):
+        def get_linecollections(ax):
+            lcs = []
+            for c in ax.collections:
+                if isinstance(c, mpl.collections.LineCollection):
+                    lcs.append(c)
+            if len(lcs) > 0:
+                return lcs
+            raise RuntimeError("No LineCollections found")
+        
+        linecollections = get_linecollections(ax)
+        df.sort_values('val_acc', inplace=True)
+        colour_list = [colour_map(i) for i in df[colorbar_var].values]
+        for linecollection in linecollections:
+            linecollection.set_segments(sorted(linecollection.get_segments(), key=lambda x: x[0][1]))
+            linecollection.set_colors(colour_list)
+
+    sns.violinplot(df,
+                    x='num_qumodes', y='val_acc', legend=None, 
+                    width=0.8, bw_method=0.1, inner='stick', split=False, cut=0, palette=palette, alpha=1.0,
+                    density_norm='count', inner_kws={'lw': 1, 'color': 'grey', 'alpha':0.9}, native_scale=False, ax=ax)
+
+    norm = mpl.colors.Normalize(df[colorbar_var].min(), df[colorbar_var].max())
+    colour_map = mpl.cm.get_cmap(cmap)
+    sm = mpl.cm.ScalarMappable(cmap=colour_map, norm=norm)
+    
+    
+    
+    colour_cutoffs(ax, df, lambda x: colour_map(norm(x)))
+
+
+    
+    return norm, sm
  
 if __name__ == '__main__':
     try:
@@ -234,7 +289,6 @@ if __name__ == '__main__':
     df_kerr8_mean.reset_index(inplace=True)
     df_kerr8_mean = df_kerr8_mean[df_kerr8_mean['num_qumodes'] == 2]
 
-    print(df_kerr8_mean)
 
 
     df_kerr8_loss = df_kerr8_mean.copy()
@@ -243,49 +297,117 @@ if __name__ == '__main__':
 
     df_kerr8_loss = df_loss_calculation(df_kerr8_loss)
 
-    
-    print(df_kerr8_loss[df_kerr8_loss['eta'] > 1.0])
+    df_kerr8_loss_full = df_loss_calculation_v2(df_kerr8[groups + columns])
 
+    # fig, ax = plt.subplots(1, 2, figsize=(5.5, 4.5), sharey=True)
+    # ax1 = ax[0]
+    # ax2 = ax[1]
+    # sns.lineplot(data=df_kerr8_loss, x='photonic_loss', y='val_acc_r2', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax1)
+
+    # sns.lineplot(data=df_kerr8_mean, x='max_squeezing_db', y='val_acc', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax2, legend=None)
+    
+    # ax1.set_xlabel('Estimated Photonic Loss (dB)')
+    # ax1.set_ylabel('Validation Accuracy')
+
+    # ax2.set_xlabel('Maximum Squeezing (dB)')
+    # ax2.set_ylabel('Validation Accuracy')
+
+    # handles, labels = ax1.get_legend_handles_labels()
+
+    # for i, (h, l) in enumerate(zip(handles, labels)):
+    #     if l == 'n_layers':
+    #         handles.pop(i)
+    #         labels.pop(i)
+    #     if l == 'num_qumodes':
+    #         handles.pop(i)
+    #         labels.pop(i)
+    #         handles.pop(i)
+    #         labels.pop(i)
+    
+    # ax1.legend(handles, labels, title='Number of Layers', loc='upper left', frameon=False) 
+    # plt.tight_layout() 
+    # plt.show()
+
+    # fig, ax3 = plt.subplots(1, 1, figsize=(4.5, 4.5))
+    # df_hybrid_120 = pd.read_pickle('./dataframes/df_hybrid_120.pkl', compression='xz')
+
+    # color_cutoff_dict = plot_coloured_cutoff_violin(df_hybrid_120, ax3)
+
+    # df_kerr8_loss_120 = df_kerr8_loss[df_kerr8_loss['n_layers'] == 1]
+
+    # for key, val in color_cutoff_dict.items():
+    #     label = df_kerr8_loss_120[df_kerr8_loss['cutoff_r2'] == key]['photonic_loss'].values[0] 
+    #     ax3.plot([], [], color=val, label=f'{label:0.2}'.capitalize(), lw=2)
+
+    #     ax3.legend(title='Photonic Loss', loc='lower right', frameon=False)
+    
+    # plt.show()
+
+    df_kerr8_loss_v2 = df_loss_calculation_v2(df_kerr8_mean)
+    df_kerr8_loss_v2.sort_values('max_squeezing_db', inplace=True)
+    max_squeezing_xticklabels = [2.25, 2.75, 3.25, 3.75, 4.25]
+    max_squeezing_xticks = np.interp(max_squeezing_xticklabels, df_kerr8_loss_v2['max_squeezing_db'], df_kerr8_loss_v2['photonic_loss'])
+    
     fig, ax = plt.subplots(1, 2, figsize=(5.5, 4.5), sharey=True)
     ax1 = ax[0]
-    ax2 = ax[1]
-    sns.lineplot(data=df_kerr8_loss, x='photonic_loss', y='val_acc_r2', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax1)
+    ax2 = ax1.twiny()
+    ax3 = ax[1]
 
-    sns.lineplot(data=df_kerr8_mean, x='max_squeezing_db', y='val_acc', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax2, legend=None)
-    
-    ax1.set_xlabel('Estimated Photonic Loss (dB)')
-    ax1.set_ylabel('Validation Accuracy')
-
-    ax2.set_xlabel('Maximum Squeezing (dB)')
-    ax2.set_ylabel('Validation Accuracy')
-
-    handles, labels = ax1.get_legend_handles_labels()
-
-    for i, (h, l) in enumerate(zip(handles, labels)):
-        if l == 'n_layers':
-            handles.pop(i)
-            labels.pop(i)
-        if l == 'num_qumodes':
-            handles.pop(i)
-            labels.pop(i)
-            handles.pop(i)
-            labels.pop(i)
-    
-    ax1.legend(handles, labels, title='Number of Layers', loc='upper left', frameon=False) 
-    plt.tight_layout() 
-    plt.show()
-
-    fig, ax3 = plt.subplots(1, 1, figsize=(4.5, 4.5))
     df_hybrid_120 = pd.read_pickle('./dataframes/df_hybrid_120.pkl', compression='xz')
 
-    color_cutoff_dict = plot_coloured_violin(df_hybrid_120, ax3)
+    color_cutoff_dict = plot_coloured_cutoff_violin(df_hybrid_120, ax3)
 
-    df_kerr8_loss_120 = df_kerr8_loss[df_kerr8_loss['n_layers'] == 1]
+    df_kerr8_loss_120 = df_kerr8_loss_v2[df_kerr8_loss_v2['n_layers'] == 1]
 
     for key, val in color_cutoff_dict.items():
-        label = df_kerr8_loss_120[df_kerr8_loss['cutoff_r2'] == key]['photonic_loss'].values[0] 
-        ax3.plot([], [], color=val, label=f'{label:0.2}'.capitalize(), lw=2)
+        label = df_kerr8_loss_120[df_kerr8_loss_120['cutoff'] == key]['photonic_loss'].values[0] 
+        ax3.plot([], [], color=val, label=f'{label:0.3f} dB', lw=2)
 
-        ax3.legend(title='Photonic Loss', loc='lower right', frameon=False)
+        ax3.legend(title='Estimated\nPhotonic Loss', loc='lower right', frameon=False)
+    
+    ax3.set_xlabel('')
+
+    ax3.set_xticklabels(['120 Parameters'], fontsize=12)
+
+
+    sns.lineplot(df_kerr8_loss_v2, x='photonic_loss', y='val_acc', markers=True, hue='num_qumodes', style='num_qumodes', palette=palette[0:], legend=None, ax=ax1)
+    # sns.lineplot(df_kerr8_loss_v2, x='max_squeezing_db', y='val_acc', markers=True, hue='num_qumodes', style='num_qumodes', palette=palette[2:], legend=None, ax=ax2)
+    # ax2.cla()
+    ax2.set_xlim(ax1.get_xlim())
+    ax2.set_xticks(max_squeezing_xticks)
+    ax2.set_xticklabels([f'{i:0.2f}' for i in max_squeezing_xticklabels])
+    plt.tight_layout()
+    ax1.set_ylabel('Validation Accuracy')
+    # ax2.set_ylabel('Validation Accuracy')
+    ax1.set_xlabel('Estimated Photonic Loss (dB)')
+    ax2.set_xlabel('Maximum Squeezing (dB)')
+
+    plt.savefig('./figures/photonic_loss_vs_accuracy.pdf', bbox_inches='tight')
+    plt.savefig('./figures/photonic_loss_vs_accuracy.png', bbox_inches='tight')
+    plt.savefig('./figures/photonic_loss_vs_accuracy.svg', bbox_inches='tight')
+    
+    plt.close()
+
+    fig, axs = plt.subplots(1, 2, figsize=(5.5, 4.5), sharey=True)
+    ax1 = axs[0]
+    ax2 = axs[1]
+    df_kerr8_loss_full = df_kerr8_loss_full[df_kerr8_loss_full['num_qumodes'] == 2]
+    norm, sm = plot_coloured_photonic_loss_violin(df_kerr8_loss_full, ax2)
+    plt.colorbar(sm, ax=ax2, label='Estimated Photonic Loss (dB)')
+    ax2.set_xlabel('')
+    ax2.set_xticklabels(["Two Qumodes\nN Layers"], fontsize=12)
+
+    sns.lineplot(df_kerr8_loss_v2, x='photonic_loss', y='val_acc', markers=True, hue='num_qumodes', style='num_qumodes', palette=palette[0:], legend=None, ax=ax1)
+    # sns.lineplot(df_kerr8_loss_v2, x='max_squeezing_db', y='val_acc', markers=True, hue='num_qumodes', style='num_qumodes', palette=palette[2:], legend=None, ax=ax2)
+    # ax2.cla()
+    ax1.set_ylabel('Validation Accuracy')
+    # ax2.set_ylabel('Validation Accuracy')
+    ax1.set_xlabel('Estimated Photonic Loss (dB)')
+    
+    plt.tight_layout()
+
+    plt.savefig('./figures/photonic_loss_vs_accuracy_v2.pdf', bbox_inches='tight')
+    plt.savefig('./figures/photonic_loss_vs_accuracy_v2.png', bbox_inches='tight')
+    plt.savefig('./figures/photonic_loss_vs_accuracy_v2.svg', bbox_inches='tight')
     
     plt.show()
