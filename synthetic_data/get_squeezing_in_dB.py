@@ -175,7 +175,44 @@ def df_loss_calculation(df):
     merged_df['eta_r2_dB'] = 10*np.log10(merged_df['eta_r2'])
     merged_df.drop(columns=['eta_r2'], inplace=True)
     return merged_df
+
+
+def plot_coloured_violin(df, ax):
+
+    def colour_cutoffs(ax, df):
+        def get_linecollections(ax):
+            lcs = []
+            for c in ax.collections:
+                if isinstance(c, mpl.collections.LineCollection):
+                    lcs.append(c)
+            if len(lcs) > 0:
+                return lcs
+            raise RuntimeError("No LineCollections found")
+        all_num_params = sorted(df['num_params'].unique().tolist())
+        df = df[df['network_type']=='quantum']
+        quantum_params = sorted(list(df['num_params'].unique()))
+        linecollections = get_linecollections(ax)
+        color_dict = dict(zip(sorted(df['cutoff'].unique()), colors[6:]))
+        for num_param,linecollection in zip(all_num_params, linecollections):
+            if num_param == quantum_params[0]:
+                df_line_colour = df[df['num_params']==quantum_params.pop(0)].sort_values('val_acc')
+                colour_list = [color_dict[i] for i in df_line_colour['cutoff'].values]
+                linecollection.set_segments(sorted(linecollection.get_segments(), key=lambda x: x[0][1]))
+                linecollection.set_colors(colour_list)
+            if not quantum_params:
+                break
+        return color_dict
+
+    sns.violinplot(df,
+                    x='num_params', y='val_acc', hue='network_type', legend=None, 
+                    hue_order=['quantum', 'classical'], width=0.8, bw_method=0.1, inner='stick', split=False, cut=0, palette=palette, alpha=1.0,
+                    density_norm='count', inner_kws={'lw': 1, 'color': 'grey', 'alpha':0.9}, native_scale=False, ax=ax)
+
+
+    color_dict = colour_cutoffs(ax, df)
     
+    return color_dict
+ 
 if __name__ == '__main__':
     try:
         # raise Exception()
@@ -209,34 +246,46 @@ if __name__ == '__main__':
     
     print(df_kerr8_loss[df_kerr8_loss['eta'] > 1.0])
 
-    fig, ax = plt.subplots(2, 1, figsize=(5.5, 4.5), sharey=True)
+    fig, ax = plt.subplots(1, 2, figsize=(5.5, 4.5), sharey=True)
     ax1 = ax[0]
     ax2 = ax[1]
     sns.lineplot(data=df_kerr8_loss, x='photonic_loss', y='val_acc_r2', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax1)
 
     sns.lineplot(data=df_kerr8_mean, x='max_squeezing_db', y='val_acc', hue='n_layers', style='num_qumodes', markers=True, palette=palette[2:], ax=ax2, legend=None)
     
-    ax1.set_xlabel('Photonic Loss (dB)')
+    ax1.set_xlabel('Estimated Photonic Loss (dB)')
     ax1.set_ylabel('Validation Accuracy')
 
     ax2.set_xlabel('Maximum Squeezing (dB)')
     ax2.set_ylabel('Validation Accuracy')
+
+    handles, labels = ax1.get_legend_handles_labels()
+
+    for i, (h, l) in enumerate(zip(handles, labels)):
+        if l == 'n_layers':
+            handles.pop(i)
+            labels.pop(i)
+        if l == 'num_qumodes':
+            handles.pop(i)
+            labels.pop(i)
+            handles.pop(i)
+            labels.pop(i)
+    
+    ax1.legend(handles, labels, title='Number of Layers', loc='upper left', frameon=False) 
+    plt.tight_layout() 
     plt.show()
 
-    df_kerr8_124 = df_kerr8[df_kerr8['num_params'] == 124]
+    fig, ax3 = plt.subplots(1, 1, figsize=(4.5, 4.5))
+    df_hybrid_120 = pd.read_pickle('./dataframes/df_hybrid_120.pkl', compression='xz')
 
-    sns.violinplot(data=df_kerr8_124, x='num_params', y='val_acc', hue='n_layers', palette=palette[2:])
+    color_cutoff_dict = plot_coloured_violin(df_hybrid_120, ax3)
+
+    df_kerr8_loss_120 = df_kerr8_loss[df_kerr8_loss['n_layers'] == 1]
+
+    for key, val in color_cutoff_dict.items():
+        label = df_kerr8_loss_120[df_kerr8_loss['cutoff_r2'] == key]['photonic_loss'].values[0] 
+        ax3.plot([], [], color=val, label=f'{label:0.2}'.capitalize(), lw=2)
+
+        ax3.legend(title='Photonic Loss', loc='lower right', frameon=False)
+    
     plt.show()
-    
-
-
-
-
-
-
-    
-    
-    
-
-
-    
