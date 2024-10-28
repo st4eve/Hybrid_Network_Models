@@ -74,7 +74,8 @@ class Net(Model):  # pylint: disable=W0223
             cutoff,
             n_layers,
             input_nl,
-            max_initial_weight=None,):
+            max_initial_weight=None,
+            shots=None,):
         super().__init__(
         )
 
@@ -157,7 +158,7 @@ class Net(Model):  # pylint: disable=W0223
                 regularizer=regularizers.L2(l2=0.1),
                 max_initial_weight=max_initial_weight,
                 measurement_object=CV_Measurement("X_quadrature"),
-                shots=None,
+                shots=shots,
             )
 
             self.quantum_preparation_layer = Activation_Layer("Sigmoid", self.quantum_layer.encoding_object)
