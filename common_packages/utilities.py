@@ -50,6 +50,8 @@ def get_total_parameters(num_qumodes, n_layers, input_size=8, output_size=4, enc
     return get_num_parameters_per_quantum_layer(num_qumodes) * n_layers + (input_size+1)*encoding_constant + (num_qumodes+1)*output_size
 
 if __name__ == '__main__':
+    print(get_num_parameters_per_quantum_layer(2))
+    
     num_qumodes = np.arange(2, 5, 1)
     n_layers = np.arange(1, 6, 1)
     for nq in num_qumodes:

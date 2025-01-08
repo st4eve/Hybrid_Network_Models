@@ -44,7 +44,10 @@ def load_weights(model, epoch, exp_folder, exp):
                             try:
                                 model.load_weights(f'{exp_folder}{exp}/weights/weight.195.ckpt', by_name=False).expect_partial()
                             except:
-                                model.load_weights(f'{exp_folder}{exp}/weights/weight195.ckpt', by_name=False).expect_partial()
+                                try:
+                                    model.load_weights(f'{exp_folder}{exp}/weights/weight195.ckpt', by_name=False).expect_partial()
+                                except:
+                                    return None
     return model
 
 
@@ -150,6 +153,8 @@ def generate_noise_dataframe(df, metric='acc', noise_range=(0.4, -3), npoints=50
                     for s in np.logspace(noise_range[0], noise_range[1], npoints): 
                         model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
                         model_classical = load_weights(model_classical, epoch, exp_folder, exp_classical)
+                        if model_quantum is None or model_classical is None:
+                            continue
                         
                         model_quantum(validate_data[0][0:1])
                         model_classical(validate_data[0][0:1])
@@ -185,6 +190,7 @@ def generate_enob_dataframe(df,
 
     exp_folder_quantum = df_quantum['exp_folder'].unique()[0]
     exp_folder_classical = df_classical['exp_folder'].unique()[0]
+
     
     for n in df_quantum['num_qumodes'].unique():
         for c in df_quantum[df_quantum['num_qumodes']==n]['cutoff'].unique():
@@ -194,8 +200,10 @@ def generate_enob_dataframe(df,
                 if (len(exp_quantum) == 0) or (len(exp_classical) == 0):
                     continue
                 else:
-                    exp_quantum = exp_quantum[exp_quantum[metric] == exp_quantum[metric].median()].index[0]
-                    exp_classical = exp_classical[exp_classical[metric] == exp_classical[metric].median()].index[0]
+                    # exp_quantum = exp_quantum[exp_quantum[metric] == exp_quantum[metric].median()].index[0]
+                    # exp_classical = exp_classical[exp_classical[metric] == exp_classical[metric].median()].index[0]
+                    exp_quantum = exp_quantum[metric].idxmax()
+                    exp_classical = exp_classical[metric].idxmax()
                     print('For Number of Qumodes: ', n, ' Cutoff: ', int(c), ' Layers: ', nl)
                     print(f'Highest Accuracy Experiments\nQuantum: {exp_quantum}\nClassical: {exp_classical}')
                     print(f'Quantum Val Acc, Acc: {df_quantum.loc[exp_quantum, "val_acc"][-1]}, {df_quantum.loc[exp_quantum, "loss"][-1]}')
@@ -285,6 +293,8 @@ def generate_enob_dataframe(df,
                     for e in tqdm(np.arange(enob_range[0], enob_range[1]+step_size, step_size)): 
                         model_quantum = load_weights(model_quantum, epoch, exp_folder_quantum, exp_quantum)
                         model_classical = load_weights(model_classical, epoch, exp_folder_classical, exp_classical)
+                        if model_quantum is None or model_classical is None:
+                            continue
                         
                         model_quantum(validate_data[0][0:1])
                         model_classical(validate_data[0][0:1])
@@ -409,6 +419,8 @@ def generate_enob_dataframe_amp_phase(df,
                     for ae in tqdm(np.arange(enob_range[0], enob_range[1]+step_size, step_size)): 
                         for pe in tqdm(np.arange(enob_range[0], enob_range[1]+step_size, step_size)): 
                             model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
+                            if model_quantum is None:
+                                continue
                             
                             model_quantum(validate_data[0][0:1])
 
@@ -539,6 +551,8 @@ def generate_enob_dataframe_gate_based(df,
                     def process_combination(model_quantum, params, columns=plot_df.columns):
                         se, ke, ie, de = params
                         model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
+                        if model_quantum is None:
+                            return None
                         model_quantum(validate_data[0][0:1])
                         return build_df(model_quantum, se, ke, ie, de, columns=columns)
                     
@@ -548,6 +562,8 @@ def generate_enob_dataframe_gate_based(df,
 
 
                     model_trained = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
+                    if model_trained is None:
+                        continue
                     
                     model_trained.evaluate(*validate_data)
 
@@ -613,7 +629,7 @@ def generate_shot_dataframe(df,
 
                             model_quantum.compile(optimizer=OPTIMIZER, loss=LOSS_FUNCTION, metrics=["accuracy"])
 
-                            load_weights(model_quantum, epoch, exp_folder, exp_quantum)
+                            model_quantum = load_weights(model_quantum, epoch, exp_folder, exp_quantum)
                             
                             model_quantum(validate_data[0][0:1])
                             val_loss, val_acc = model_quantum.evaluate(*validate_data, verbose=0)
@@ -635,7 +651,6 @@ def generate_shot_dataframe(df,
 
 
 if __name__ == '__main__':
-    df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==4) & (df_kerr8['n_layers']==1)]
-    print(df_kerr8)
+    df_kerr8 = df_kerr8[(df_kerr8['num_qumodes']==2) & (df_kerr8['n_layers']==5)]
     enob_df = generate_enob_dataframe(df_kerr8, metric='acc', enob_range=(0.5, 10), step_size=0.5, data=(train_data, validate_data), epoch=199)
-    pd.to_pickle(enob_df, './dataframes/enob_df_kerr8_4qumodes.pkl', compression='xz')
+    pd.to_pickle(enob_df, './dataframes/enob_df_kerr8_2qumodes_5layers.pkl', compression='xz')
