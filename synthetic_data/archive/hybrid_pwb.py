@@ -14,7 +14,7 @@ from sacred.observers import FileStorageObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 from common_packages.CV_quantum_layers import Activation_Layer, CV_Measurement, QuantumLayer_MultiQunode
-from PWBLayer_TF import PWBLinearLayer
+from synthetic_data.archive.PWBLayer_TF import PWBLinearLayer
 from common_packages.utilities import get_equivalent_classical_layer_size
 
 EXPERIMENT_NAME = "Synthetic_Hybrid_PWB_Experiment_Test2"

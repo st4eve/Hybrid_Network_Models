@@ -9,7 +9,7 @@ tf.compat.v1.enable_eager_execution()
 import keras
 import sys
 sys.path.append("../")
-from quantum_base import Net
+from synthetic_data.archive.quantum_base import Net
 import copy
 from common_packages.utilities import get_equivalent_classical_layer_size, get_num_parameters_per_quantum_layer
 tf.compat.v1.enable_eager_execution()

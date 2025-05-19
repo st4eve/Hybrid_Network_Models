@@ -10,14 +10,14 @@ sys.path.append("../")
 import copy
 from Plotting.generate_database import ResultsDatabaseGenerator
 from common_packages.utilities import get_equivalent_classical_layer_size, get_num_parameters_per_quantum_layer
-from quantum_base import Net as Net_orig
+from synthetic_data.archive.quantum_base import Net as Net_orig
 from quantum_base_kerr import Net as Net_kerr
 from data import generate_synthetic_dataset_easy
 from Plotting.Plot import BasicPlot, MultiPlot
 tf.compat.v1.enable_eager_execution()
 import pandas as pd
 import seaborn as sns
-from CalculateFisherInformation import Calculate_Fisher_Information_Matrix
+from synthetic_data.archive.CalculateFisherInformation import Calculate_Fisher_Information_Matrix
 from sklearn.model_selection import ParameterGrid
 colors =   ["#5dd448",
             "#bfa900",
